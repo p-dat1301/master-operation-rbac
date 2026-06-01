@@ -19,7 +19,7 @@ class UserRepository(ABC):
         pass
 
     @abstractmethod
-    async def create(self, user: User) -> User:
+    async def create(self, user: User, *, hashed_password: str) -> User:
         pass
 
     @abstractmethod

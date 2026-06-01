@@ -111,7 +111,7 @@ class SQLAlchemyUserRepository(UserRepository):
     # Write
     # ------------------------------------------------------------------
 
-    async def create(self, user: User, hashed_password: str = "") -> User:
+    async def create(self, user: User, *, hashed_password: str) -> User:
         """Tạo user mới. ``hashed_password`` truyền riêng để tách biệt concern."""
         model = UserModel(
             employee_code=user.employee_code,

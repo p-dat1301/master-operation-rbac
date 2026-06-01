@@ -150,12 +150,14 @@ class DepartmentTreeService:
     ) -> set[int]:
         """BFS/DFS để thu thập toàn bộ con cháu từ children_index."""
         result: set[int] = set()
+        visited: set[int] = {root_id}
         queue: list[int] = list(children_index.get(root_id, []))
 
         while queue:
             current = queue.pop()
-            if current in result:
+            if current in visited:
                 continue  # phòng ngừa cycle
+            visited.add(current)
             result.add(current)
             queue.extend(children_index.get(current, []))
 

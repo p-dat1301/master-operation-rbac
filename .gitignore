@@ -1,1 +1,6 @@
 docs/
+.claude/
+.gitnexus/
+.venv/
+.vscode/
+.omo/

@@ -15,3 +15,7 @@ class LeaveRequest:
     rejected_reason: Optional[str] = None
     reviewed_at: Optional[datetime] = None
     created_at: Optional[datetime] = None
+
+    def __post_init__(self) -> None:
+        if self.end_date < self.start_date:
+            raise ValueError("end_date must be greater than or equal to start_date")
