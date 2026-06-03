@@ -47,6 +47,7 @@ class SQLAlchemyUserRepository(UserRepository):
             email=model.email,
             full_name=model.full_name,
             role_name=model.role.name if model.role else "",
+            role_id=model.role_id,
             permissions=permissions,
             phone=model.phone,
             job_title=model.job_title,
@@ -55,6 +56,7 @@ class SQLAlchemyUserRepository(UserRepository):
             manager_id=model.manager_id,
             hire_date=model.hire_date,
             is_active=model.is_active,
+            hashed_password=model.hashed_password,
         )
 
     def _base_stmt(self):
@@ -125,7 +127,7 @@ class SQLAlchemyUserRepository(UserRepository):
             manager_id=user.manager_id,
             hire_date=user.hire_date,
             is_active=user.is_active,
-            # role_id phải được lookup trước khi gọi create, hoặc resolve từ role_name
+            role_id=user.role_id,
         )
         self._session.add(model)
         await self._session.flush()

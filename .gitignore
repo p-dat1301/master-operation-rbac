@@ -4,3 +4,5 @@ docs/
 .venv/
 .vscode/
 .omo/
+AGENT.md
+CLAUDE.md

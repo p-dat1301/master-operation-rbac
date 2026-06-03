@@ -29,6 +29,7 @@ class LeaveRequestModel(Base):
     start_date: Mapped[date] = mapped_column(Date, nullable=False)
     end_date: Mapped[date] = mapped_column(Date, nullable=False)
     reason: Mapped[Optional[str]] = mapped_column(Text)
+    department_id: Mapped[Optional[int]] = mapped_column(ForeignKey("departments.id", ondelete="SET NULL"))
     status: Mapped[str] = mapped_column(String(20), default="pending", nullable=False)
     reviewed_at: Mapped[Optional[datetime]]
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())

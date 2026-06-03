@@ -11,6 +11,7 @@ class LeaveRequest:
     end_date: date
     reason: Optional[str] = None
     status: str = "pending"
+    department_id: Optional[int] = None
     reviewed_by: Optional[int] = None
     rejected_reason: Optional[str] = None
     reviewed_at: Optional[datetime] = None

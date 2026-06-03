@@ -25,6 +25,10 @@ class LeaveRequestRepository(ABC):
         pass
 
     @abstractmethod
+    async def list_by_departments(self, department_ids: set[int]) -> list[LeaveRequest]:
+        pass
+
+    @abstractmethod
     async def create(self, leave: LeaveRequest) -> LeaveRequest:
         pass
 

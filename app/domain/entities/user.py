@@ -22,6 +22,7 @@ class User:
     email: str
     full_name: str
     role_name: str                              # tên vai trò: "admin", "manager", …
+    role_id: Optional[int] = None               # id vai trò để map infra
     permissions: set[str] = field(default_factory=set)  # quyền từ DB, nạp sớm
     phone: Optional[str] = None
     job_title: Optional[str] = None
@@ -30,3 +31,4 @@ class User:
     manager_id: Optional[int] = None
     hire_date: Optional[date] = None
     is_active: bool = True
+    hashed_password: Optional[str] = None       # chỉ dùng khi cần auth

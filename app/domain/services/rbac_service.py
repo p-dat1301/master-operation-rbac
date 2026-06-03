@@ -7,6 +7,7 @@ from app.domain.entities.user import User
 
 AttendanceScope = Literal["all", "department", "self"]
 TaskScope = Literal["all", "department", "self"]
+LeaveRequestScope = Literal["all", "department", "self"]
 
 # Vai trò đặc biệt được coi là "super-admin" — bỏ qua kiểm tra permission_code.
 _SUPERADMIN_ROLES: frozenset[str] = frozenset({"admin"})
@@ -62,19 +63,27 @@ class RBACService:
     # Scope helpers
     # ------------------------------------------------------------------
 
-    def get_attendance_scope(self, actor: User) -> AttendanceScope:
-        """Phạm vi dữ liệu chấm công được phép xem."""
-        if self.has_permission(actor, "view_attendance_all"):
-            return "all"
-        if self.has_permission(actor, "view_attendance_dept"):
-            return "department"
-        return "self"
-
     def get_task_scope(self, actor: User) -> TaskScope:
         """Phạm vi task được phép thao tác."""
         if actor.role_name in ("admin", "bod"):
             return "all"
         if actor.role_name == "manager":
+            return "department"
+        return "self"
+
+    def get_leave_request_scope(self, actor: User) -> LeaveRequestScope:
+        """Phạm vi đơn xin nghỉ được phép xem."""
+        if actor.role_name in ("admin", "bod"):
+            return "all"
+        if self.has_permission(actor, "approve_leave"):
+            return "department"
+        return "self"
+
+    def get_attendance_scope(self, actor: User) -> AttendanceScope:
+        """Phạm vi dữ liệu chấm công được phép xem."""
+        if self.has_permission(actor, "view_attendance_all"):
+            return "all"
+        if self.has_permission(actor, "view_attendance_dept"):
             return "department"
         return "self"
 

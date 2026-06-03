@@ -23,6 +23,7 @@ class AttendanceModel(Base):
     date: Mapped[date] = mapped_column(Date, nullable=False)
     check_in: Mapped[Optional[time]] = mapped_column(Time)
     check_out: Mapped[Optional[time]] = mapped_column(Time)
+    department_id: Mapped[Optional[int]] = mapped_column(ForeignKey("departments.id", ondelete="SET NULL"))
     status: Mapped[str] = mapped_column(String(20), default="present", nullable=False)
     note: Mapped[Optional[str]] = mapped_column(String(500))
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())

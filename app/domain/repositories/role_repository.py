@@ -15,3 +15,15 @@ class RoleRepository(ABC):
     @abstractmethod
     async def find_all(self) -> list[Role]:
         pass
+
+    @abstractmethod
+    async def create(self, role: Role) -> Role:
+        pass
+
+    @abstractmethod
+    async def update(self, role: Role) -> Role:
+        pass
+
+    @abstractmethod
+    async def delete(self, role_id: int) -> None:
+        pass

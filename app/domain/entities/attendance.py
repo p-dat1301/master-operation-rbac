@@ -12,4 +12,5 @@ class Attendance:
     total_minutes: Optional[int] = None
     ip_address: Optional[str] = None
     note: Optional[str] = None
+    department_id: Optional[int] = None
     status: Optional[str] = None

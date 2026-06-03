@@ -11,7 +11,7 @@ class Task:
     assignee_id: Optional[int] = None
     assigner_id: Optional[int] = None
     department_id: Optional[int] = None
-    status: str = "backlog"
+    status: str = "todo"
     priority: Optional[str] = None
     start_date: Optional[date] = None
     due_date: Optional[date] = None

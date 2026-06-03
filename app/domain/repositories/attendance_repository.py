@@ -18,7 +18,7 @@ class AttendanceRepository(ABC):
         pass
 
     @abstractmethod
-    async def list_by_department(self, department_id: int) -> list[Attendance]:
+    async def list_by_departments(self, department_ids: set[int]) -> list[Attendance]:
         pass
 
     @abstractmethod
