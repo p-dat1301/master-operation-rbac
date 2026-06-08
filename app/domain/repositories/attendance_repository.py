@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from datetime import date
+from datetime import date, datetime
 
 from app.domain.entities.attendance import Attendance
 
@@ -37,7 +37,7 @@ class AttendanceRepository(ABC):
     async def checkout(
         self,
         attendance_id: int,
-        check_out: str | None,
+        check_out: datetime,
         total_minutes: int | None,
     ) -> Attendance:
         pass

@@ -5,6 +5,7 @@ Chỉ khởi tạo User mock với permissions set giả lập → test O(1) log
 """
 import pytest
 from app.domain.entities.user import User
+from app.domain.exceptions import PermissionDenied
 from app.domain.services.rbac_service import RBACService
 
 
@@ -83,7 +84,7 @@ class TestHasPermission:
 class TestRequirePermission:
     def test_raises_on_missing(self, svc):
         user = make_user("employee", {"view_attendance_self"})
-        with pytest.raises(PermissionError, match="approve_leave"):
+        with pytest.raises(PermissionDenied, match="approve_leave"):
             svc.require_permission(user, "approve_leave")
 
     def test_no_raise_on_present(self, svc):

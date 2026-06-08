@@ -1,7 +1,7 @@
 """SQLAlchemy 2.0 async implementation của AttendanceRepository."""
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, datetime
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -21,6 +21,8 @@ class SQLAlchemyAttendanceRepository(AttendanceRepository):
             date=model.date,
             check_in=model.check_in,
             check_out=model.check_out,
+            total_minutes=model.total_minutes,
+            ip_address=model.ip_address,
             department_id=model.department_id,
             status=model.status,
             note=model.note,
@@ -64,6 +66,9 @@ class SQLAlchemyAttendanceRepository(AttendanceRepository):
             user_id=attendance.user_id,
             date=attendance.date,
             check_in=attendance.check_in,
+            check_out=attendance.check_out,
+            total_minutes=attendance.total_minutes,
+            ip_address=attendance.ip_address,
             department_id=attendance.department_id,
             status=attendance.status,
             note=attendance.note,
@@ -81,6 +86,8 @@ class SQLAlchemyAttendanceRepository(AttendanceRepository):
             raise ValueError(f"Attendance {attendance.id} not found")
         model.check_in = attendance.check_in
         model.check_out = attendance.check_out
+        model.total_minutes = attendance.total_minutes
+        model.ip_address = attendance.ip_address
         model.status = attendance.status
         model.note = attendance.note
         model.department_id = attendance.department_id
@@ -90,7 +97,7 @@ class SQLAlchemyAttendanceRepository(AttendanceRepository):
     async def checkout(
         self,
         attendance_id: int,
-        check_out,
+        check_out: datetime,
         total_minutes: int | None,
     ) -> Attendance:
         stmt = select(AttendanceModel).where(AttendanceModel.id == attendance_id)
@@ -99,5 +106,7 @@ class SQLAlchemyAttendanceRepository(AttendanceRepository):
         if not model:
             raise ValueError(f"Attendance {attendance_id} not found")
         model.check_out = check_out
+        model.total_minutes = total_minutes
+        model.status = "checked_out"
         await self._session.flush()
         return self._to_entity(model)

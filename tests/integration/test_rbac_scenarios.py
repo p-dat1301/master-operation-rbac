@@ -114,8 +114,9 @@ class TestRBACScenarios:
         now = datetime.now().isoformat()
         resp = await client.post(
             "/api/v1/attendance/checkin",
+            headers={"Authorization": f"Bearer {employee_token}"},
             json={
-                "user_id": 3,
+                "user_id": 999,
                 "check_in": now,
                 "ip_address": "192.168.1.100",
                 "note": "Morning check-in",
