@@ -32,7 +32,7 @@ class SQLAlchemyLeaveBalanceRepository(LeaveBalanceRepository):
         model = result.scalars().first()
         return self._to_entity(model) if model else None
 
-    async def find_by_user_and_year(self, user_id: int, year: int) -> LeaveBalance | None:
+    async def find_by_user_year(self, user_id: int, year: int) -> LeaveBalance | None:
         stmt = select(LeaveBalanceModel).where(
             LeaveBalanceModel.user_id == user_id,
             LeaveBalanceModel.year == year,
@@ -68,6 +68,22 @@ class SQLAlchemyLeaveBalanceRepository(LeaveBalanceRepository):
         model.used_days = int(balance.used_days)
         await self._session.flush()
         return self._to_entity(model)
+
+    async def upsert(self, balance: LeaveBalance) -> LeaveBalance:
+        existing = await self.find_by_user_year(balance.user_id, balance.year)
+        if existing:
+            balance_with_id = LeaveBalance(
+                id=existing.id,
+                user_id=balance.user_id,
+                year=balance.year,
+                total_days=balance.total_days,
+                used_days=balance.used_days,
+                pending_days=balance.pending_days,
+                remaining_days=balance.remaining_days,
+                updated_at=balance.updated_at,
+            )
+            return await self.update(balance_with_id)
+        return await self.create(balance)
 
     async def delete(self, balance_id: int) -> None:
         stmt = select(LeaveBalanceModel).where(LeaveBalanceModel.id == balance_id)

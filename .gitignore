@@ -1,4 +1,3 @@
-docs/
 .claude/
 .gitnexus/
 .venv/
@@ -6,3 +5,7 @@ docs/
 .omo/
 AGENT.md
 CLAUDE.md
+__pycache__/
+*.pyc
+*.pyo
+.playwright-mcp/

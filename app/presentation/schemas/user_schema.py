@@ -25,7 +25,7 @@ class UserResponse(BaseModel):
             email=user.email,
             full_name=user.full_name,
             role_name=user.role_name,
-            permissions=list(user.permissions) if user.permissions else [],
+            permissions=list(user.permissions) if hasattr(user, 'permissions') and user.permissions else [],
             phone=user.phone,
             job_title=user.job_title,
             department_id=user.department_id,
@@ -41,3 +41,13 @@ class UserCreateRequest(BaseModel):
     password: str
     role_name: str
     department_id: Optional[int] = None
+
+
+class UserUpdateRequest(BaseModel):
+    full_name: Optional[str] = None
+    phone: Optional[str] = None
+    job_title: Optional[str] = None
+    contact_type: Optional[str] = None
+    department_id: Optional[int] = None
+    manager_id: Optional[int] = None
+    is_active: Optional[bool] = None

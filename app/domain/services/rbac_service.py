@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Literal
 
 from app.domain.entities.user import User
+from app.domain.exceptions import PermissionDenied
 
 
 AttendanceScope = Literal["all", "department", "self"]
@@ -42,12 +43,12 @@ class RBACService:
         return permission_code in actor.permissions
 
     def require_permission(self, actor: User, permission_code: str) -> None:
-        """Raise ``PermissionError`` nếu actor không có quyền.
+        """Raise ``PermissionDenied`` nếu actor không có quyền.
 
         Tiện ích để Use Case gọi trực tiếp thay vì ``if not has_permission``.
         """
         if not self.has_permission(actor, permission_code):
-            raise PermissionError(
+            raise PermissionDenied(
                 f"Role '{actor.role_name}' lacks permission '{permission_code}'."
             )
 

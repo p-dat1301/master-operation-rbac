@@ -1,7 +1,7 @@
 from app.application.dtos.user import UserCreateInput, UserOutput
 from app.application.ports.password import IPasswordService
 from app.domain.entities.user import User
-from app.domain.exceptions import BusinessRuleViolation, PermissionDenied, ResourceNotFound
+from app.domain.exceptions import BusinessRuleViolation, ResourceNotFound
 from app.domain.repositories.role_repository import RoleRepository
 from app.domain.repositories.user_repository import UserRepository
 from app.domain.services.rbac_service import RBACService
@@ -23,10 +23,7 @@ class CreateUserUseCase:
         self.rbac_service = rbac_service
 
     async def execute(self, actor: User, data: UserCreateInput) -> UserOutput:
-        try:
-            self.rbac_service.require_permission(actor, "manage_org")
-        except PermissionError:
-            raise PermissionDenied("You do not have permission to create users")
+        self.rbac_service.require_permission(actor, "manage_org")
 
         role = await self.role_repo.find_by_name(data.role_name)
         if role is None:

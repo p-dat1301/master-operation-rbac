@@ -1,0 +1,2844 @@
+{
+  "info": {
+    "_postman_id": "8b72c45e-a80c-4dc3-94e9-25540e147fe7",
+    "name": "Master Operation API - Auto Test Collection",
+    "description": "Generated from FastAPI OpenAPI. Run `00 - Auth / Login` first, then run folders or the full collection. Collection variables include seed credentials and common IDs.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "const now = new Date();",
+          "const today = now.toISOString().slice(0, 10);",
+          "const tomorrowDate = new Date(now.getTime() + 24 * 60 * 60 * 1000);",
+          "pm.collectionVariables.set(\"today\", pm.collectionVariables.get(\"today\") || today);",
+          "pm.collectionVariables.set(\"tomorrow\", pm.collectionVariables.get(\"tomorrow\") || tomorrowDate.toISOString().slice(0, 10));",
+          "pm.collectionVariables.set(\"now_iso\", now.toISOString());"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "00 - Auth",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ],
+              "query": []
+            },
+            "description": "POST /api/v1/auth/login\n\nImported from OpenAPI operationId: `login_api_v1_auth_login_post`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@company.vn\",\n  \"password\": \"Admin@123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const expected = [200, 422];",
+                  "pm.test(\"Response status is documented or non-server-error\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "  if (expected.length) { pm.expect(expected.concat([400, 401, 403, 404, 405, 409, 422])).to.include(pm.response.code); }",
+                  "});",
+                  "pm.test(\"Login returns access_token\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  const data = pm.response.json();",
+                  "  pm.expect(data).to.have.property(\"access_token\");",
+                  "  pm.collectionVariables.set(\"token\", data.access_token);",
+                  "  pm.environment.set(\"token\", data.access_token);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Me",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "me"
+              ],
+              "query": []
+            },
+            "description": "GET /api/v1/auth/me\n\nImported from OpenAPI operationId: `me_api_v1_auth_me_get`.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const expected = [200];",
+                  "pm.test(\"Response status is documented or non-server-error\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "  if (expected.length) { pm.expect(expected.concat([400, 401, 403, 404, 405, 409, 422])).to.include(pm.response.code); }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "users",
+      "item": [
+        {
+          "name": "List Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users"
+              ],
+              "query": [
+                {
+                  "key": "department_id",
+                  "value": "{{department_id}}",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "role_name",
+                  "value": "employee",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "is_active",
+                  "value": "true",
+                  "description": "",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "GET /api/v1/users/\n\nImported from OpenAPI operationId: `list_users_api_v1_users__get`.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const expected = [200, 422];",
+                  "pm.test(\"Response status is documented or non-server-error\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "  if (expected.length) { pm.expect(expected.concat([400, 401, 403, 404, 405, 409, 422])).to.include(pm.response.code); }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users"
+              ],
+              "query": []
+            },
+            "description": "POST /api/v1/users/\n\nImported from OpenAPI operationId: `create_user_api_v1_users__post`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employee_code\": \"PM{{$timestamp}}\",\n  \"email\": \"postman{{$timestamp}}@company.vn\",\n  \"full_name\": \"Postman Test User\",\n  \"password\": \"Test@123\",\n  \"role_name\": \"employee\",\n  \"department_id\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const expected = [200, 422];",
+                  "pm.test(\"Response status is documented or non-server-error\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "  if (expected.length) { pm.expect(expected.concat([400, 401, 403, 404, 405, 409, 422])).to.include(pm.response.code); }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get User",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/{{user_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users",
+                "{{user_id}}"
+              ],
+              "query": []
+            },
+            "description": "GET /api/v1/users/{id}\n\nImported from OpenAPI operationId: `get_user_api_v1_users__id__get`.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const expected = [200, 422];",
+                  "pm.test(\"Response status is documented or non-server-error\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "  if (expected.length) { pm.expect(expected.concat([400, 401, 403, 404, 405, 409, 422])).to.include(pm.response.code); }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/{{user_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users",
+                "{{user_id}}"
+              ],
+              "query": []
+            },
+            "description": "PUT /api/v1/users/{id}\n\nImported from OpenAPI operationId: `update_user_api_v1_users__id__put`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"Postman Updated User\",\n  \"phone\": \"0900000000\",\n  \"job_title\": \"QA Tester\",\n  \"contact_type\": \"phone\",\n  \"department_id\": 1,\n  \"manager_id\": 2,\n  \"is_active\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const expected = [200, 422];",
+                  "pm.test(\"Response status is documented or non-server-error\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "  if (expected.length) { pm.expect(expected.concat([400, 401, 403, 404, 405, 409, 422])).to.include(pm.response.code); }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/{{user_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users",
+                "{{user_id}}"
+              ],
+              "query": []
+            },
+            "description": "DELETE /api/v1/users/{id}\n\nImported from OpenAPI operationId: `delete_user_api_v1_users__id__delete`.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const expected = [200, 422];",
+                  "pm.test(\"Response status is documented or non-server-error\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "  if (expected.length) { pm.expect(expected.concat([400, 401, 403, 404, 405, 409, 422])).to.include(pm.response.code); }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Activate User",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/{{user_id}}/activate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users",
+                "{{user_id}}",
+                "activate"
+              ],
+              "query": []
+            },
+            "description": "PUT /api/v1/users/{id}/activate\n\nImported from OpenAPI operationId: `activate_user_api_v1_users__id__activate_put`.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const expected = [200, 422];",
+                  "pm.test(\"Response status is documented or non-server-error\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "  if (expected.length) { pm.expect(expected.concat([400, 401, 403, 404, 405, 409, 422])).to.include(pm.response.code); }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Deactivate User",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/{{user_id}}/deactivate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users",
+                "{{user_id}}",
+                "deactivate"
+              ],
+              "query": []
+            },
+            "description": "PUT /api/v1/users/{id}/deactivate\n\nImported from OpenAPI operationId: `deactivate_user_api_v1_users__id__deactivate_put`.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const expected = [200, 422];",
+                  "pm.test(\"Response status is documented or non-server-error\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "  if (expected.length) { pm.expect(expected.concat([400, 401, 403, 404, 405, 409, 422])).to.include(pm.response.code); }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/{{user_id}}/change-password",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users",
+                "{{user_id}}",
+                "change-password"
+              ],
+              "query": []
+            },
+            "description": "PUT /api/v1/users/{id}/change-password\n\nImported from OpenAPI operationId: `change_password_api_v1_users__id__change_password_put`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"current_password\": \"Employee@123\",\n  \"new_password\": \"Employee@123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const expected = [200, 422];",
+                  "pm.test(\"Response status is documented or non-server-error\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "  if (expected.length) { pm.expect(expected.concat([400, 401, 403, 404, 405, 409, 422])).to.include(pm.response.code); }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/{{user_id}}/reset-password",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users",
+                "{{user_id}}",
+                "reset-password"
+              ],
+              "query": []
+            },
+            "description": "PUT /api/v1/users/{id}/reset-password\n\nImported from OpenAPI operationId: `reset_password_api_v1_users__id__reset_password_put`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"new_password\": \"Employee@123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const expected = [200, 422];",
+                  "pm.test(\"Response status is documented or non-server-error\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "  if (expected.length) { pm.expect(expected.concat([400, 401, 403, 404, 405, 409, 422])).to.include(pm.response.code); }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "tasks",
+      "item": [
+        {
+          "name": "List Tasks",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/tasks/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tasks"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "backlog",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "assignee_id",
+                  "value": "{{user_id}}",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "department_id",
+                  "value": "{{department_id}}",
+                  "description": "",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "GET /api/v1/tasks/\n\nImported from OpenAPI operationId: `list_tasks_api_v1_tasks__get`.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const expected = [200, 422];",
+                  "pm.test(\"Response status is documented or non-server-error\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "  if (expected.length) { pm.expect(expected.concat([400, 401, 403, 404, 405, 409, 422])).to.include(pm.response.code); }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Task",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/tasks/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tasks"
+              ],
+              "query": []
+            },
+            "description": "POST /api/v1/tasks/\n\nImported from OpenAPI operationId: `create_task_api_v1_tasks__post`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"task_code\": \"PM-TASK-{{$timestamp}}\",\n  \"title\": \"Postman smoke task\",\n  \"description\": \"Created by Postman collection\",\n  \"assignee_id\": 3,\n  \"department_id\": 1,\n  \"priority\": \"high\",\n  \"start_date\": \"{{today}}\",\n  \"due_date\": \"{{tomorrow}}\",\n  \"estimated_hours\": 4\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const expected = [200, 422];",
+                  "pm.test(\"Response status is documented or non-server-error\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "  if (expected.length) { pm.expect(expected.concat([400, 401, 403, 404, 405, 409, 422])).to.include(pm.response.code); }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Task",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/tasks/{{task_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tasks",
+                "{{task_id}}"
+              ],
+              "query": []
+            },
+            "description": "GET /api/v1/tasks/{id}\n\nImported from OpenAPI operationId: `get_task_api_v1_tasks__id__get`.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const expected = [200, 422];",
+                  "pm.test(\"Response status is documented or non-server-error\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "  if (expected.length) { pm.expect(expected.concat([400, 401, 403, 404, 405, 409, 422])).to.include(pm.response.code); }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Task",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/tasks/{{task_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tasks",
+                "{{task_id}}"
+              ],
+              "query": []
+            },
+            "description": "PUT /api/v1/tasks/{id}\n\nImported from OpenAPI operationId: `update_task_api_v1_tasks__id__put`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Postman updated task\",\n  \"description\": \"Updated by Postman collection\",\n  \"assignee_id\": 3,\n  \"department_id\": 1,\n  \"priority\": \"medium\",\n  \"start_date\": \"{{today}}\",\n  \"due_date\": \"{{tomorrow}}\",\n  \"estimated_hours\": 6\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const expected = [200, 422];",
+                  "pm.test(\"Response status is documented or non-server-error\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "  if (expected.length) { pm.expect(expected.concat([400, 401, 403, 404, 405, 409, 422])).to.include(pm.response.code); }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete Task",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/tasks/{{task_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tasks",
+                "{{task_id}}"
+              ],
+              "query": []
+            },
+            "description": "DELETE /api/v1/tasks/{id}\n\nImported from OpenAPI operationId: `delete_task_api_v1_tasks__id__delete`.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const expected = [200, 422];",
+                  "pm.test(\"Response status is documented or non-server-error\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "  if (expected.length) { pm.expect(expected.concat([400, 401, 403, 404, 405, 409, 422])).to.include(pm.response.code); }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Assign Task",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/tasks/{{task_id}}/assign",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tasks",
+                "{{task_id}}",
+                "assign"
+              ],
+              "query": []
+            },
+            "description": "PUT /api/v1/tasks/{id}/assign\n\nImported from OpenAPI operationId: `assign_task_api_v1_tasks__id__assign_put`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"task_id\": \"{{task_id}}\",\n  \"assignee_id\": 3\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const expected = [200, 422];",
+                  "pm.test(\"Response status is documented or non-server-error\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "  if (expected.length) { pm.expect(expected.concat([400, 401, 403, 404, 405, 409, 422])).to.include(pm.response.code); }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Complete Task",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/tasks/{{task_id}}/complete",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tasks",
+                "{{task_id}}",
+                "complete"
+              ],
+              "query": []
+            },
+            "description": "PUT /api/v1/tasks/{id}/complete\n\nImported from OpenAPI operationId: `complete_task_api_v1_tasks__id__complete_put`.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const expected = [200, 422];",
+                  "pm.test(\"Response status is documented or non-server-error\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "  if (expected.length) { pm.expect(expected.concat([400, 401, 403, 404, 405, 409, 422])).to.include(pm.response.code); }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cancel Task",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/tasks/{{task_id}}/cancel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tasks",
+                "{{task_id}}",
+                "cancel"
+              ],
+              "query": []
+            },
+            "description": "PUT /api/v1/tasks/{id}/cancel\n\nImported from OpenAPI operationId: `cancel_task_api_v1_tasks__id__cancel_put`.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const expected = [200, 422];",
+                  "pm.test(\"Response status is documented or non-server-error\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "  if (expected.length) { pm.expect(expected.concat([400, 401, 403, 404, 405, 409, 422])).to.include(pm.response.code); }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Start Task",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/tasks/{{task_id}}/start",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tasks",
+                "{{task_id}}",
+                "start"
+              ],
+              "query": []
+            },
+            "description": "PUT /api/v1/tasks/{id}/start\n\nImported from OpenAPI operationId: `start_task_api_v1_tasks__id__start_put`.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const expected = [200, 422];",
+                  "pm.test(\"Response status is documented or non-server-error\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "  if (expected.length) { pm.expect(expected.concat([400, 401, 403, 404, 405, 409, 422])).to.include(pm.response.code); }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "leaves",
+      "item": [
+        {
+          "name": "List Leaves",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/leaves/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "leaves"
+              ],
+              "query": []
+            },
+            "description": "GET /api/v1/leaves/\n\nImported from OpenAPI operationId: `list_leaves_api_v1_leaves__get`.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const expected = [200];",
+                  "pm.test(\"Response status is documented or non-server-error\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "  if (expected.length) { pm.expect(expected.concat([400, 401, 403, 404, 405, 409, 422])).to.include(pm.response.code); }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Leave",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/leaves/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "leaves"
+              ],
+              "query": []
+            },
+            "description": "POST /api/v1/leaves/\n\nImported from OpenAPI operationId: `create_leave_api_v1_leaves__post`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"leave_type\": \"annual\",\n  \"start_date\": \"{{today}}\",\n  \"end_date\": \"{{tomorrow}}\",\n  \"reason\": \"Postman test leave\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const expected = [200, 422];",
+                  "pm.test(\"Response status is documented or non-server-error\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "  if (expected.length) { pm.expect(expected.concat([400, 401, 403, 404, 405, 409, 422])).to.include(pm.response.code); }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Review Leave",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/leaves/{{leave_id}}/review",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "leaves",
+                "{{leave_id}}",
+                "review"
+              ],
+              "query": []
+            },
+            "description": "PUT /api/v1/leaves/{id}/review\n\nImported from OpenAPI operationId: `review_leave_api_v1_leaves__id__review_put`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"leave_request_id\": \"{{leave_id}}\",\n  \"action\": \"approve\",\n  \"rejected_reason\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const expected = [200, 422];",
+                  "pm.test(\"Response status is documented or non-server-error\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "  if (expected.length) { pm.expect(expected.concat([400, 401, 403, 404, 405, 409, 422])).to.include(pm.response.code); }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Leave",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/leaves/{{leave_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "leaves",
+                "{{leave_id}}"
+              ],
+              "query": []
+            },
+            "description": "PUT /api/v1/leaves/{id}\n\nImported from OpenAPI operationId: `update_leave_api_v1_leaves__id__put`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"leave_type\": \"annual\",\n  \"start_date\": \"{{today}}\",\n  \"end_date\": \"{{tomorrow}}\",\n  \"reason\": \"Updated by Postman\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const expected = [200, 422];",
+                  "pm.test(\"Response status is documented or non-server-error\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "  if (expected.length) { pm.expect(expected.concat([400, 401, 403, 404, 405, 409, 422])).to.include(pm.response.code); }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cancel Leave",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/leaves/{{leave_id}}/cancel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "leaves",
+                "{{leave_id}}",
+                "cancel"
+              ],
+              "query": []
+            },
+            "description": "PUT /api/v1/leaves/{id}/cancel\n\nImported from OpenAPI operationId: `cancel_leave_api_v1_leaves__id__cancel_put`.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const expected = [200, 422];",
+                  "pm.test(\"Response status is documented or non-server-error\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "  if (expected.length) { pm.expect(expected.concat([400, 401, 403, 404, 405, 409, 422])).to.include(pm.response.code); }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "attendance",
+      "item": [
+        {
+          "name": "Checkin",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/attendance/checkin",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "attendance",
+                "checkin"
+              ],
+              "query": []
+            },
+            "description": "POST /api/v1/attendance/checkin\n\nImported from OpenAPI operationId: `checkin_api_v1_attendance_checkin_post`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"check_in\": \"{{now_iso}}\",\n  \"ip_address\": \"127.0.0.1\",\n  \"note\": \"Postman checkin\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const expected = [200, 422];",
+                  "pm.test(\"Response status is documented or non-server-error\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "  if (expected.length) { pm.expect(expected.concat([400, 401, 403, 404, 405, 409, 422])).to.include(pm.response.code); }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Heatmap",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/attendance/heatmap?start_date={{today}}&end_date={{tomorrow}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "attendance",
+                "heatmap"
+              ],
+              "query": [
+                {
+                  "key": "start_date",
+                  "value": "{{today}}",
+                  "description": "",
+                  "disabled": false
+                },
+                {
+                  "key": "end_date",
+                  "value": "{{tomorrow}}",
+                  "description": "",
+                  "disabled": false
+                },
+                {
+                  "key": "user_id",
+                  "value": "{{user_id}}",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "department_id",
+                  "value": "{{department_id}}",
+                  "description": "",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "GET /api/v1/attendance/heatmap\n\nImported from OpenAPI operationId: `heatmap_api_v1_attendance_heatmap_get`.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const expected = [200, 422];",
+                  "pm.test(\"Response status is documented or non-server-error\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "  if (expected.length) { pm.expect(expected.concat([400, 401, 403, 404, 405, 409, 422])).to.include(pm.response.code); }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Checkout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/attendance/checkout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "attendance",
+                "checkout"
+              ],
+              "query": []
+            },
+            "description": "POST /api/v1/attendance/checkout\n\nImported from OpenAPI operationId: `checkout_api_v1_attendance_checkout_post`.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const expected = [200];",
+                  "pm.test(\"Response status is documented or non-server-error\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "  if (expected.length) { pm.expect(expected.concat([400, 401, 403, 404, 405, 409, 422])).to.include(pm.response.code); }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "departments",
+      "item": [
+        {
+          "name": "List Departments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/departments/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "departments"
+              ],
+              "query": []
+            },
+            "description": "GET /api/v1/departments/\n\nImported from OpenAPI operationId: `list_departments_api_v1_departments__get`.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const expected = [200];",
+                  "pm.test(\"Response status is documented or non-server-error\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "  if (expected.length) { pm.expect(expected.concat([400, 401, 403, 404, 405, 409, 422])).to.include(pm.response.code); }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "leave-balances",
+      "item": [
+        {
+          "name": "Get My Leave Balance",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/leave-balances/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "leave-balances",
+                "me"
+              ],
+              "query": [
+                {
+                  "key": "year",
+                  "value": "2026",
+                  "description": "",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "GET /api/v1/leave-balances/me\n\nImported from OpenAPI operationId: `get_my_leave_balance_api_v1_leave_balances_me_get`.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const expected = [200, 422];",
+                  "pm.test(\"Response status is documented or non-server-error\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "  if (expected.length) { pm.expect(expected.concat([400, 401, 403, 404, 405, 409, 422])).to.include(pm.response.code); }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get User Leave Balance",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/leave-balances/users/{{user_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "leave-balances",
+                "users",
+                "{{user_id}}"
+              ],
+              "query": [
+                {
+                  "key": "year",
+                  "value": "2026",
+                  "description": "",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "GET /api/v1/leave-balances/users/{user_id}\n\nImported from OpenAPI operationId: `get_user_leave_balance_api_v1_leave_balances_users__user_id__get`.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const expected = [200, 422];",
+                  "pm.test(\"Response status is documented or non-server-error\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "  if (expected.length) { pm.expect(expected.concat([400, 401, 403, 404, 405, 409, 422])).to.include(pm.response.code); }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update User Leave Balance",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/leave-balances/users/{{user_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "leave-balances",
+                "users",
+                "{{user_id}}"
+              ],
+              "query": []
+            },
+            "description": "PUT /api/v1/leave-balances/users/{user_id}\n\nImported from OpenAPI operationId: `update_user_leave_balance_api_v1_leave_balances_users__user_id__put`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"year\": 2026,\n  \"total_days\": 12,\n  \"used_days\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const expected = [200, 422];",
+                  "pm.test(\"Response status is documented or non-server-error\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "  if (expected.length) { pm.expect(expected.concat([400, 401, 403, 404, 405, 409, 422])).to.include(pm.response.code); }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "notifications",
+      "item": [
+        {
+          "name": "List Notifications",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/notifications/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "notifications"
+              ],
+              "query": []
+            },
+            "description": "GET /api/v1/notifications/\n\nImported from OpenAPI operationId: `list_notifications_api_v1_notifications__get`.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const expected = [200];",
+                  "pm.test(\"Response status is documented or non-server-error\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "  if (expected.length) { pm.expect(expected.concat([400, 401, 403, 404, 405, 409, 422])).to.include(pm.response.code); }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Mark Notification Read",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/notifications/{{notification_id}}/read",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "notifications",
+                "{{notification_id}}",
+                "read"
+              ],
+              "query": []
+            },
+            "description": "PUT /api/v1/notifications/{id}/read\n\nImported from OpenAPI operationId: `mark_notification_read_api_v1_notifications__id__read_put`.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const expected = [200, 422];",
+                  "pm.test(\"Response status is documented or non-server-error\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "  if (expected.length) { pm.expect(expected.concat([400, 401, 403, 404, 405, 409, 422])).to.include(pm.response.code); }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Mark All Notifications Read",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/notifications/read-all",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "notifications",
+                "read-all"
+              ],
+              "query": []
+            },
+            "description": "PUT /api/v1/notifications/read-all\n\nImported from OpenAPI operationId: `mark_all_notifications_read_api_v1_notifications_read_all_put`.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const expected = [200];",
+                  "pm.test(\"Response status is documented or non-server-error\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "  if (expected.length) { pm.expect(expected.concat([400, 401, 403, 404, 405, 409, 422])).to.include(pm.response.code); }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "audit_logs",
+      "item": [
+        {
+          "name": "List Audit Logs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/audit_logs/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "audit_logs"
+              ],
+              "query": []
+            },
+            "description": "GET /api/v1/audit_logs/\n\nImported from OpenAPI operationId: `list_audit_logs_api_v1_audit_logs__get`.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const expected = [200];",
+                  "pm.test(\"Response status is documented or non-server-error\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "  if (expected.length) { pm.expect(expected.concat([400, 401, 403, 404, 405, 409, 422])).to.include(pm.response.code); }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "roles",
+      "item": [
+        {
+          "name": "List Roles",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/roles/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "roles"
+              ],
+              "query": []
+            },
+            "description": "GET /api/v1/roles/\n\nImported from OpenAPI operationId: `list_roles_api_v1_roles__get`.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const expected = [200];",
+                  "pm.test(\"Response status is documented or non-server-error\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "  if (expected.length) { pm.expect(expected.concat([400, 401, 403, 404, 405, 409, 422])).to.include(pm.response.code); }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Role",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/roles/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "roles"
+              ],
+              "query": []
+            },
+            "description": "POST /api/v1/roles/\n\nImported from OpenAPI operationId: `create_role_api_v1_roles__post`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"postman_role_{{$timestamp}}\",\n  \"display_name\": \"Postman Role\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const expected = [200, 422];",
+                  "pm.test(\"Response status is documented or non-server-error\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "  if (expected.length) { pm.expect(expected.concat([400, 401, 403, 404, 405, 409, 422])).to.include(pm.response.code); }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Role",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/roles/{{role_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "roles",
+                "{{role_id}}"
+              ],
+              "query": []
+            },
+            "description": "PUT /api/v1/roles/{id}\n\nImported from OpenAPI operationId: `update_role_api_v1_roles__id__put`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"manager\",\n  \"display_name\": \"Manager\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const expected = [200, 422];",
+                  "pm.test(\"Response status is documented or non-server-error\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "  if (expected.length) { pm.expect(expected.concat([400, 401, 403, 404, 405, 409, 422])).to.include(pm.response.code); }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete Role",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/roles/{{role_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "roles",
+                "{{role_id}}"
+              ],
+              "query": []
+            },
+            "description": "DELETE /api/v1/roles/{id}\n\nImported from OpenAPI operationId: `delete_role_api_v1_roles__id__delete`.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const expected = [200, 422];",
+                  "pm.test(\"Response status is documented or non-server-error\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "  if (expected.length) { pm.expect(expected.concat([400, 401, 403, 404, 405, 409, 422])).to.include(pm.response.code); }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List Role Permissions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/roles/{{role_id}}/permissions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "roles",
+                "{{role_id}}",
+                "permissions"
+              ],
+              "query": []
+            },
+            "description": "GET /api/v1/roles/{id}/permissions\n\nImported from OpenAPI operationId: `list_role_permissions_api_v1_roles__id__permissions_get`.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const expected = [200, 422];",
+                  "pm.test(\"Response status is documented or non-server-error\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "  if (expected.length) { pm.expect(expected.concat([400, 401, 403, 404, 405, 409, 422])).to.include(pm.response.code); }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Add Permission To Role",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/roles/{{role_id}}/permissions/{{permission_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "roles",
+                "{{role_id}}",
+                "permissions",
+                "{{permission_id}}"
+              ],
+              "query": []
+            },
+            "description": "POST /api/v1/roles/{role_id}/permissions/{permission_id}\n\nImported from OpenAPI operationId: `add_permission_to_role_api_v1_roles__role_id__permissions__permission_id__post`.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const expected = [200, 422];",
+                  "pm.test(\"Response status is documented or non-server-error\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "  if (expected.length) { pm.expect(expected.concat([400, 401, 403, 404, 405, 409, 422])).to.include(pm.response.code); }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Remove Permission From Role",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/roles/{{role_id}}/permissions/{{permission_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "roles",
+                "{{role_id}}",
+                "permissions",
+                "{{permission_id}}"
+              ],
+              "query": []
+            },
+            "description": "DELETE /api/v1/roles/{role_id}/permissions/{permission_id}\n\nImported from OpenAPI operationId: `remove_permission_from_role_api_v1_roles__role_id__permissions__permission_id__delete`.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const expected = [200, 422];",
+                  "pm.test(\"Response status is documented or non-server-error\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "  if (expected.length) { pm.expect(expected.concat([400, 401, 403, 404, 405, 409, 422])).to.include(pm.response.code); }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "permissions",
+      "item": [
+        {
+          "name": "List Permissions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/permissions/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "permissions"
+              ],
+              "query": []
+            },
+            "description": "GET /api/v1/permissions/\n\nImported from OpenAPI operationId: `list_permissions_api_v1_permissions__get`.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const expected = [200];",
+                  "pm.test(\"Response status is documented or non-server-error\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "  if (expected.length) { pm.expect(expected.concat([400, 401, 403, 404, 405, 409, 422])).to.include(pm.response.code); }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Permission",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/permissions/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "permissions"
+              ],
+              "query": []
+            },
+            "description": "POST /api/v1/permissions/\n\nImported from OpenAPI operationId: `create_permission_api_v1_permissions__post`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"postman:permission:{{$timestamp}}\",\n  \"description\": \"Created by Postman\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const expected = [200, 422];",
+                  "pm.test(\"Response status is documented or non-server-error\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "  if (expected.length) { pm.expect(expected.concat([400, 401, 403, 404, 405, 409, 422])).to.include(pm.response.code); }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Permission",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/permissions/{{permission_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "permissions",
+                "{{permission_id}}"
+              ],
+              "query": []
+            },
+            "description": "PUT /api/v1/permissions/{id}\n\nImported from OpenAPI operationId: `update_permission_api_v1_permissions__id__put`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"postman:permission:updated\",\n  \"description\": \"Updated by Postman\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const expected = [200, 422];",
+                  "pm.test(\"Response status is documented or non-server-error\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "  if (expected.length) { pm.expect(expected.concat([400, 401, 403, 404, 405, 409, 422])).to.include(pm.response.code); }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete Permission",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/permissions/{{permission_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "permissions",
+                "{{permission_id}}"
+              ],
+              "query": []
+            },
+            "description": "DELETE /api/v1/permissions/{id}\n\nImported from OpenAPI operationId: `delete_permission_api_v1_permissions__id__delete`.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const expected = [200, 422];",
+                  "pm.test(\"Response status is documented or non-server-error\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "  if (expected.length) { pm.expect(expected.concat([400, 401, 403, 404, 405, 409, 422])).to.include(pm.response.code); }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "01 - Health",
+      "item": [
+        {
+          "name": "Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "health"
+              ],
+              "query": []
+            },
+            "description": "GET /health\n\nImported from OpenAPI operationId: `health_health_get`.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const expected = [200];",
+                  "pm.test(\"Response status is documented or non-server-error\", function () {",
+                  "  pm.expect(pm.response.code).to.be.below(500);",
+                  "  if (expected.length) { pm.expect(expected.concat([400, 401, 403, 404, 405, 409, 422])).to.include(pm.response.code); }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "99 - Negative Smoke Cases",
+      "item": [
+        {
+          "name": "Unauthorized - Get Me Without Token",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "me"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Unauthorized returns 401 or 403\", function () {",
+                  "  pm.expect([401, 403]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Validation - Login Missing Password",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@company.vn\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Validation error\", function () {",
+                  "  pm.expect([400, 422]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Validation - Create Task Empty Body",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/tasks/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tasks"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Validation error\", function () {",
+                  "  pm.expect([400, 422]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "3",
+      "type": "string"
+    },
+    {
+      "key": "manager_id",
+      "value": "2",
+      "type": "string"
+    },
+    {
+      "key": "task_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "leave_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "role_id",
+      "value": "2",
+      "type": "string"
+    },
+    {
+      "key": "permission_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "notification_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "department_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "today",
+      "value": "2026-06-08",
+      "type": "string"
+    },
+    {
+      "key": "tomorrow",
+      "value": "2026-06-09",
+      "type": "string"
+    },
+    {
+      "key": "now_iso",
+      "value": "2026-06-08T09:00:00Z",
+      "type": "string"
+    }
+  ]
+}

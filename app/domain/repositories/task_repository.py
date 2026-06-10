@@ -35,3 +35,7 @@ class TaskRepository(ABC):
     @abstractmethod
     async def assign_task(self, task_id: int, assignee_id: int, assigner_id: int) -> Task:
         pass
+
+    @abstractmethod
+    async def delete(self, task_id: int) -> None:
+        pass

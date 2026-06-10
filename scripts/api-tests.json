@@ -1,0 +1,314 @@
+{
+  "base_url": "http://localhost:8000",
+  "variables": {
+    "login_email": "admin@company.vn",
+    "login_password": "Admin@123",
+    "user_id": 3,
+    "department_id": 1,
+    "role_id": 2,
+    "permission_id": 1,
+    "notification_id": 1,
+    "year": 2026,
+    "start_date": "2026-06-08",
+    "end_date": "2026-06-09"
+  },
+  "cases": [
+    {
+      "name": "Login",
+      "method": "POST",
+      "path": "/api/v1/auth/login",
+      "auth": false,
+      "body": {
+        "email": "{{login_email}}",
+        "password": "{{login_password}}"
+      },
+      "expect_status": [
+        200
+      ]
+    },
+    {
+      "name": "Auth / Me",
+      "method": "GET",
+      "path": "/api/v1/auth/me",
+      "auth": true,
+      "expect_status": [
+        200
+      ]
+    },
+    {
+      "name": "Users / List",
+      "method": "GET",
+      "path": "/api/v1/users/",
+      "auth": true,
+      "query": {
+        "department_id": "{{department_id}}",
+        "role_name": "employee",
+        "is_active": true
+      },
+      "expect_status": [
+        200
+      ]
+    },
+    {
+      "name": "Users / Get",
+      "method": "GET",
+      "path": "/api/v1/users/{{user_id}}",
+      "auth": true,
+      "expect_status": [
+        200
+      ]
+    },
+    {
+      "name": "Tasks / List",
+      "method": "GET",
+      "path": "/api/v1/tasks/",
+      "auth": true,
+      "query": {
+        "status": "backlog",
+        "assignee_id": "{{user_id}}",
+        "department_id": "{{department_id}}"
+      },
+      "expect_status": [
+        200
+      ]
+    },
+    {
+      "name": "Tasks / Get",
+      "method": "GET",
+      "path": "/api/v1/tasks/1",
+      "auth": true,
+      "expect_status": [
+        200,
+        404
+      ]
+    },
+    {
+      "name": "Leaves / List",
+      "method": "GET",
+      "path": "/api/v1/leaves/",
+      "auth": true,
+      "expect_status": [
+        200
+      ]
+    },
+    {
+      "name": "Attendance / Heatmap",
+      "method": "GET",
+      "path": "/api/v1/attendance/heatmap",
+      "auth": true,
+      "query": {
+        "start_date": "{{start_date}}",
+        "end_date": "{{end_date}}",
+        "user_id": "{{user_id}}",
+        "department_id": "{{department_id}}"
+      },
+      "expect_status": [
+        200
+      ]
+    },
+    {
+      "name": "Departments / List",
+      "method": "GET",
+      "path": "/api/v1/departments/",
+      "auth": true,
+      "expect_status": [
+        200
+      ]
+    },
+    {
+      "name": "Leave Balances / Me",
+      "method": "GET",
+      "path": "/api/v1/leave-balances/me",
+      "auth": true,
+      "query": {
+        "year": "{{year}}"
+      },
+      "expect_status": [
+        200
+      ]
+    },
+    {
+      "name": "Leave Balances / User",
+      "method": "GET",
+      "path": "/api/v1/leave-balances/users/{{user_id}}",
+      "auth": true,
+      "query": {
+        "year": "{{year}}"
+      },
+      "expect_status": [
+        200
+      ]
+    },
+    {
+      "name": "Notifications / List",
+      "method": "GET",
+      "path": "/api/v1/notifications/",
+      "auth": true,
+      "expect_status": [
+        200
+      ]
+    },
+    {
+      "name": "Audit Logs / List",
+      "method": "GET",
+      "path": "/api/v1/audit_logs/",
+      "auth": true,
+      "expect_status": [
+        200
+      ]
+    },
+    {
+      "name": "Roles / List",
+      "method": "GET",
+      "path": "/api/v1/roles/",
+      "auth": true,
+      "expect_status": [
+        200
+      ]
+    },
+    {
+      "name": "Permissions / List",
+      "method": "GET",
+      "path": "/api/v1/permissions/",
+      "auth": true,
+      "expect_status": [
+        200
+      ]
+    },
+    {
+      "name": "Health",
+      "method": "GET",
+      "path": "/health",
+      "auth": false,
+      "expect_status": [
+        200
+      ]
+    },
+    {
+      "name": "Unauthorized / Me",
+      "method": "GET",
+      "path": "/api/v1/auth/me",
+      "auth": false,
+      "expect_status": [
+        401,
+        403
+      ]
+    },
+    {
+      "name": "Validation / Login Missing Password",
+      "method": "POST",
+      "path": "/api/v1/auth/login",
+      "auth": false,
+      "body": {
+        "email": "{{login_email}}"
+      },
+      "expect_status": [
+        422
+      ]
+    },
+    {
+      "name": "Users / Create",
+      "method": "POST",
+      "path": "/api/v1/users/",
+      "auth": true,
+      "enabled": false,
+      "body": {
+        "employee_code": "EMP-{{year}}-001",
+        "email": "new-{{year}}@company.vn",
+        "full_name": "New User",
+        "password": "Password@123",
+        "role_name": "employee",
+        "department_id": "{{department_id}}"
+      },
+      "expect_status": [
+        200,
+        201
+      ]
+    },
+    {
+      "name": "Tasks / Create",
+      "method": "POST",
+      "path": "/api/v1/tasks/",
+      "auth": true,
+      "enabled": false,
+      "body": {
+        "task_code": "TASK-{{year}}-001",
+        "title": "Smoke task",
+        "description": "Created by JSON runner",
+        "assignee_id": "{{user_id}}",
+        "department_id": "{{department_id}}",
+        "priority": "high",
+        "start_date": "{{start_date}}",
+        "due_date": "{{end_date}}",
+        "estimated_hours": 4
+      },
+      "expect_status": [
+        200,
+        201
+      ]
+    },
+    {
+      "name": "Leaves / Create",
+      "method": "POST",
+      "path": "/api/v1/leaves/",
+      "auth": true,
+      "enabled": false,
+      "body": {
+        "leave_type": "annual",
+        "start_date": "{{start_date}}",
+        "end_date": "{{end_date}}",
+        "reason": "Smoke test"
+      },
+      "expect_status": [
+        200,
+        201
+      ]
+    },
+    {
+      "name": "Attendance / Checkin",
+      "method": "POST",
+      "path": "/api/v1/attendance/checkin",
+      "auth": true,
+      "enabled": false,
+      "body": {
+        "check_in": "2026-06-08T08:30:00Z",
+        "ip_address": "127.0.0.1",
+        "note": "Auto check-in"
+      },
+      "expect_status": [
+        200,
+        201
+      ]
+    },
+    {
+      "name": "Roles / Create",
+      "method": "POST",
+      "path": "/api/v1/roles/",
+      "auth": true,
+      "enabled": false,
+      "body": {
+        "name": "role_{{year}}",
+        "display_name": "Role {{year}}"
+      },
+      "expect_status": [
+        200,
+        201
+      ]
+    },
+    {
+      "name": "Permissions / Create",
+      "method": "POST",
+      "path": "/api/v1/permissions/",
+      "auth": true,
+      "enabled": false,
+      "body": {
+        "code": "perm:{{year}}",
+        "description": "Permission created by JSON runner"
+      },
+      "expect_status": [
+        200,
+        201
+      ]
+    }
+  ]
+}

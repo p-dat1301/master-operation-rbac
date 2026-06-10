@@ -98,3 +98,11 @@ class SQLAlchemyTaskRepository(TaskRepository):
         model.creator_id = assigner_id
         await self._session.flush()
         return self._to_entity(model)
+
+    async def delete(self, task_id: int) -> None:
+        stmt = select(TaskModel).where(TaskModel.id == task_id)
+        result = await self._session.execute(stmt)
+        model = result.scalars().first()
+        if model:
+            await self._session.delete(model)
+            await self._session.flush()

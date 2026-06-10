@@ -10,7 +10,6 @@ from datetime import date
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.infrastructure.database.base import Base
 from app.infrastructure.database.models.department_model import DepartmentModel
 from app.infrastructure.database.models.permission_model import PermissionModel
 from app.infrastructure.database.models.role_model import RoleModel
@@ -43,11 +42,12 @@ PERMISSIONS: list[dict] = [
     {"id": 5, "code": "view_attendance_all", "description": "View attendance for all departments"},
     {"id": 6, "code": "view_attendance_dept", "description": "View attendance for own department"},
     {"id": 7, "code": "audit:view", "description": "View audit logs"},
+    {"id": 8, "code": "system.config.manage", "description": "Manage admin system configuration sync"},
 ]
 
 # role_id -> list of permission_ids
 ROLE_PERMISSIONS: dict[int, list[int]] = {
-    1: [1, 2, 3, 4, 5, 6, 7],      # admin: all
+    1: [1, 2, 3, 4, 5, 6, 7, 8],      # admin: all
     2: [2, 3, 4, 6],                # manager: create_task, assign_task, approve_leave, view_attendance_dept
     3: [],                          # employee: no explicit permissions (self-scope by default)
 }

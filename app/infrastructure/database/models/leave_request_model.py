@@ -17,7 +17,7 @@ class LeaveRequestModel(Base):
     __table_args__ = (
         CheckConstraint("end_date >= start_date", name="ck_leave_requests_date_range"),
         CheckConstraint(
-            "status IN ('pending','approved','rejected')",
+            "status IN ('pending','approved','rejected','cancelled')",
             name="ck_leave_requests_status",
         ),
     )

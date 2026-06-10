@@ -1,0 +1,1097 @@
+{
+  "generated_at": "2026-06-08T08:59:36Z",
+  "base_url": "http://localhost:8000",
+  "request_file": "scripts/api-tests.json",
+  "summary": {
+    "total": 24,
+    "executed": 18,
+    "skipped": 6,
+    "passed": 18,
+    "failed": 0,
+    "server_errors": 0
+  },
+  "results": [
+    {
+      "name": "Login",
+      "request": {
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "query": null,
+        "body": {
+          "email": "admin@company.vn",
+          "password": "Admin@123"
+        },
+        "headers": {},
+        "auth": false,
+        "enabled": true
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "date": "Mon, 08 Jun 2026 08:59:35 GMT",
+          "server": "uvicorn",
+          "content-length": "423",
+          "content-type": "application/json"
+        },
+        "body": {
+          "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiaWF0IjoxNzgwOTA5MTc2LCJleHAiOjE3ODA5MTAwNzYsInJvbGVfbmFtZSI6ImFkbWluIiwicGVybWlzc2lvbnMiOlsiYXNzaWduX3Rhc2siLCJjcmVhdGVfdGFzayIsInZpZXdfYXR0ZW5kYW5jZV9kZXB0IiwicG9zdG1hbjpwZXJtaXNzaW9uOnVwZGF0ZWQiLCJ2aWV3X2F0dGVuZGFuY2VfYWxsIiwiYXVkaXQ6dmlldyIsImFwcHJvdmVfbGVhdmUiXX0.LVerIpJdowsrfLStoZVaeDLGNDs5UbIUmV0LntejBfc",
+          "token_type": "bearer",
+          "expires_in": 3600
+        }
+      },
+      "expected_status": [
+        200
+      ],
+      "passed": true,
+      "skipped": false
+    },
+    {
+      "name": "Auth / Me",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "query": null,
+        "body": null,
+        "headers": {},
+        "auth": true,
+        "enabled": true
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "date": "Mon, 08 Jun 2026 08:59:35 GMT",
+          "server": "uvicorn",
+          "content-length": "338",
+          "content-type": "application/json"
+        },
+        "body": {
+          "id": 1,
+          "employee_code": "EMP001",
+          "email": "admin@company.vn",
+          "full_name": "Admin User",
+          "role_name": "admin",
+          "permissions": [
+            "assign_task",
+            "create_task",
+            "view_attendance_dept",
+            "postman:permission:updated",
+            "view_attendance_all",
+            "audit:view",
+            "approve_leave"
+          ],
+          "phone": null,
+          "job_title": null,
+          "department_id": null,
+          "manager_id": null,
+          "is_active": true
+        }
+      },
+      "expected_status": [
+        200
+      ],
+      "passed": true,
+      "skipped": false
+    },
+    {
+      "name": "Users / List",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/users/",
+        "query": {
+          "department_id": 1,
+          "role_name": "employee",
+          "is_active": true
+        },
+        "body": null,
+        "headers": {},
+        "auth": true,
+        "enabled": true
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "date": "Mon, 08 Jun 2026 08:59:35 GMT",
+          "server": "uvicorn",
+          "content-length": "2",
+          "content-type": "application/json"
+        },
+        "body": []
+      },
+      "expected_status": [
+        200
+      ],
+      "passed": true,
+      "skipped": false
+    },
+    {
+      "name": "Users / Get",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/users/3",
+        "query": null,
+        "body": null,
+        "headers": {},
+        "auth": true,
+        "enabled": true
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "date": "Mon, 08 Jun 2026 08:59:35 GMT",
+          "server": "uvicorn",
+          "content-length": "236",
+          "content-type": "application/json"
+        },
+        "body": {
+          "id": 3,
+          "employee_code": "EMP003",
+          "email": "employee@company.vn",
+          "full_name": "Updated Postman User",
+          "role_name": "employee",
+          "permissions": [],
+          "phone": "0900000000",
+          "job_title": "QA Engineer",
+          "department_id": 1,
+          "manager_id": 2,
+          "is_active": false
+        }
+      },
+      "expected_status": [
+        200
+      ],
+      "passed": true,
+      "skipped": false
+    },
+    {
+      "name": "Tasks / List",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/tasks/",
+        "query": {
+          "status": "backlog",
+          "assignee_id": 3,
+          "department_id": 1
+        },
+        "body": null,
+        "headers": {},
+        "auth": true,
+        "enabled": true
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "date": "Mon, 08 Jun 2026 08:59:35 GMT",
+          "server": "uvicorn",
+          "content-length": "2",
+          "content-type": "application/json"
+        },
+        "body": []
+      },
+      "expected_status": [
+        200
+      ],
+      "passed": true,
+      "skipped": false
+    },
+    {
+      "name": "Tasks / Get",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/tasks/1",
+        "query": null,
+        "body": null,
+        "headers": {},
+        "auth": true,
+        "enabled": true
+      },
+      "response": {
+        "status": 404,
+        "headers": {
+          "date": "Mon, 08 Jun 2026 08:59:35 GMT",
+          "server": "uvicorn",
+          "content-length": "29",
+          "content-type": "application/json"
+        },
+        "body": {
+          "detail": "Task 1 not found"
+        }
+      },
+      "expected_status": [
+        200,
+        404
+      ],
+      "passed": true,
+      "skipped": false
+    },
+    {
+      "name": "Leaves / List",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/leaves/",
+        "query": null,
+        "body": null,
+        "headers": {},
+        "auth": true,
+        "enabled": true
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "date": "Mon, 08 Jun 2026 08:59:35 GMT",
+          "server": "uvicorn",
+          "content-length": "2",
+          "content-type": "application/json"
+        },
+        "body": []
+      },
+      "expected_status": [
+        200
+      ],
+      "passed": true,
+      "skipped": false
+    },
+    {
+      "name": "Attendance / Heatmap",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/attendance/heatmap",
+        "query": {
+          "start_date": "2026-06-08",
+          "end_date": "2026-06-09",
+          "user_id": 3,
+          "department_id": 1
+        },
+        "body": null,
+        "headers": {},
+        "auth": true,
+        "enabled": true
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "date": "Mon, 08 Jun 2026 08:59:35 GMT",
+          "server": "uvicorn",
+          "content-length": "2",
+          "content-type": "application/json"
+        },
+        "body": []
+      },
+      "expected_status": [
+        200
+      ],
+      "passed": true,
+      "skipped": false
+    },
+    {
+      "name": "Departments / List",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/departments/",
+        "query": null,
+        "body": null,
+        "headers": {},
+        "auth": true,
+        "enabled": true
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "date": "Mon, 08 Jun 2026 08:59:35 GMT",
+          "server": "uvicorn",
+          "content-length": "106",
+          "content-type": "application/json"
+        },
+        "body": [
+          {
+            "id": 1,
+            "name": "Engineering",
+            "level": 1,
+            "parent_id": null
+          },
+          {
+            "id": 2,
+            "name": "HR",
+            "level": 1,
+            "parent_id": null
+          }
+        ]
+      },
+      "expected_status": [
+        200
+      ],
+      "passed": true,
+      "skipped": false
+    },
+    {
+      "name": "Leave Balances / Me",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/leave-balances/me",
+        "query": {
+          "year": 2026
+        },
+        "body": null,
+        "headers": {},
+        "auth": true,
+        "enabled": true
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "date": "Mon, 08 Jun 2026 08:59:35 GMT",
+          "server": "uvicorn",
+          "content-length": "107",
+          "content-type": "application/json"
+        },
+        "body": {
+          "id": 0,
+          "user_id": 1,
+          "year": 2026,
+          "total_days": 12.0,
+          "used_days": 0.0,
+          "pending_days": 0.0,
+          "remaining_days": 12.0
+        }
+      },
+      "expected_status": [
+        200
+      ],
+      "passed": true,
+      "skipped": false
+    },
+    {
+      "name": "Leave Balances / User",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/leave-balances/users/3",
+        "query": {
+          "year": 2026
+        },
+        "body": null,
+        "headers": {},
+        "auth": true,
+        "enabled": true
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "date": "Mon, 08 Jun 2026 08:59:35 GMT",
+          "server": "uvicorn",
+          "content-length": "107",
+          "content-type": "application/json"
+        },
+        "body": {
+          "id": 1,
+          "user_id": 3,
+          "year": 2026,
+          "total_days": 12.0,
+          "used_days": 0.0,
+          "pending_days": 0.0,
+          "remaining_days": 12.0
+        }
+      },
+      "expected_status": [
+        200
+      ],
+      "passed": true,
+      "skipped": false
+    },
+    {
+      "name": "Notifications / List",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/notifications/",
+        "query": null,
+        "body": null,
+        "headers": {},
+        "auth": true,
+        "enabled": true
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "date": "Mon, 08 Jun 2026 08:59:35 GMT",
+          "server": "uvicorn",
+          "content-length": "2",
+          "content-type": "application/json"
+        },
+        "body": []
+      },
+      "expected_status": [
+        200
+      ],
+      "passed": true,
+      "skipped": false
+    },
+    {
+      "name": "Audit Logs / List",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/audit_logs/",
+        "query": null,
+        "body": null,
+        "headers": {},
+        "auth": true,
+        "enabled": true
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "date": "Mon, 08 Jun 2026 08:59:35 GMT",
+          "server": "uvicorn",
+          "content-length": "4370",
+          "content-type": "application/json"
+        },
+        "body": [
+          {
+            "id": 31,
+            "user_id": 1,
+            "action": "update",
+            "resource": "permissions",
+            "resource_id": 1,
+            "details": {
+              "method": "PUT",
+              "path": "/api/v1/permissions/1",
+              "status_code": 200
+            },
+            "created_at": "2026-06-08T08:47:38.429478"
+          },
+          {
+            "id": 30,
+            "user_id": 1,
+            "action": "create",
+            "resource": "roles",
+            "resource_id": 2,
+            "details": {
+              "method": "POST",
+              "path": "/api/v1/roles/2/permissions/1",
+              "status_code": 200
+            },
+            "created_at": "2026-06-08T08:47:38.363542"
+          },
+          {
+            "id": 29,
+            "user_id": 1,
+            "action": "update",
+            "resource": "roles",
+            "resource_id": 2,
+            "details": {
+              "method": "PUT",
+              "path": "/api/v1/roles/2",
+              "status_code": 200
+            },
+            "created_at": "2026-06-08T08:47:38.312336"
+          },
+          {
+            "id": 28,
+            "user_id": 1,
+            "action": "update",
+            "resource": "notifications",
+            "resource_id": 0,
+            "details": {
+              "method": "PUT",
+              "path": "/api/v1/notifications/read-all",
+              "status_code": 200
+            },
+            "created_at": "2026-06-08T08:47:38.245819"
+          },
+          {
+            "id": 27,
+            "user_id": 1,
+            "action": "update",
+            "resource": "leave",
+            "resource_id": 0,
+            "details": {
+              "method": "PUT",
+              "path": "/api/v1/leave-balances/users/3",
+              "status_code": 200
+            },
+            "created_at": "2026-06-08T08:47:38.185285"
+          },
+          {
+            "id": 26,
+            "user_id": 1,
+            "action": "update",
+            "resource": "users",
+            "resource_id": 3,
+            "details": {
+              "method": "PUT",
+              "path": "/api/v1/users/3/reset-password",
+              "status_code": 200
+            },
+            "created_at": "2026-06-08T08:47:37.628635"
+          },
+          {
+            "id": 25,
+            "user_id": 1,
+            "action": "update",
+            "resource": "users",
+            "resource_id": 3,
+            "details": {
+              "method": "PUT",
+              "path": "/api/v1/users/3/deactivate",
+              "status_code": 200
+            },
+            "created_at": "2026-06-08T08:47:37.325843"
+          },
+          {
+            "id": 24,
+            "user_id": 1,
+            "action": "update",
+            "resource": "users",
+            "resource_id": 3,
+            "details": {
+              "method": "PUT",
+              "path": "/api/v1/users/3/activate",
+              "status_code": 200
+            },
+            "created_at": "2026-06-08T08:47:37.288235"
+          },
+          {
+            "id": 23,
+            "user_id": 1,
+            "action": "update",
+            "resource": "users",
+            "resource_id": 3,
+            "details": {
+              "method": "PUT",
+              "path": "/api/v1/users/3",
+              "status_code": 200
+            },
+            "created_at": "2026-06-08T08:47:37.248366"
+          },
+          {
+            "id": 19,
+            "user_id": 1,
+            "action": "delete",
+            "resource": "permissions",
+            "resource_id": 1,
+            "details": {
+              "method": "DELETE",
+              "path": "/api/v1/permissions/1",
+              "status_code": 200
+            },
+            "created_at": "2026-06-08T08:15:54.030396"
+          },
+          {
+            "id": 18,
+            "user_id": 1,
+            "action": "update",
+            "resource": "permissions",
+            "resource_id": 1,
+            "details": {
+              "method": "PUT",
+              "path": "/api/v1/permissions/1",
+              "status_code": 200
+            },
+            "created_at": "2026-06-08T08:15:53.990203"
+          },
+          {
+            "id": 17,
+            "user_id": 1,
+            "action": "delete",
+            "resource": "roles",
+            "resource_id": 2,
+            "details": {
+              "method": "DELETE",
+              "path": "/api/v1/roles/2/permissions/1",
+              "status_code": 200
+            },
+            "created_at": "2026-06-08T08:15:53.873939"
+          },
+          {
+            "id": 16,
+            "user_id": 1,
+            "action": "create",
+            "resource": "roles",
+            "resource_id": 2,
+            "details": {
+              "method": "POST",
+              "path": "/api/v1/roles/2/permissions/1",
+              "status_code": 200
+            },
+            "created_at": "2026-06-08T08:15:53.821823"
+          },
+          {
+            "id": 15,
+            "user_id": 1,
+            "action": "update",
+            "resource": "roles",
+            "resource_id": 2,
+            "details": {
+              "method": "PUT",
+              "path": "/api/v1/roles/2",
+              "status_code": 200
+            },
+            "created_at": "2026-06-08T08:15:53.681328"
+          },
+          {
+            "id": 14,
+            "user_id": 1,
+            "action": "update",
+            "resource": "notifications",
+            "resource_id": 0,
+            "details": {
+              "method": "PUT",
+              "path": "/api/v1/notifications/read-all",
+              "status_code": 200
+            },
+            "created_at": "2026-06-08T08:15:53.492048"
+          },
+          {
+            "id": 13,
+            "user_id": 1,
+            "action": "update",
+            "resource": "leave",
+            "resource_id": 0,
+            "details": {
+              "method": "PUT",
+              "path": "/api/v1/leave-balances/users/3",
+              "status_code": 200
+            },
+            "created_at": "2026-06-08T08:15:53.378206"
+          },
+          {
+            "id": 12,
+            "user_id": 1,
+            "action": "update",
+            "resource": "users",
+            "resource_id": 3,
+            "details": {
+              "method": "PUT",
+              "path": "/api/v1/users/3/reset-password",
+              "status_code": 200
+            },
+            "created_at": "2026-06-08T08:15:52.382452"
+          },
+          {
+            "id": 11,
+            "user_id": 1,
+            "action": "update",
+            "resource": "users",
+            "resource_id": 3,
+            "details": {
+              "method": "PUT",
+              "path": "/api/v1/users/3/deactivate",
+              "status_code": 200
+            },
+            "created_at": "2026-06-08T08:15:52.008491"
+          },
+          {
+            "id": 10,
+            "user_id": 1,
+            "action": "update",
+            "resource": "users",
+            "resource_id": 3,
+            "details": {
+              "method": "PUT",
+              "path": "/api/v1/users/3/activate",
+              "status_code": 200
+            },
+            "created_at": "2026-06-08T08:15:51.956660"
+          },
+          {
+            "id": 9,
+            "user_id": 1,
+            "action": "delete",
+            "resource": "users",
+            "resource_id": 3,
+            "details": {
+              "method": "DELETE",
+              "path": "/api/v1/users/3",
+              "status_code": 200
+            },
+            "created_at": "2026-06-08T08:15:51.894694"
+          },
+          {
+            "id": 8,
+            "user_id": 1,
+            "action": "update",
+            "resource": "users",
+            "resource_id": 3,
+            "details": {
+              "method": "PUT",
+              "path": "/api/v1/users/3",
+              "status_code": 200
+            },
+            "created_at": "2026-06-08T08:15:51.838922"
+          },
+          {
+            "id": 6,
+            "user_id": 1,
+            "action": "update",
+            "resource": "notifications",
+            "resource_id": 0,
+            "details": {
+              "method": "PUT",
+              "path": "/api/v1/notifications/read-all",
+              "status_code": 200
+            },
+            "created_at": "2026-06-08T08:15:09.561556"
+          }
+        ]
+      },
+      "expected_status": [
+        200
+      ],
+      "passed": true,
+      "skipped": false
+    },
+    {
+      "name": "Roles / List",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/roles/",
+        "query": null,
+        "body": null,
+        "headers": {},
+        "auth": true,
+        "enabled": true
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "date": "Mon, 08 Jun 2026 08:59:35 GMT",
+          "server": "uvicorn",
+          "content-length": "168",
+          "content-type": "application/json"
+        },
+        "body": [
+          {
+            "id": 1,
+            "name": "admin",
+            "display_name": "Administrator"
+          },
+          {
+            "id": 2,
+            "name": "manager",
+            "display_name": "Manager Updated"
+          },
+          {
+            "id": 3,
+            "name": "employee",
+            "display_name": "Employee"
+          }
+        ]
+      },
+      "expected_status": [
+        200
+      ],
+      "passed": true,
+      "skipped": false
+    },
+    {
+      "name": "Permissions / List",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/permissions/",
+        "query": null,
+        "body": null,
+        "headers": {},
+        "auth": true,
+        "enabled": true
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "date": "Mon, 08 Jun 2026 08:59:35 GMT",
+          "server": "uvicorn",
+          "content-length": "540",
+          "content-type": "application/json"
+        },
+        "body": [
+          {
+            "id": 1,
+            "code": "postman:permission:updated",
+            "description": "Updated by automated script"
+          },
+          {
+            "id": 2,
+            "code": "create_task",
+            "description": "Create tasks"
+          },
+          {
+            "id": 3,
+            "code": "assign_task",
+            "description": "Assign tasks to others"
+          },
+          {
+            "id": 4,
+            "code": "approve_leave",
+            "description": "Approve or reject leave requests"
+          },
+          {
+            "id": 5,
+            "code": "view_attendance_all",
+            "description": "View attendance for all departments"
+          },
+          {
+            "id": 6,
+            "code": "view_attendance_dept",
+            "description": "View attendance for own department"
+          },
+          {
+            "id": 7,
+            "code": "audit:view",
+            "description": "View audit logs"
+          }
+        ]
+      },
+      "expected_status": [
+        200
+      ],
+      "passed": true,
+      "skipped": false
+    },
+    {
+      "name": "Health",
+      "request": {
+        "method": "GET",
+        "path": "/health",
+        "query": null,
+        "body": null,
+        "headers": {},
+        "auth": false,
+        "enabled": true
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "date": "Mon, 08 Jun 2026 08:59:35 GMT",
+          "server": "uvicorn",
+          "content-length": "32",
+          "content-type": "application/json"
+        },
+        "body": {
+          "status": "ok",
+          "db": "connected"
+        }
+      },
+      "expected_status": [
+        200
+      ],
+      "passed": true,
+      "skipped": false
+    },
+    {
+      "name": "Unauthorized / Me",
+      "request": {
+        "method": "GET",
+        "path": "/api/v1/auth/me",
+        "query": null,
+        "body": null,
+        "headers": {},
+        "auth": false,
+        "enabled": true
+      },
+      "response": {
+        "status": 401,
+        "headers": {
+          "date": "Mon, 08 Jun 2026 08:59:35 GMT",
+          "server": "uvicorn",
+          "www-authenticate": "Bearer",
+          "content-length": "30",
+          "content-type": "application/json"
+        },
+        "body": {
+          "detail": "Not authenticated"
+        }
+      },
+      "expected_status": [
+        401,
+        403
+      ],
+      "passed": true,
+      "skipped": false
+    },
+    {
+      "name": "Validation / Login Missing Password",
+      "request": {
+        "method": "POST",
+        "path": "/api/v1/auth/login",
+        "query": null,
+        "body": {
+          "email": "admin@company.vn"
+        },
+        "headers": {},
+        "auth": false,
+        "enabled": true
+      },
+      "response": {
+        "status": 422,
+        "headers": {
+          "date": "Mon, 08 Jun 2026 08:59:35 GMT",
+          "server": "uvicorn",
+          "content-length": "117",
+          "content-type": "application/json"
+        },
+        "body": {
+          "detail": [
+            {
+              "type": "missing",
+              "loc": [
+                "body",
+                "password"
+              ],
+              "msg": "Field required",
+              "input": {
+                "email": "admin@company.vn"
+              }
+            }
+          ]
+        }
+      },
+      "expected_status": [
+        422
+      ],
+      "passed": true,
+      "skipped": false
+    },
+    {
+      "name": "Users / Create",
+      "request": {
+        "method": "POST",
+        "path": "/api/v1/users/",
+        "query": null,
+        "body": {
+          "employee_code": "EMP-2026-001",
+          "email": "new-2026@company.vn",
+          "full_name": "New User",
+          "password": "Password@123",
+          "role_name": "employee",
+          "department_id": 1
+        },
+        "headers": {},
+        "auth": true,
+        "enabled": false
+      },
+      "response": null,
+      "expected_status": [
+        200,
+        201
+      ],
+      "passed": null,
+      "skipped": true
+    },
+    {
+      "name": "Tasks / Create",
+      "request": {
+        "method": "POST",
+        "path": "/api/v1/tasks/",
+        "query": null,
+        "body": {
+          "task_code": "TASK-2026-001",
+          "title": "Smoke task",
+          "description": "Created by JSON runner",
+          "assignee_id": 3,
+          "department_id": 1,
+          "priority": "high",
+          "start_date": "2026-06-08",
+          "due_date": "2026-06-09",
+          "estimated_hours": 4
+        },
+        "headers": {},
+        "auth": true,
+        "enabled": false
+      },
+      "response": null,
+      "expected_status": [
+        200,
+        201
+      ],
+      "passed": null,
+      "skipped": true
+    },
+    {
+      "name": "Leaves / Create",
+      "request": {
+        "method": "POST",
+        "path": "/api/v1/leaves/",
+        "query": null,
+        "body": {
+          "leave_type": "annual",
+          "start_date": "2026-06-08",
+          "end_date": "2026-06-09",
+          "reason": "Smoke test"
+        },
+        "headers": {},
+        "auth": true,
+        "enabled": false
+      },
+      "response": null,
+      "expected_status": [
+        200,
+        201
+      ],
+      "passed": null,
+      "skipped": true
+    },
+    {
+      "name": "Attendance / Checkin",
+      "request": {
+        "method": "POST",
+        "path": "/api/v1/attendance/checkin",
+        "query": null,
+        "body": {
+          "check_in": "2026-06-08T08:30:00Z",
+          "ip_address": "127.0.0.1",
+          "note": "Auto check-in"
+        },
+        "headers": {},
+        "auth": true,
+        "enabled": false
+      },
+      "response": null,
+      "expected_status": [
+        200,
+        201
+      ],
+      "passed": null,
+      "skipped": true
+    },
+    {
+      "name": "Roles / Create",
+      "request": {
+        "method": "POST",
+        "path": "/api/v1/roles/",
+        "query": null,
+        "body": {
+          "name": "role_2026",
+          "display_name": "Role 2026"
+        },
+        "headers": {},
+        "auth": true,
+        "enabled": false
+      },
+      "response": null,
+      "expected_status": [
+        200,
+        201
+      ],
+      "passed": null,
+      "skipped": true
+    },
+    {
+      "name": "Permissions / Create",
+      "request": {
+        "method": "POST",
+        "path": "/api/v1/permissions/",
+        "query": null,
+        "body": {
+          "code": "perm:2026",
+          "description": "Permission created by JSON runner"
+        },
+        "headers": {},
+        "auth": true,
+        "enabled": false
+      },
+      "response": null,
+      "expected_status": [
+        200,
+        201
+      ],
+      "passed": null,
+      "skipped": true
+    }
+  ]
+}

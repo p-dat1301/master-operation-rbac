@@ -1,6 +1,6 @@
 from app.application.dtos.task import AssignTaskInput, TaskOutput
 from app.domain.entities.user import User
-from app.domain.exceptions import PermissionDenied, ResourceNotFound
+from app.domain.exceptions import ResourceNotFound
 from app.domain.repositories.task_repository import TaskRepository
 from app.domain.services.rbac_service import RBACService
 
@@ -13,10 +13,7 @@ class AssignTaskUseCase:
         self.rbac_service = rbac_service
 
     async def execute(self, actor: User, data: AssignTaskInput) -> TaskOutput:
-        try:
-            self.rbac_service.require_permission(actor, "assign_task")
-        except PermissionError:
-            raise PermissionDenied("You do not have permission to assign tasks")
+        self.rbac_service.require_permission(actor, "assign_task")
 
         task = await self.task_repo.find_by_id(data.task_id)
         if task is None:

@@ -1,7 +1,6 @@
 from app.application.dtos.task import TaskCreateInput, TaskOutput
 from app.domain.entities.task import Task
 from app.domain.entities.user import User
-from app.domain.exceptions import PermissionDenied
 from app.domain.repositories.task_repository import TaskRepository
 from app.domain.services.rbac_service import RBACService
 
@@ -14,10 +13,7 @@ class CreateTaskUseCase:
         self.rbac_service = rbac_service
 
     async def execute(self, actor: User, data: TaskCreateInput) -> TaskOutput:
-        try:
-            self.rbac_service.require_permission(actor, "create_task")
-        except PermissionError:
-            raise PermissionDenied("You do not have permission to create tasks")
+        self.rbac_service.require_permission(actor, "create_task")
 
         task_entity = Task(
             id=0,

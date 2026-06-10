@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 
+from app.domain.entities.permission import Permission
 from app.domain.entities.role import Role
 
 
@@ -26,4 +27,16 @@ class RoleRepository(ABC):
 
     @abstractmethod
     async def delete(self, role_id: int) -> None:
+        pass
+
+    @abstractmethod
+    async def list_permissions(self, role_id: int) -> list[Permission]:
+        pass
+
+    @abstractmethod
+    async def add_permission(self, role_id: int, permission_id: int) -> None:
+        pass
+
+    @abstractmethod
+    async def remove_permission(self, role_id: int, permission_id: int) -> None:
         pass

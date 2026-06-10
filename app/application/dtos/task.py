@@ -60,3 +60,14 @@ class AssignTaskInput(BaseModel):
 
 class CompleteTaskInput(BaseModel):
     task_id: int
+
+
+class TaskUpdateInput(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    assignee_id: Optional[int] = None
+    department_id: Optional[int] = None
+    priority: Optional[str] = None
+    start_date: Optional[date] = None
+    due_date: Optional[date] = None
+    estimated_hours: Optional[float] = None

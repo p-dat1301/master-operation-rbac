@@ -1,0 +1,26 @@
+[
+  {
+    "locale": "vi",
+    "key": "menu.dashboard",
+    "value": "Tổng quan",
+    "namespace": "menu"
+  },
+  {
+    "locale": "vi",
+    "key": "menu.config",
+    "value": "Cấu hình",
+    "namespace": "menu"
+  },
+  {
+    "locale": "vi",
+    "key": "menu.config.menu_sync",
+    "value": "Đồng bộ menu",
+    "namespace": "menu"
+  },
+  {
+    "locale": "vi",
+    "key": "menu.config.i18n_sync",
+    "value": "Đồng bộ i18n",
+    "namespace": "menu"
+  }
+]

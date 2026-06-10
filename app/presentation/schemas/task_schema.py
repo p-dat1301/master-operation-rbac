@@ -16,3 +16,14 @@ class TaskResponse(TaskOutput):
 class AssignTaskRequest(BaseModel):
     task_id: int
     assignee_id: int
+
+
+class TaskUpdateRequest(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    assignee_id: Optional[int] = None
+    department_id: Optional[int] = None
+    priority: Optional[str] = None
+    start_date: Optional[str] = None
+    due_date: Optional[str] = None
+    estimated_hours: Optional[float] = None

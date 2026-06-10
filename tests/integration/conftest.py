@@ -3,8 +3,9 @@ from __future__ import annotations
 
 import pytest
 import httpx
+import os
 
-BASE_URL = "http://localhost:8000"
+BASE_URL = os.environ.get("ADMIN_API_BASE_URL", "http://localhost:8000")
 
 
 @pytest.fixture

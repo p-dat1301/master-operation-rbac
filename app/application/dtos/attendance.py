@@ -38,7 +38,7 @@ class AttendanceOutput(BaseModel):
 
 
 class CheckinInput(BaseModel):
-    user_id: int
+    """Input for checkin — user_id is NOT in the body; it comes from the authenticated actor."""
     check_in: datetime
     ip_address: Optional[str] = None
     note: Optional[str] = None

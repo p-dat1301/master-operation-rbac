@@ -1,0 +1,26 @@
+[
+  {
+    "locale": "en",
+    "key": "menu.dashboard",
+    "value": "Dashboard",
+    "namespace": "menu"
+  },
+  {
+    "locale": "en",
+    "key": "menu.config",
+    "value": "Configuration",
+    "namespace": "menu"
+  },
+  {
+    "locale": "en",
+    "key": "menu.config.menu_sync",
+    "value": "Menu sync",
+    "namespace": "menu"
+  },
+  {
+    "locale": "en",
+    "key": "menu.config.i18n_sync",
+    "value": "i18n sync",
+    "namespace": "menu"
+  }
+]

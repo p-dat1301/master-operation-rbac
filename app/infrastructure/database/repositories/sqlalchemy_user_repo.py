@@ -147,6 +147,8 @@ class SQLAlchemyUserRepository(UserRepository):
         model.department_id = user.department_id
         model.manager_id = user.manager_id
         model.is_active = user.is_active
+        if user.hashed_password is not None:
+            model.hashed_password = user.hashed_password
         await self._session.flush()
         return await self.find_by_id(model.id)  # type: ignore[return-value]
 

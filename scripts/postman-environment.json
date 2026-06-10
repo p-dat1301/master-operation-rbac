@@ -1,0 +1,32 @@
+{
+  "name": "Master Operation Local",
+  "values": [
+    { "key": "base_url", "value": "http://localhost:8000", "enabled": true, "type": "default" },
+    { "key": "admin_email", "value": "admin@company.vn", "enabled": true, "type": "default" },
+    { "key": "admin_password", "value": "Admin@123", "enabled": true, "type": "secret" },
+    { "key": "manager_email", "value": "manager@company.vn", "enabled": true, "type": "default" },
+    { "key": "manager_password", "value": "Manager@123", "enabled": true, "type": "secret" },
+    { "key": "employee_email", "value": "employee@company.vn", "enabled": true, "type": "default" },
+    { "key": "employee_password", "value": "Employee@123", "enabled": true, "type": "secret" },
+    { "key": "user_id", "value": "3", "enabled": true, "type": "default" },
+    { "key": "department_id", "value": "1", "enabled": true, "type": "default" },
+    { "key": "role_id", "value": "2", "enabled": true, "type": "default" },
+    { "key": "permission_id", "value": "1", "enabled": true, "type": "default" },
+    { "key": "notification_id", "value": "1", "enabled": true, "type": "default" },
+    { "key": "year", "value": "2026", "enabled": true, "type": "default" },
+    { "key": "start_date", "value": "2026-06-01", "enabled": true, "type": "default" },
+    { "key": "end_date", "value": "2026-06-30", "enabled": true, "type": "default" },
+    { "key": "admin_token", "value": "", "enabled": true, "type": "default" },
+    { "key": "manager_token", "value": "", "enabled": true, "type": "default" },
+    { "key": "employee_token", "value": "", "enabled": true, "type": "default" },
+    { "key": "created_user_id", "value": "", "enabled": true, "type": "default" },
+    { "key": "leave_id", "value": "", "enabled": true, "type": "default" },
+    { "key": "admin_leave_id", "value": "", "enabled": true, "type": "default" },
+    { "key": "task_id", "value": "", "enabled": true, "type": "default" },
+    { "key": "created_role_id", "value": "", "enabled": true, "type": "default" },
+    { "key": "today", "value": "", "enabled": true, "type": "default" },
+    { "key": "tomorrow", "value": "", "enabled": true, "type": "default" },
+    { "key": "day_after", "value": "", "enabled": true, "type": "default" },
+    { "key": "now", "value": "", "enabled": true, "type": "default" }
+  ]
+}

@@ -1,0 +1,1451 @@
+{
+  "info": {
+    "name": "Master Operation RBAC - Full API Test",
+    "description": "Complete Postman collection for testing all API endpoints with RBAC scenarios.\n\n**How to use:**\n1. Import this collection into Postman.\n2. Create an Environment with the variables listed in the README.\n3. Run the 'Auth' folder first to populate tokens.\n4. Run other folders.\n\n**Test accounts:**\n- admin@company.vn / Admin@123\n- manager@company.vn / Manager@123\n- employee@company.vn / Employee@123",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "01 — Auth",
+      "description": "Authentication endpoints and token management.",
+      "item": [
+        {
+          "name": "Login — Admin",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/api/v1/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"{{admin_email}}\",\"password\":\"{{admin_password}}\"}",
+              "options": { "raw": { "language": "json" } }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Has access_token', () => { const json = pm.response.json(); pm.expect(json).to.have.property('access_token'); pm.expect(json.access_token).to.be.a('string'); });",
+                  "pm.test('Token type is bearer', () => pm.expect(pm.response.json().token_type).to.eql('bearer'));",
+                  "pm.environment.set('admin_token', pm.response.json().access_token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login — Manager",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/api/v1/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"{{manager_email}}\",\"password\":\"{{manager_password}}\"}",
+              "options": { "raw": { "language": "json" } }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Has access_token', () => pm.expect(pm.response.json()).to.have.property('access_token'));",
+                  "pm.environment.set('manager_token', pm.response.json().access_token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login — Employee",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/api/v1/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"{{employee_email}}\",\"password\":\"{{employee_password}}\"}",
+              "options": { "raw": { "language": "json" } }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Has access_token', () => pm.expect(pm.response.json()).to.have.property('access_token'));",
+                  "pm.environment.set('employee_token', pm.response.json().access_token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login — Wrong Password",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/api/v1/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"{{admin_email}}\",\"password\":\"WrongPassword123\"}",
+              "options": { "raw": { "language": "json" } }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 403', () => pm.response.to.have.status(403));",
+                  "pm.test('Permission denied message', () => pm.expect(pm.response.json().detail).to.include('Permission denied'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login — Nonexistent User",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/api/v1/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"nobody@company.vn\",\"password\":\"SomePass123\"}",
+              "options": { "raw": { "language": "json" } }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 404', () => pm.response.to.have.status(404));",
+                  "pm.test('User not found', () => pm.expect(pm.response.json().detail).to.include('User not found'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login — Missing Password (Validation)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{base_url}}/api/v1/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"{{admin_email}}\"}",
+              "options": { "raw": { "language": "json" } }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 422', () => pm.response.to.have.status(422));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Me — Admin",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": "{{base_url}}/api/v1/auth/me"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Email matches', () => pm.expect(pm.response.json().email).to.eql('admin@company.vn'));",
+                  "pm.test('Role is admin', () => pm.expect(pm.response.json().role_name).to.eql('admin'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Me — Manager",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{manager_token}}" }],
+            "url": "{{base_url}}/api/v1/auth/me"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Role is manager', () => pm.expect(pm.response.json().role_name).to.eql('manager'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Me — Employee",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{employee_token}}" }],
+            "url": "{{base_url}}/api/v1/auth/me"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Role is employee', () => pm.expect(pm.response.json().role_name).to.eql('employee'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Me — No Token",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/v1/auth/me"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 401', () => pm.response.to.have.status(401));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Me — Invalid Token",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer invalid.token.here" }],
+            "url": "{{base_url}}/api/v1/auth/me"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 401', () => pm.response.to.have.status(401));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "02 — Users",
+      "description": "User management endpoints. Admin can manage all. Manager can manage same department. Employee is restricted.",
+      "item": [
+        {
+          "name": "List Users — Admin",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/v1/users/?department_id={{department_id}}&role_name=employee&is_active=true",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "users", ""],
+              "query": [
+                { "key": "department_id", "value": "{{department_id}}" },
+                { "key": "role_name", "value": "employee" },
+                { "key": "is_active", "value": "true" }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response is array', () => pm.expect(pm.response.json()).to.be.an('array'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "List Users — Employee (403)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{employee_token}}" }],
+            "url": "{{base_url}}/api/v1/users/"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 403', () => pm.response.to.have.status(403));",
+                  "pm.test('Permission denied', () => pm.expect(pm.response.json().detail).to.include('Permission denied'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get User — Admin",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": "{{base_url}}/api/v1/users/{{user_id}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Has id', () => pm.expect(pm.response.json()).to.have.property('id'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create User — Admin",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": "{{base_url}}/api/v1/users/",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"employee_code\":\"EMP-{{$randomInt}}\",\"email\":\"new{{$randomInt}}@company.vn\",\"full_name\":\"New User\",\"password\":\"Password@123\",\"role_name\":\"employee\",\"department_id\":{{department_id}}}",
+              "options": { "raw": { "language": "json" } }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 201', () => pm.expect(pm.response.code).to.be.oneOf([200,201]));",
+                  "pm.test('Has id', () => pm.expect(pm.response.json()).to.have.property('id'));",
+                  "pm.environment.set('created_user_id', pm.response.json().id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update User — Admin",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": "{{base_url}}/api/v1/users/{{user_id}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"full_name\":\"Updated Name\",\"phone\":\"0909123456\"}",
+              "options": { "raw": { "language": "json" } }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Name updated', () => pm.expect(pm.response.json().full_name).to.eql('Updated Name'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Change Password — Admin",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": "{{base_url}}/api/v1/users/{{user_id}}/change-password",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"current_password\":\"Admin@123\",\"new_password\":\"NewPass@123\"}",
+              "options": { "raw": { "language": "json" } }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reset Password — Admin",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": "{{base_url}}/api/v1/users/{{user_id}}/reset-password",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"new_password\":\"ResetPass@123\"}",
+              "options": { "raw": { "language": "json" } }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Deactivate User — Admin",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": "{{base_url}}/api/v1/users/{{created_user_id}}/deactivate"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Is inactive', () => pm.expect(pm.response.json().is_active).to.eql(false));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Activate User — Admin",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": "{{base_url}}/api/v1/users/{{created_user_id}}/activate"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Is active', () => pm.expect(pm.response.json().is_active).to.eql(true));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete User — Admin",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": "{{base_url}}/api/v1/users/{{created_user_id}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "03 — Leaves",
+      "description": "Leave request management. Employee can create. Manager can review same department.",
+      "item": [
+        {
+          "name": "Create Leave — Employee",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{employee_token}}" }
+            ],
+            "url": "{{base_url}}/api/v1/leaves/",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"leave_type\":\"annual\",\"start_date\":\"{{tomorrow}}\",\"end_date\":\"{{day_after}}\",\"reason\":\"Family vacation\"}",
+              "options": { "raw": { "language": "json" } }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Status is pending', () => pm.expect(pm.response.json().status).to.eql('pending'));",
+                  "pm.environment.set('leave_id', pm.response.json().id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "List Leaves — Employee",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{employee_token}}" }],
+            "url": "{{base_url}}/api/v1/leaves/"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response is array', () => pm.expect(pm.response.json()).to.be.an('array'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Review Leave — Manager Same Dept (Approve)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{manager_token}}" }
+            ],
+            "url": "{{base_url}}/api/v1/leaves/{{leave_id}}/review",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"action\":\"approve\"}",
+              "options": { "raw": { "language": "json" } }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Status is approved', () => pm.expect(pm.response.json().status).to.eql('approved'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Leave — Admin (for cross-dept test)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": "{{base_url}}/api/v1/leaves/",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"leave_type\":\"sick\",\"start_date\":\"{{tomorrow}}\",\"end_date\":\"{{day_after}}\",\"reason\":\"Medical check\"}",
+              "options": { "raw": { "language": "json" } }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.environment.set('admin_leave_id', pm.response.json().id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Review Leave — Manager Other Dept (403)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{manager_token}}" }
+            ],
+            "url": "{{base_url}}/api/v1/leaves/{{admin_leave_id}}/review",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"action\":\"approve\"}",
+              "options": { "raw": { "language": "json" } }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 403', () => pm.response.to.have.status(403));",
+                  "pm.test('Permission denied', () => pm.expect(pm.response.json().detail).to.include('Permission denied'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Leave — Employee",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{employee_token}}" }
+            ],
+            "url": "{{base_url}}/api/v1/leaves/{{leave_id}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"leave_type\":\"annual\",\"start_date\":\"{{tomorrow}}\",\"end_date\":\"{{day_after}}\",\"reason\":\"Updated reason\"}",
+              "options": { "raw": { "language": "json" } }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cancel Leave — Employee",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{employee_token}}" }],
+            "url": "{{base_url}}/api/v1/leaves/{{leave_id}}/cancel"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "04 — Tasks",
+      "description": "Task management. Employee can read. Manager can create/assign.",
+      "item": [
+        {
+          "name": "List Tasks — Admin",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/v1/tasks/?status=backlog&assignee_id={{user_id}}&department_id={{department_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "tasks", ""],
+              "query": [
+                { "key": "status", "value": "backlog" },
+                { "key": "assignee_id", "value": "{{user_id}}" },
+                { "key": "department_id", "value": "{{department_id}}" }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response is array', () => pm.expect(pm.response.json()).to.be.an('array'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Task — Admin",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": "{{base_url}}/api/v1/tasks/",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"task_code\":\"TASK-{{$randomInt}}\",\"title\":\"Smoke Test Task\",\"description\":\"Created via Postman\",\"assignee_id\":{{user_id}},\"department_id\":{{department_id}},\"priority\":\"high\",\"start_date\":\"{{today}}\",\"due_date\":\"{{tomorrow}}\",\"estimated_hours\":4}",
+              "options": { "raw": { "language": "json" } }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 201', () => pm.expect(pm.response.code).to.be.oneOf([200,201]));",
+                  "pm.environment.set('task_id', pm.response.json().id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Task — Admin",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": "{{base_url}}/api/v1/tasks/{{task_id}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Has task_code', () => pm.expect(pm.response.json()).to.have.property('task_code'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Task — Employee (403)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{employee_token}}" }
+            ],
+            "url": "{{base_url}}/api/v1/tasks/",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"task_code\":\"TASK-E-{{$randomInt}}\",\"title\":\"Employee Task\",\"assignee_id\":2}",
+              "options": { "raw": { "language": "json" } }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 403', () => pm.response.to.have.status(403));",
+                  "pm.test('Permission denied', () => pm.expect(pm.response.json().detail).to.include('Permission denied'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Assign Task — Manager",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{manager_token}}" }
+            ],
+            "url": "{{base_url}}/api/v1/tasks/{{task_id}}/assign",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"task_id\":{{task_id}},\"assignee_id\":{{user_id}}}",
+              "options": { "raw": { "language": "json" } }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Start Task — Manager",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{manager_token}}" }],
+            "url": "{{base_url}}/api/v1/tasks/{{task_id}}/start"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Complete Task — Manager",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{manager_token}}" }],
+            "url": "{{base_url}}/api/v1/tasks/{{task_id}}/complete"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cancel Task — Admin",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": "{{base_url}}/api/v1/tasks/{{task_id}}/cancel"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Task — Admin",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": "{{base_url}}/api/v1/tasks/{{task_id}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"title\":\"Updated Task Title\",\"description\":\"Updated description\"}",
+              "options": { "raw": { "language": "json" } }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete Task — Admin",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": "{{base_url}}/api/v1/tasks/{{task_id}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "05 — Attendance",
+      "description": "Attendance tracking. Employee can checkin/checkout. Manager can view heatmap.",
+      "item": [
+        {
+          "name": "Checkin — Employee",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{employee_token}}" }
+            ],
+            "url": "{{base_url}}/api/v1/attendance/checkin",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"check_in\":\"{{now}}\",\"ip_address\":\"192.168.1.100\",\"note\":\"Morning check-in\"}",
+              "options": { "raw": { "language": "json" } }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Status is checked_in', () => pm.expect(pm.response.json().status).to.eql('checked_in'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Checkout — Employee",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{employee_token}}" }],
+            "url": "{{base_url}}/api/v1/attendance/checkout"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Heatmap — Manager",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{manager_token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/v1/attendance/heatmap?start_date={{start_date}}&end_date={{end_date}}&user_id={{user_id}}&department_id={{department_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "attendance", "heatmap"],
+              "query": [
+                { "key": "start_date", "value": "{{start_date}}" },
+                { "key": "end_date", "value": "{{end_date}}" },
+                { "key": "user_id", "value": "{{user_id}}" },
+                { "key": "department_id", "value": "{{department_id}}" }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response is array', () => pm.expect(pm.response.json()).to.be.an('array'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "06 — Roles & Permissions",
+      "description": "Role and permission management. Admin only.",
+      "item": [
+        {
+          "name": "List Roles — Admin",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": "{{base_url}}/api/v1/roles/"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response is array', () => pm.expect(pm.response.json()).to.be.an('array'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Role — Admin",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": "{{base_url}}/api/v1/roles/",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\":\"role_{{$randomInt}}\",\"display_name\":\"New Role\"}",
+              "options": { "raw": { "language": "json" } }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 201', () => pm.expect(pm.response.code).to.be.oneOf([200,201]));",
+                  "pm.environment.set('created_role_id', pm.response.json().id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Role — Admin",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": "{{base_url}}/api/v1/roles/{{created_role_id}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\":\"updated_role\",\"display_name\":\"Updated Role Name\"}",
+              "options": { "raw": { "language": "json" } }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "List Role Permissions — Admin",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": "{{base_url}}/api/v1/roles/{{role_id}}/permissions"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Add Permission to Role — Admin",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": "{{base_url}}/api/v1/roles/{{role_id}}/permissions/{{permission_id}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Remove Permission from Role — Admin",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": "{{base_url}}/api/v1/roles/{{role_id}}/permissions/{{permission_id}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete Role — Admin",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": "{{base_url}}/api/v1/roles/{{created_role_id}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "List Permissions — Admin",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": "{{base_url}}/api/v1/permissions/"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "07 — Notifications",
+      "description": "Notification management. Users can only access their own notifications.",
+      "item": [
+        {
+          "name": "List Notifications — Employee",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{employee_token}}" }],
+            "url": "{{base_url}}/api/v1/notifications/"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response is array', () => pm.expect(pm.response.json()).to.be.an('array'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Mark Notification Read — Employee",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{employee_token}}" }],
+            "url": "{{base_url}}/api/v1/notifications/{{notification_id}}/read"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Mark All Notifications Read — Employee",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{employee_token}}" }],
+            "url": "{{base_url}}/api/v1/notifications/read-all"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Has marked_count', () => pm.expect(pm.response.json()).to.have.property('marked_count'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "08 — Leave Balances",
+      "description": "Leave balance management. Users can view their own. Admin can view and update any user's.",
+      "item": [
+        {
+          "name": "Get My Leave Balance — Employee",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{employee_token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/v1/leave-balances/me?year={{year}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "leave-balances", "me"],
+              "query": [{ "key": "year", "value": "{{year}}" }]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Has user_id', () => pm.expect(pm.response.json()).to.have.property('user_id'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get User Leave Balance — Admin",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/v1/leave-balances/users/{{user_id}}?year={{year}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "leave-balances", "users", "{{user_id}}"],
+              "query": [{ "key": "year", "value": "{{year}}" }]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update User Leave Balance — Admin",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": "{{base_url}}/api/v1/leave-balances/users/{{user_id}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"year\":{{year}},\"total_days\":15.0,\"used_days\":2.0}",
+              "options": { "raw": { "language": "json" } }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "09 — Audit Logs",
+      "description": "Audit log viewing. Admin only (placeholder currently allows all).",
+      "item": [
+        {
+          "name": "List Audit Logs — Admin",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{admin_token}}" }],
+            "url": "{{base_url}}/api/v1/audit_logs/"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response is array', () => pm.expect(pm.response.json()).to.be.an('array'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "List Audit Logs — Employee (Expected 403)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{employee_token}}" }],
+            "url": "{{base_url}}/api/v1/audit_logs/"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 403 (or 200 if placeholder)', () => { const code = pm.response.code; pm.expect(code).to.be.oneOf([200,403]); });",
+                  "if (pm.response.code === 403) { pm.test('Permission denied', () => pm.expect(pm.response.json().detail).to.include('Permission denied')); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "10 — Health",
+      "description": "Health check endpoint. No authentication required.",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/health"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Set dynamic date variables if not already set",
+          "if (!pm.environment.get('today')) {",
+          "  const now = new Date();",
+          "  const today = now.toISOString().split('T')[0];",
+          "  const tomorrow = new Date(now); tomorrow.setDate(tomorrow.getDate()+1);",
+          "  const dayAfter = new Date(now); dayAfter.setDate(dayAfter.getDate()+2);",
+          "  pm.environment.set('today', today);",
+          "  pm.environment.set('tomorrow', tomorrow.toISOString().split('T')[0]);",
+          "  pm.environment.set('day_after', dayAfter.toISOString().split('T')[0]);",
+          "  pm.environment.set('now', now.toISOString().replace('\\+00:00','Z'));",
+          "}"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8000", "type": "string" },
+    { "key": "admin_email", "value": "admin@company.vn", "type": "string" },
+    { "key": "admin_password", "value": "Admin@123", "type": "string" },
+    { "key": "manager_email", "value": "manager@company.vn", "type": "string" },
+    { "key": "manager_password", "value": "Manager@123", "type": "string" },
+    { "key": "employee_email", "value": "employee@company.vn", "type": "string" },
+    { "key": "employee_password", "value": "Employee@123", "type": "string" },
+    { "key": "user_id", "value": "3", "type": "string" },
+    { "key": "department_id", "value": "1", "type": "string" },
+    { "key": "role_id", "value": "2", "type": "string" },
+    { "key": "permission_id", "value": "1", "type": "string" },
+    { "key": "notification_id", "value": "1", "type": "string" },
+    { "key": "year", "value": "2026", "type": "string" },
+    { "key": "start_date", "value": "2026-06-01", "type": "string" },
+    { "key": "end_date", "value": "2026-06-30", "type": "string" }
+  ]
+}

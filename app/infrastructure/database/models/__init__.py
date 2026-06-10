@@ -14,6 +14,8 @@ from app.infrastructure.database.models.leave_balance_model import LeaveBalanceM
 from app.infrastructure.database.models.attendance_model import AttendanceModel
 from app.infrastructure.database.models.notification_model import NotificationModel
 from app.infrastructure.database.models.audit_log_model import AuditLogModel
+from app.infrastructure.database.models.menu_model import MenuModel
+from app.infrastructure.database.models.translation_model import TranslationModel
 
 __all__ = [
     "RoleModel",
@@ -27,4 +29,6 @@ __all__ = [
     "AttendanceModel",
     "NotificationModel",
     "AuditLogModel",
+    "MenuModel",
+    "TranslationModel",
 ]

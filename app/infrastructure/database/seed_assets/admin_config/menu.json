@@ -1,0 +1,46 @@
+[
+  {
+    "key": "dashboard",
+    "parent_key": null,
+    "title_key": "menu.dashboard",
+    "route": "/",
+    "icon": "dashboard",
+    "order": 1,
+    "permission_key": null,
+    "is_visible": true,
+    "is_external": false
+  },
+  {
+    "key": "config",
+    "parent_key": null,
+    "title_key": "menu.config",
+    "route": null,
+    "icon": "setting",
+    "order": 90,
+    "permission_key": "system.config.manage",
+    "is_visible": true,
+    "is_external": false
+  },
+  {
+    "key": "config.menu-sync",
+    "parent_key": "config",
+    "title_key": "menu.config.menu_sync",
+    "route": "/config/menu-sync",
+    "icon": "unordered-list",
+    "order": 91,
+    "permission_key": "system.config.manage",
+    "is_visible": true,
+    "is_external": false
+  },
+  {
+    "key": "config.i18n-sync",
+    "parent_key": "config",
+    "title_key": "menu.config.i18n_sync",
+    "route": "/config/i18n-sync",
+    "icon": "translation",
+    "order": 92,
+    "permission_key": "system.config.manage",
+    "is_visible": true,
+    "is_external": false
+  }
+]
