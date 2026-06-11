@@ -15,6 +15,7 @@ type ShellNavItem = {
 	icon: string;
 	route: string;
 	permission?: string;
+	group?: string;
 };
 
 @Component({
@@ -278,9 +279,22 @@ export class AdminShellComponent implements OnInit {
 	protected readonly authStore = inject(AuthStoreService);
 
 	private readonly allNavItems: ShellNavItem[] = [
+		// ── General ────────────────────────────────────────────────────────────
 		{ label: 'Dashboard', icon: 'dashboard', route: '/' },
+		{ label: 'Thông báo', icon: 'bell', route: '/notifications' },
+		// ── HR & Users ─────────────────────────────────────────────────────────
+		{ label: 'Người dùng', icon: 'team', route: '/users', permission: 'manage_org' },
+		// ── RBAC ───────────────────────────────────────────────────────────────
+		{ label: 'Roles', icon: 'safety-certificate', route: '/rbac/roles', permission: 'manage_org' },
+		{ label: 'Permissions', icon: 'key', route: '/rbac/permissions', permission: 'manage_org' },
+		// ── Operations ─────────────────────────────────────────────────────────
+		{ label: 'Công việc', icon: 'check-square', route: '/tasks', permission: 'create_task' },
+		{ label: 'Nghỉ phép', icon: 'calendar', route: '/leaves', permission: 'approve_leave' },
+		// ── Configuration ──────────────────────────────────────────────────────
 		{ label: 'Menu sync', icon: 'appstore', route: '/config/menu-sync', permission: 'system.config.manage' },
-		{ label: 'i18n sync', icon: 'translation', route: '/config/i18n-sync', permission: 'system.config.manage' }
+		{ label: 'i18n sync', icon: 'translation', route: '/config/i18n-sync', permission: 'system.config.manage' },
+		// ── Security ───────────────────────────────────────────────────────────
+		{ label: 'Audit Logs', icon: 'file-search', route: '/audit-logs', permission: 'audit:view' }
 	];
 
 	breadcrumbs: string[] = ['Admin'];
@@ -329,8 +343,22 @@ export class AdminShellComponent implements OnInit {
 
 	private readonly routeMeta = [
 		{ route: '/', title: 'Dashboard', breadcrumbs: ['Admin', 'Dashboard'] },
+		// Configuration
 		{ route: '/config/menu-sync', title: 'Menu sync', breadcrumbs: ['Admin', 'Configuration', 'Menu sync'] },
 		{ route: '/config/i18n-sync', title: 'i18n sync', breadcrumbs: ['Admin', 'Configuration', 'i18n sync'] },
+		// Users
+		{ route: '/users', title: 'Quản lý người dùng', breadcrumbs: ['Admin', 'Người dùng'] },
+		// RBAC
+		{ route: '/rbac/roles', title: 'Roles', breadcrumbs: ['Admin', 'RBAC', 'Roles'] },
+		{ route: '/rbac/permissions', title: 'Permissions', breadcrumbs: ['Admin', 'RBAC', 'Permissions'] },
+		// Operations
+		{ route: '/tasks', title: 'Công việc', breadcrumbs: ['Admin', 'Operations', 'Công việc'] },
+		{ route: '/leaves', title: 'Đơn nghỉ phép', breadcrumbs: ['Admin', 'Operations', 'Nghỉ phép'] },
+		// Notifications
+		{ route: '/notifications', title: 'Thông báo', breadcrumbs: ['Admin', 'Thông báo'] },
+		// Audit
+		{ route: '/audit-logs', title: 'Audit Logs', breadcrumbs: ['Admin', 'Security', 'Audit Logs'] },
+		// System
 		{ route: '/unauthorized', title: 'Unauthorized', breadcrumbs: ['Admin', 'Unauthorized'] },
 		{ route: '/forbidden', title: 'Forbidden', breadcrumbs: ['Admin', 'Forbidden'] },
 		{ route: '/not-found', title: 'Not found', breadcrumbs: ['Admin', 'Not found'] }

@@ -15,10 +15,10 @@ export class AdminConfigSyncService extends BaseApiService {
 	}
 
 	syncMenu(dryRun = false): Observable<SyncSummary> {
-		return this.post<{ dry_run: boolean }, SyncSummary>('/admin/config/menu/sync', { dry_run: dryRun });
+		return this.post<{ dry_run: boolean }, SyncSummary>('/api/v1/admin/config/menu/sync', { dry_run: dryRun });
 	}
 
 	syncI18n(dryRun = false): Observable<SyncSummary> {
-		return this.post<{ dry_run: boolean }, SyncSummary>('/admin/config/i18n/sync', { dry_run: dryRun });
+		return this.post<{ dry_run: boolean }, SyncSummary>('/api/v1/admin/config/i18n/sync', { dry_run: dryRun });
 	}
 }

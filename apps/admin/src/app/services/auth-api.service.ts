@@ -15,10 +15,10 @@ export class AuthApiService extends BaseApiService {
 	}
 
 	login(payload: LoginRequest): Observable<LoginResponse> {
-		return this.post<LoginRequest, LoginResponse>('/auth/login', payload);
+		return this.post<LoginRequest, LoginResponse>('/api/v1/auth/login', payload);
 	}
 
 	me(): Observable<UserResponse> {
-		return this.get<UserResponse>('/auth/me');
+		return this.get<UserResponse>('/api/v1/auth/me');
 	}
 }
