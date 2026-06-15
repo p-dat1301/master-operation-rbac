@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import date
 from typing import Optional
 from pydantic import BaseModel
 from app.application.dtos.task import TaskCreateInput, TaskOutput
@@ -24,6 +25,6 @@ class TaskUpdateRequest(BaseModel):
     assignee_id: Optional[int] = None
     department_id: Optional[int] = None
     priority: Optional[str] = None
-    start_date: Optional[str] = None
-    due_date: Optional[str] = None
+    start_date: Optional[date] = None
+    due_date: Optional[date] = None
     estimated_hours: Optional[float] = None

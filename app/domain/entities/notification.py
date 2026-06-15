@@ -6,10 +6,13 @@ from typing import Optional, Any
 class Notification:
     id: int
     recipient_id: int
-    type: str
-    channel: str
+    title: str = "Notification"
+    body: Optional[str] = None
+    channel: str = "in_app"
+    is_read: bool = False
+    created_at: Optional[datetime] = None
+    read_at: Optional[datetime] = None
+    type: Optional[str] = None
     message: Optional[str] = None
     payload: Optional[dict[str, Any]] = None
-    is_read: bool = False
     sent_at: Optional[datetime] = None
-    read_at: Optional[datetime] = None

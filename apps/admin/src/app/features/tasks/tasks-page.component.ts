@@ -14,6 +14,7 @@ import { firstValueFrom } from 'rxjs';
 
 import { TaskFilters, TaskResponse, TaskStatus } from '../../models/task.models';
 import { TaskApiService } from '../../services/task-api.service';
+import { ADMIN_DATE_FORMAT } from '../../shared/date-formats';
 
 const STATUS_COLOR: Record<string, string> = {
 	pending: 'orange', in_progress: 'blue', completed: 'green', cancelled: 'default'
@@ -85,7 +86,7 @@ const STATUS_LABEL: Record<string, string> = {
 								<span *ngIf="!t.priority" class="muted">—</span>
 							</td>
 							<td class="muted">{{ t.assignee_name || '—' }}</td>
-							<td class="muted">{{ t.due_date ? (t.due_date | date:'dd/MM/yyyy') : '—' }}</td>
+							<td class="muted">{{ t.due_date ? (t.due_date | date:ADMIN_DATE_FORMAT) : '—' }}</td>
 							<td nzAlign="right">
 								<button *ngIf="t.status === 'pending'" nz-button nzType="text" nzSize="small" (click)="action(t,'start')" nz-tooltip="Bắt đầu" style="color:#60a5fa" [attr.data-testid]="'start-task-'+t.id"><span nz-icon nzType="play-circle"></span></button>
 								<button *ngIf="t.status === 'in_progress'" nz-button nzType="text" nzSize="small" (click)="action(t,'complete')" nz-tooltip="Hoàn thành" style="color:#34d399" [attr.data-testid]="'complete-task-'+t.id"><span nz-icon nzType="check-circle"></span></button>
@@ -113,6 +114,7 @@ const STATUS_LABEL: Record<string, string> = {
 	`]
 })
 export class TasksPageComponent implements OnInit {
+	protected readonly ADMIN_DATE_FORMAT = ADMIN_DATE_FORMAT;
 	private readonly taskApi = inject(TaskApiService);
 	private readonly message = inject(NzMessageService);
 	private readonly modal = inject(NzModalService);

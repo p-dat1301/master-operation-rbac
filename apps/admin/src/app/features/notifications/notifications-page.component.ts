@@ -11,6 +11,7 @@ import { firstValueFrom } from 'rxjs';
 
 import { NotificationResponse } from '../../models/notification.models';
 import { NotificationApiService } from '../../services/notification-api.service';
+import { ADMIN_DATETIME_FORMAT } from '../../shared/date-formats';
 
 @Component({
 	selector: 'app-notifications-page',
@@ -56,7 +57,7 @@ import { NotificationApiService } from '../../services/notification-api.service'
 								<span [class.notif-title-unread]="!n.is_read" [class.notif-title-read]="n.is_read">{{ n.title }}</span>
 							</td>
 							<td class="muted">{{ n.body }}</td>
-							<td class="time-col">{{ n.created_at | date:'dd/MM/yy HH:mm' }}</td>
+							<td class="time-col">{{ n.created_at | date:ADMIN_DATETIME_FORMAT }}</td>
 							<td nzAlign="right">
 								<button *ngIf="!n.is_read" nz-button nzType="text" nzSize="small" (click)="markOne(n)" nz-tooltip="Đánh dấu đã đọc" style="color:#60a5fa" [attr.data-testid]="'mark-read-'+n.id">
 									<span nz-icon nzType="eye"></span>
@@ -85,6 +86,7 @@ import { NotificationApiService } from '../../services/notification-api.service'
 	`]
 })
 export class NotificationsPageComponent implements OnInit {
+	protected readonly ADMIN_DATETIME_FORMAT = ADMIN_DATETIME_FORMAT;
 	private readonly notifApi = inject(NotificationApiService);
 	private readonly message = inject(NzMessageService);
 

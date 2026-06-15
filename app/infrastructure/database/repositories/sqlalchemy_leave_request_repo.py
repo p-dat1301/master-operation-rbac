@@ -1,6 +1,8 @@
 """SQLAlchemy 2.0 async implementation của LeaveRequestRepository."""
 from __future__ import annotations
 
+from datetime import datetime, timezone
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -13,6 +15,14 @@ class SQLAlchemyLeaveRequestRepository(LeaveRequestRepository):
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
 
+    @staticmethod
+    def _as_utc(value: datetime | None) -> datetime | None:
+        if value is None:
+            return None
+        if value.tzinfo is None:
+            return value.replace(tzinfo=timezone.utc)
+        return value.astimezone(timezone.utc)
+
     def _to_entity(self, model: LeaveRequestModel) -> LeaveRequest:
         return LeaveRequest(
             id=model.id,
@@ -24,8 +34,8 @@ class SQLAlchemyLeaveRequestRepository(LeaveRequestRepository):
             status=model.status,
             department_id=model.department_id,
             reviewed_by=model.reviewer_id,
-            reviewed_at=model.reviewed_at,
-            created_at=model.created_at,
+            reviewed_at=self._as_utc(model.reviewed_at),
+            created_at=self._as_utc(model.created_at),
         )
 
     async def find_by_id(self, leave_id: int) -> LeaveRequest | None:
@@ -103,7 +113,6 @@ class SQLAlchemyLeaveRequestRepository(LeaveRequestRepository):
             raise ValueError(f"LeaveRequest {leave_id} not found")
         model.status = status
         model.reviewer_id = reviewed_by
-        from datetime import datetime
-        model.reviewed_at = datetime.utcnow()
+        model.reviewed_at = datetime.now(timezone.utc)
         await self._session.flush()
         return self._to_entity(model)

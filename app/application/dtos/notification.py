@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional, Any
+from typing import Optional
 
 from pydantic import BaseModel
 
@@ -9,12 +9,15 @@ from app.domain.entities.notification import Notification
 class NotificationOutput(BaseModel):
     id: int
     recipient_id: int
-    type: str
+    title: str
+    body: Optional[str] = None
     channel: str
-    message: Optional[str] = None
     is_read: bool = False
-    sent_at: Optional[datetime] = None
+    created_at: Optional[datetime] = None
     read_at: Optional[datetime] = None
+    type: Optional[str] = None
+    message: Optional[str] = None
+    sent_at: Optional[datetime] = None
 
     @classmethod
     def from_entity(cls, notif: Notification) -> "NotificationOutput":
@@ -23,10 +26,13 @@ class NotificationOutput(BaseModel):
         return cls(
             id=notif.id,
             recipient_id=notif.recipient_id,
-            type=notif.type,
+            title=notif.title,
+            body=notif.body,
             channel=notif.channel,
-            message=notif.message,
             is_read=notif.is_read,
-            sent_at=notif.sent_at,
+            created_at=notif.created_at,
             read_at=notif.read_at,
+            type=notif.type,
+            message=notif.message,
+            sent_at=notif.sent_at,
         )

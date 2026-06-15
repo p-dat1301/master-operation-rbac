@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from typing import Optional
 
 from pydantic import BaseModel
@@ -19,6 +19,8 @@ class TaskOutput(BaseModel):
     start_date: Optional[date] = None
     due_date: Optional[date] = None
     estimated_hours: Optional[float] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
     @classmethod
     def from_entity(cls, task) -> "TaskOutput":
@@ -38,6 +40,8 @@ class TaskOutput(BaseModel):
             start_date=task.start_date,
             due_date=task.due_date,
             estimated_hours=task.estimated_hours,
+            created_at=task.created_at,
+            updated_at=task.updated_at,
         )
 
 

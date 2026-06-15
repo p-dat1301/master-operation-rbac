@@ -17,3 +17,4 @@ class Task:
     due_date: Optional[date] = None
     estimated_hours: Optional[float] = None
     created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None

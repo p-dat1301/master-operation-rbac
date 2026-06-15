@@ -1,6 +1,8 @@
 """SQLAlchemy 2.0 async implementation của NotificationRepository."""
 from __future__ import annotations
 
+from datetime import datetime, timezone
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -13,14 +15,27 @@ class SQLAlchemyNotificationRepository(NotificationRepository):
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
 
+    @staticmethod
+    def _as_utc(value: datetime | None) -> datetime | None:
+        if value is None:
+            return None
+        if value.tzinfo is None:
+            return value.replace(tzinfo=timezone.utc)
+        return value.astimezone(timezone.utc)
+
     def _to_entity(self, model: NotificationModel) -> Notification:
         return Notification(
             id=model.id,
             recipient_id=model.recipient_id,
-            type="general",
+            title=model.title,
+            body=model.body,
             channel=model.channel,
-            message=model.body,
             is_read=model.is_read,
+            created_at=self._as_utc(model.created_at),
+            read_at=self._as_utc(model.created_at) if model.is_read else None,
+            type="general",
+            message=model.body,
+            sent_at=self._as_utc(model.created_at),
         )
 
     async def find_by_id(self, notification_id: int) -> Notification | None:
@@ -37,7 +52,7 @@ class SQLAlchemyNotificationRepository(NotificationRepository):
     async def list_unread_by_recipient(self, recipient_id: int) -> list[Notification]:
         stmt = select(NotificationModel).where(
             NotificationModel.recipient_id == recipient_id,
-            NotificationModel.is_read == False,
+            NotificationModel.is_read.is_(False),
         ).order_by(NotificationModel.id)
         result = await self._session.execute(stmt)
         return [self._to_entity(m) for m in result.scalars().all()]
@@ -69,7 +84,7 @@ class SQLAlchemyNotificationRepository(NotificationRepository):
     async def mark_all_as_read(self, recipient_id: int) -> int:
         stmt = select(NotificationModel).where(
             NotificationModel.recipient_id == recipient_id,
-            NotificationModel.is_read == False,
+            NotificationModel.is_read.is_(False),
         )
         result = await self._session.execute(stmt)
         models = result.scalars().all()

@@ -10,6 +10,7 @@ import { firstValueFrom } from 'rxjs';
 
 import { AuditLogResponse } from '../../models/audit.models';
 import { AuditApiService } from '../../services/audit-api.service';
+import { ADMIN_DATETIME_SECONDS_FORMAT } from '../../shared/date-formats';
 
 @Component({
 	selector: 'app-audit-logs-page',
@@ -45,7 +46,7 @@ import { AuditApiService } from '../../services/audit-api.service';
 					<tbody>
 						<tr *ngFor="let log of logTable.data; let i = index">
 							<td class="idx-col">{{ i + 1 }}</td>
-							<td class="time-col">{{ log.created_at | date:'dd/MM/yy HH:mm:ss' }}</td>
+							<td class="time-col">{{ log.created_at | date:ADMIN_DATETIME_SECONDS_FORMAT }}</td>
 							<td>
 								<span class="actor-name">{{ log.actor_name || '—' }}</span>
 								<span *ngIf="log.actor_id" class="actor-id">(ID:{{ log.actor_id }})</span>
@@ -78,6 +79,7 @@ import { AuditApiService } from '../../services/audit-api.service';
 	`]
 })
 export class AuditLogsPageComponent implements OnInit {
+	protected readonly ADMIN_DATETIME_SECONDS_FORMAT = ADMIN_DATETIME_SECONDS_FORMAT;
 	private readonly auditApi = inject(AuditApiService);
 	private readonly message = inject(NzMessageService);
 

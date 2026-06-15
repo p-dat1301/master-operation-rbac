@@ -14,6 +14,7 @@ import { firstValueFrom } from 'rxjs';
 
 import { LeaveFilters, LeaveRequestResponse, LeaveStatus } from '../../models/leave.models';
 import { LeaveApiService } from '../../services/leave-api.service';
+import { ADMIN_DATE_FORMAT } from '../../shared/date-formats';
 
 const STATUS_COLOR: Record<string, string> = {
 	pending: 'orange', approved: 'green', rejected: 'red', cancelled: 'default'
@@ -84,8 +85,9 @@ const STATUS_LABEL: Record<string, string> = {
 							<td class="idx-col">{{ i + 1 }}</td>
 							<td class="name-col">{{ l.user_name || 'ID:' + l.user_id }}</td>
 							<td><nz-tag nzColor="geekblue">{{ l.leave_type }}</nz-tag></td>
-							<td class="muted">{{ l.start_date | date:'dd/MM/yy' }}</td>
-							<td class="muted">{{ l.end_date | date:'dd/MM/yy' }}</td>
+						<td class="muted">{{ l.start_date | date:ADMIN_DATE_FORMAT }}</td>
+						<td class="muted">{{ l.end_date | date:ADMIN_DATE_FORMAT }}</td>
+
 							<td class="muted">{{ l.reason || '—' }}</td>
 							<td nzAlign="center"><nz-tag [nzColor]="statusColor(l.status)">{{ statusLabel(l.status) }}</nz-tag></td>
 							<td nzAlign="right">
@@ -119,6 +121,7 @@ const STATUS_LABEL: Record<string, string> = {
 	`]
 })
 export class LeavesPageComponent implements OnInit {
+	protected readonly ADMIN_DATE_FORMAT = ADMIN_DATE_FORMAT;
 	private readonly leaveApi = inject(LeaveApiService);
 	private readonly message = inject(NzMessageService);
 	private readonly modal = inject(NzModalService);

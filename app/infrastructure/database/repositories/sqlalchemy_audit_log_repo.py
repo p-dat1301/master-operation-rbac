@@ -1,6 +1,8 @@
 """SQLAlchemy 2.0 async implementation của AuditLogRepository."""
 from __future__ import annotations
 
+from datetime import datetime, timezone
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -13,6 +15,14 @@ class SQLAlchemyAuditLogRepository(AuditLogRepository):
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
 
+    @staticmethod
+    def _as_utc(value: datetime | None) -> datetime | None:
+        if value is None:
+            return None
+        if value.tzinfo is None:
+            return value.replace(tzinfo=timezone.utc)
+        return value.astimezone(timezone.utc)
+
     def _to_entity(self, model: AuditLogModel) -> AuditLog:
         return AuditLog(
             id=model.id,
@@ -21,7 +31,7 @@ class SQLAlchemyAuditLogRepository(AuditLogRepository):
             resource=model.resource_type,
             resource_id=model.resource_id or 0,
             details=model.details,
-            created_at=model.created_at,
+            created_at=self._as_utc(model.created_at),
         )
 
     async def find_by_id(self, log_id: int) -> AuditLog | None:

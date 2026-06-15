@@ -1,6 +1,8 @@
 """SQLAlchemy 2.0 async implementation của LeaveBalanceRepository."""
 from __future__ import annotations
 
+from datetime import datetime, timezone
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -13,6 +15,14 @@ class SQLAlchemyLeaveBalanceRepository(LeaveBalanceRepository):
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
 
+    @staticmethod
+    def _as_utc(value: datetime | None) -> datetime | None:
+        if value is None:
+            return None
+        if value.tzinfo is None:
+            return value.replace(tzinfo=timezone.utc)
+        return value.astimezone(timezone.utc)
+
     def _to_entity(self, model: LeaveBalanceModel) -> LeaveBalance:
         remaining = model.total_days - model.used_days
         return LeaveBalance(
@@ -23,7 +33,7 @@ class SQLAlchemyLeaveBalanceRepository(LeaveBalanceRepository):
             used_days=float(model.used_days),
             pending_days=0.0,
             remaining_days=remaining,
-            updated_at=model.updated_at,
+            updated_at=self._as_utc(model.updated_at),
         )
 
     async def find_by_id(self, balance_id: int) -> LeaveBalance | None:

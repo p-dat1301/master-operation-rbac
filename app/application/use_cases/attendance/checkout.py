@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 from app.application.dtos.attendance import AttendanceOutput
 from app.domain.entities.user import User
@@ -13,7 +13,7 @@ class CheckoutUseCase:
         self.attendance_repo = attendance_repo
 
     async def execute(self, actor: User, check_out: datetime | None = None) -> AttendanceOutput:
-        checkout_time = check_out or datetime.utcnow()
+        checkout_time = check_out or datetime.now(timezone.utc)
         attendance = await self.attendance_repo.find_by_user_date(actor.id, checkout_time.date())
         if attendance is None:
             raise ResourceNotFound("Attendance check-in not found for today")

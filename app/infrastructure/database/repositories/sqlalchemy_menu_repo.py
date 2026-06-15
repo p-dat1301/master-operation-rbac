@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from datetime import datetime, timezone
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -11,6 +13,14 @@ from app.infrastructure.database.models.menu_model import MenuModel
 class SQLAlchemyMenuRepository(MenuRepository):
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
+
+    @staticmethod
+    def _as_utc(value: datetime | None) -> datetime | None:
+        if value is None:
+            return None
+        if value.tzinfo is None:
+            return value.replace(tzinfo=timezone.utc)
+        return value.astimezone(timezone.utc)
 
     def _to_entity(self, model: MenuModel) -> Menu:
         return Menu(
@@ -24,8 +34,8 @@ class SQLAlchemyMenuRepository(MenuRepository):
             permission_key=model.permission_key,
             is_visible=model.is_visible,
             is_external=model.is_external,
-            created_at=model.created_at,
-            updated_at=model.updated_at,
+            created_at=self._as_utc(model.created_at),
+            updated_at=self._as_utc(model.updated_at),
         )
 
     async def find_by_key(self, key: str) -> Menu | None:

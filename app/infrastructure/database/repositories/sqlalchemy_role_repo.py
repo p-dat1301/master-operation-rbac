@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from datetime import datetime, timezone
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -15,12 +17,20 @@ class SQLAlchemyRoleRepository(RoleRepository):
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
 
+    @staticmethod
+    def _as_utc(value: datetime | None) -> datetime | None:
+        if value is None:
+            return None
+        if value.tzinfo is None:
+            return value.replace(tzinfo=timezone.utc)
+        return value.astimezone(timezone.utc)
+
     def _to_entity(self, model: RoleModel) -> Role:
         return Role(
             id=model.id,
             name=model.name,
             display_name=model.display_name,
-            created_at=model.created_at,
+            created_at=self._as_utc(model.created_at),
         )
 
     async def find_by_id(self, role_id: int) -> Role | None:
@@ -75,7 +85,15 @@ class SQLAlchemyRoleRepository(RoleRepository):
         model = result.scalars().first()
         if not model:
             return []
-        return [Permission(id=p.id, code=p.code, description=p.description, created_at=p.created_at) for p in model.permissions]
+        return [
+            Permission(
+                id=p.id,
+                code=p.code,
+                description=p.description,
+                created_at=self._as_utc(p.created_at),
+            )
+            for p in model.permissions
+        ]
 
     async def add_permission(self, role_id: int, permission_id: int) -> None:
         role_stmt = select(RoleModel).options(selectinload(RoleModel.permissions)).where(RoleModel.id == role_id)

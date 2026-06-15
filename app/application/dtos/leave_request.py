@@ -7,6 +7,8 @@ from pydantic import BaseModel
 class LeaveRequestOutput(BaseModel):
     id: int
     requester_id: int
+    user_id: int
+    user_name: Optional[str] = None
     leave_type: str
     start_date: date
     end_date: date
@@ -14,8 +16,10 @@ class LeaveRequestOutput(BaseModel):
     status: str = "pending"
     department_id: Optional[int] = None
     reviewed_by: Optional[int] = None
+    approved_by: Optional[int] = None
     rejected_reason: Optional[str] = None
     reviewed_at: Optional[datetime] = None
+    created_at: Optional[datetime] = None
 
     @classmethod
     def from_entity(cls, lr) -> "LeaveRequestOutput":
@@ -25,6 +29,8 @@ class LeaveRequestOutput(BaseModel):
         return cls(
             id=lr.id,
             requester_id=lr.requester_id,
+            user_id=lr.requester_id,
+            user_name=None,
             leave_type=lr.leave_type,
             start_date=lr.start_date,
             end_date=lr.end_date,
@@ -32,8 +38,10 @@ class LeaveRequestOutput(BaseModel):
             status=lr.status,
             department_id=lr.department_id,
             reviewed_by=lr.reviewed_by,
+            approved_by=lr.reviewed_by,
             rejected_reason=lr.rejected_reason,
             reviewed_at=lr.reviewed_at,
+            created_at=lr.created_at,
         )
 
 

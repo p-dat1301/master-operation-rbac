@@ -1,7 +1,7 @@
 """SQLAlchemy 2.0 async implementation của AttendanceRepository."""
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -14,13 +14,21 @@ class SQLAlchemyAttendanceRepository(AttendanceRepository):
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
 
+    @staticmethod
+    def _as_utc(value: datetime | None) -> datetime | None:
+        if value is None:
+            return None
+        if value.tzinfo is None:
+            return value.replace(tzinfo=timezone.utc)
+        return value.astimezone(timezone.utc)
+
     def _to_entity(self, model: AttendanceModel) -> Attendance:
         return Attendance(
             id=model.id,
             user_id=model.user_id,
             date=model.date,
-            check_in=model.check_in,
-            check_out=model.check_out,
+            check_in=self._as_utc(model.check_in),
+            check_out=self._as_utc(model.check_out),
             total_minutes=model.total_minutes,
             ip_address=model.ip_address,
             department_id=model.department_id,
@@ -65,8 +73,8 @@ class SQLAlchemyAttendanceRepository(AttendanceRepository):
         model = AttendanceModel(
             user_id=attendance.user_id,
             date=attendance.date,
-            check_in=attendance.check_in,
-            check_out=attendance.check_out,
+            check_in=self._as_utc(attendance.check_in),
+            check_out=self._as_utc(attendance.check_out),
             total_minutes=attendance.total_minutes,
             ip_address=attendance.ip_address,
             department_id=attendance.department_id,
@@ -84,8 +92,8 @@ class SQLAlchemyAttendanceRepository(AttendanceRepository):
         model = result.scalars().first()
         if not model:
             raise ValueError(f"Attendance {attendance.id} not found")
-        model.check_in = attendance.check_in
-        model.check_out = attendance.check_out
+        model.check_in = self._as_utc(attendance.check_in)
+        model.check_out = self._as_utc(attendance.check_out)
         model.total_minutes = attendance.total_minutes
         model.ip_address = attendance.ip_address
         model.status = attendance.status
@@ -105,7 +113,7 @@ class SQLAlchemyAttendanceRepository(AttendanceRepository):
         model = result.scalars().first()
         if not model:
             raise ValueError(f"Attendance {attendance_id} not found")
-        model.check_out = check_out
+        model.check_out = self._as_utc(check_out)
         model.total_minutes = total_minutes
         model.status = "checked_out"
         await self._session.flush()
