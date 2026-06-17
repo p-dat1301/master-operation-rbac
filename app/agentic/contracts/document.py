@@ -21,9 +21,7 @@ class ParserStatus(StrEnum):
 class BlockKind(StrEnum):
     HEADING = "heading"
     PARAGRAPH = "paragraph"
-    TABLE = "table"
     LIST_ITEM = "list_item"
-    PAGE_BREAK = "page_break"
 
 
 class CitationMetadata(BaseModel):
@@ -31,15 +29,6 @@ class CitationMetadata(BaseModel):
 
     page_number: int | None = Field(default=None, ge=1)
     section_path: tuple[str, ...] = Field(default_factory=tuple)
-    block_anchor: str | None = None
-    char_start: int | None = Field(default=None, ge=0)
-    char_end: int | None = Field(default=None, ge=0)
-
-    @model_validator(mode="after")
-    def validate_char_range(self) -> "CitationMetadata":
-        if self.char_start is not None and self.char_end is not None and self.char_end < self.char_start:
-            raise ValueError("char_end must be greater than or equal to char_start")
-        return self
 
 
 class ContentBlock(BaseModel):

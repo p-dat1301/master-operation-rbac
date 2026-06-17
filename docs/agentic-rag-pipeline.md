@@ -107,7 +107,7 @@ Kiến trúc code phải là:
 ### Cây thư mục mục tiêu
 ```text
 app/
-  ai/
+  agentic/
     contracts/
       document.py
       chunk.py

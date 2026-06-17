@@ -31,7 +31,6 @@ def test_normalized_document_contract_accepts_minimal_source_agnostic_pdf():
         visibility_scope=VisibilityScope.DEPARTMENT,
         allowed_roles=("employee", "manager"),
         department_id=10,
-        owner_id=99,
     )
     citation = CitationMetadata(page_number=1, section_path=("HR Policy",), block_anchor="p1")
     block = ContentBlock(
@@ -66,6 +65,12 @@ def test_access_policy_fails_closed_when_required_scope_metadata_is_missing():
             classification=Classification.RESTRICTED,
             visibility_scope=VisibilityScope.DEPARTMENT,
             allowed_roles=("manager",),
+        )
+
+    with pytest.raises(ValidationError, match="role-scoped policy requires allowed_roles"):
+        AccessPolicyMetadata(
+            classification=Classification.RESTRICTED,
+            visibility_scope=VisibilityScope.ROLE,
         )
 
 
