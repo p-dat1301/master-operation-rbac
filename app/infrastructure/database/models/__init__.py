@@ -16,6 +16,9 @@ from app.infrastructure.database.models.notification_model import NotificationMo
 from app.infrastructure.database.models.audit_log_model import AuditLogModel
 from app.infrastructure.database.models.menu_model import MenuModel
 from app.infrastructure.database.models.translation_model import TranslationModel
+from app.infrastructure.database.models.agentic_document_model import AgenticDocumentModel
+from app.infrastructure.database.models.agentic_chunk_model import AgenticChunkModel
+from app.infrastructure.database.models.agentic_chunk_embedding_model import AgenticChunkEmbeddingModel
 
 __all__ = [
     "RoleModel",
@@ -31,4 +34,7 @@ __all__ = [
     "AuditLogModel",
     "MenuModel",
     "TranslationModel",
+    "AgenticDocumentModel",
+    "AgenticChunkModel",
+    "AgenticChunkEmbeddingModel",
 ]

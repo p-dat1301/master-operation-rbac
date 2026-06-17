@@ -8,8 +8,9 @@
 > - Bộ contract lõi cho document / chunk / access policy / answer / graph state
 > - Pipeline ingest → parse → normalize → chunk → policy tag → index → retrieve → answer → audit
 > - LangGraph workflow cố định cho luồng query
+> - Session memory bằng **LangGraph checkpointer + stable `thread_id`** cho hội thoại nhiều lượt; Redis/PostgreSQL chỉ là backend lưu checkpoint/cache tùy môi trường, không thay thế retrieval/citation
 > - LangSmith observability layer để trace/debug/evaluate LangGraph flow mà không thay audit log nội bộ
-> - Adapter boundary rõ ràng để đổi model, embedding, vector DB, parser, storage mà không viết lại core flow
+> - Adapter boundary rõ ràng để đổi model, embedding, vector DB, parser, storage, cache/session store mà không viết lại core flow
 > - Lộ trình triển khai **tuần tự từng module**, không xây song song nhiều module
 >
 > **Ước lượng**: Large
@@ -40,7 +41,7 @@ Người dùng muốn triển khai một hệ thống agentic RAG cho dự án n
 - **OCR, XLSX, PPTX, Notion, Confluence, DB/API records** là extension về sau.
 - **Deny-by-default** khi access policy không đủ rõ.
 - **Không cho LLM nhìn thấy chunk không được phép**.
-- Câu trả lời phải **có citation** hoặc **trả về insufficient evidence / insufficient permission**.
+- Câu trả lời phải **có citation** hoặc **trả về insufficient evidence / insufficient permission / unsupported scope**.
 - Mục tiêu là **hoàn thành module trước rồi mới sang module tiếp theo**.
 
 ---
@@ -62,16 +63,18 @@ Thiết kế và triển khai một hệ thống Agentic RAG theo pipeline, tron
 - Access control ở retrieval-time
 - Indexing + retrieval có filter theo quyền
 - LangGraph query flow cố định
+- Session memory bằng LangGraph checkpointer với stable `thread_id`, TTL/context summary nếu backend hỗ trợ
 - Answer generation có citation
 - Audit logging nội bộ cho compliance/security
 - LangSmith observability cho tracing/debug/evaluation của LangGraph flow
-- Extension boundary cho future sources và future adapters
+- Extension boundary cho future sources, future adapters và future memory stores
 
 ### Định nghĩa hoàn thành
 - [ ] PDF text-based và DOCX đi hết pipeline từ source → answer → audit
 - [ ] Retrieval chặn đúng dữ liệu không được phép trước khi build context cho model
 - [ ] Answer luôn có citation hoặc trả lời từ chối / thiếu bằng chứng rõ ràng
 - [ ] Có thể thay model/vector DB/parser/storage qua adapter/config mà không sửa core pipeline
+- [ ] MVP chỉ triển khai một default concrete adapter cho từng capability; provider-specific adapters khác được defer sau MVP
 - [ ] LangGraph được dùng cố định ở orchestration layer, không lan khắp business logic
 
 ### Bắt buộc phải có
@@ -91,7 +94,8 @@ Thiết kế và triển khai một hệ thống Agentic RAG theo pipeline, tron
 - Không để LangGraph node chứa toàn bộ business logic
 - Không để parser PDF/DOCX rò vào contract lõi
 - Không cho unauthorized chunk đi vào LLM context
-- Không mở rộng quá scope sang OCR / XLSX / Notion / DB ngay trong v1
+- Không mở rộng quá scope sang OCR / XLSX / PPTX / Notion / Confluence / DB/API records trong MVP
+- Không triển khai DB tool / reporting tool / action-history lookup trong MVP
 - Không gửi raw restricted content / PII lên LangSmith trace mặc định
 - Không dùng LangSmith thay audit log nội bộ
 
@@ -102,7 +106,7 @@ Thiết kế và triển khai một hệ thống Agentic RAG theo pipeline, tron
 ### Nguyên tắc tổ chức
 Kiến trúc code phải là:
 
-> **Pipeline-oriented modular architecture with LangGraph as orchestration spine and replaceable adapters for model/vector DB/parser/storage**
+> **Pipeline-oriented modular architecture with LangGraph as orchestration spine and replaceable adapters for model/vector DB/parser/storage/session memory**
 
 ### Cây thư mục mục tiêu
 ```text
@@ -117,6 +121,20 @@ app/
       answer.py
       audit.py
       graph_state.py
+      memory.py
+
+    memory/
+      memory_policy.py
+      session_memory.py
+      memory_summary.py
+      checkpoint_policy.py
+
+    adapters/
+      checkpoint/
+        base.py
+        inmemory_checkpointer.py
+        postgres_checkpointer.py
+        redis_checkpointer.py
 
     ingestion/
       ingest_source.py
@@ -166,11 +184,13 @@ app/
       nodes/
         load_user_context.py
         classify_query.py
+        route_query.py
         retrieve_evidence.py
         validate_policy.py
         generate_answer.py
         deny_request.py
         audit_event.py
+
 
     adapters/
       parsers/
@@ -179,37 +199,83 @@ app/
         docx_parser.py
       llm/
         base.py
-        openai_llm.py
-        anthropic_llm.py
-        local_llm.py
+        default_llm.py
       embeddings/
         base.py
-        openai_embeddings.py
-        local_embeddings.py
+        default_embeddings.py
       vector_store/
         base.py
-        pgvector_store.py
-        qdrant_store.py
-        weaviate_store.py
+        default_vector_store.py
       storage/
         base.py
         local_storage.py
-        s3_storage.py
-        minio_storage.py
 ```
 
 ### Quy tắc dependency
 - `contracts/` là lõi ổn định
-- `ingestion/ parsing/ chunking/ access_control/ indexing/ retrieval/ generation/ audit/` dùng contract lõi
-- `orchestration/` gọi các module pipeline để tạo flow LangGraph
+- `ingestion/ parsing/ chunking/ access_control/ indexing/ retrieval/ generation/ audit/ memory/` dùng contract lõi
+- `orchestration/` gọi các module pipeline để tạo flow LangGraph và luôn truyền `configurable.thread_id` khi invoke graph có checkpoint
 - `observability/` cấu hình LangSmith tracing/redaction/run metadata, không chứa business rule và không thay audit nội bộ
 - `adapters/` chỉ implement tech cụ thể, không chứa business rule
+- MVP chỉ có **1 concrete adapter mặc định cho mỗi capability**: LLM, embeddings, vector store, storage, checkpointer backend (PostgreSQL), parser.
+
+### Quy tắc memory
+- **Session memory chính thức của dự án là LangGraph checkpointer**, định danh theo `thread_id` ổn định cho mỗi conversation/session.
+- **Session memory chỉ là context phụ trợ**, không phải evidence và không thay thế retrieval-time authorization.
+- **Checkpointer backend có thể là InMemory/PostgreSQL/Redis** tùy môi trường; backend không làm thay đổi semantics của graph state.
+- **MVP default checkpointer backend: PostgreSQL** để durable session state dùng chung với hạ tầng hiện tại; `InMemorySaver` chỉ dành cho dev/test cục bộ.
+- **Redis không bắt buộc**: chỉ là backend tùy chọn cho short-lived checkpoint/session memory/cache/lock/buffer; không là source of truth cho audit và không thay thế vector DB chính trong v1.
+- **Session memory phải có TTL rõ ràng** và giới hạn số turn / kích thước summary nếu backend hỗ trợ TTL/cache eviction.
+- **Cache key, checkpoint key và session key phải permission-aware**: tối thiểu gồm `user_id` hoặc `tenant_id`, `role_names`, `department_id`, `policy_version`, `index_version`, `thread_id`/`session_id` khi phù hợp.
+- **Session memory không được bypass citation**: mọi factual answer vẫn phải đi qua retrieval và evidence bundle hợp lệ.
+- **Checkpoint chỉ nên lưu structured graph state, references (`chunk_id`, `document_id`, last cited ids) và context summary**; không lưu raw restricted content lâu dài trong memory layer mặc định.
+- **DB/tool layer không thuộc MVP**.
+- **Khi triển khai sau MVP**, DB/tool layer phải read-only, whitelist-based, không gọi raw SQL trực tiếp từ graph/node và phải đi qua use case/query service.
 
 ### Quy tắc LangGraph
 - **LangGraph là fixed choice**
 - Nhưng LangGraph chỉ sống ở `app/agentic/orchestration/`
 - Business logic phải nằm ở các module pipeline
 - Node LangGraph chỉ là lớp điều phối mỏng
+
+### Quy tắc chọn adapter cho MVP
+- Chỉ chọn **một concrete adapter mặc định cho mỗi capability**: parser, LLM, embeddings, vector store, storage, checkpointer backend.
+- **Embedding model và answer LLM phải là hai adapter tách biệt**; không dùng chung config/interface cho hai mục đích này.
+- Ưu tiên adapter local/dev-friendly hoặc adapter đơn giản nhất phù hợp dependency thực tế của repo.
+- Nếu repo chưa có dependency provider-specific rõ ràng, dùng tên `default_*` cho concrete adapter thay vì hard-code vendor trong plan.
+- Provider-specific adapters bổ sung (OpenAI/Anthropic/Qdrant/Weaviate/S3/MinIO...) được defer sau MVP.
+- Executor phải chốt một implementation concrete duy nhất trước khi bắt đầu Task 7/9/10; không mở rộng thành multi-provider matrix trong MVP.
+
+### Token Budget / Counting Policy
+- Token counting là bắt buộc ở **3 stage**: chunking-time, embedding-time, query-time / generation-time.
+- Chunking phải lưu `token_count` và `chunker_version`; token-aware splitting ưu tiên hơn character-based splitting.
+- Embedding adapter phải validate token budget trước khi gửi chunk/query vào embedding model.
+- Query/generation phải có context budget manager: `query tokens + memory summary tokens + retrieved evidence tokens + output reserve tokens`.
+- Khi vượt budget, ưu tiên truncate/re-split ở ingestion; query-time thì giảm số evidence chunks hoặc rerank lại.
+- Tokenizer mặc định của MVP phải được chốt theo model default adapter và ghi rõ trong task tương ứng.
+
+### Model Strategy / Auxiliary Model Policy
+- **Answer LLM** dùng cho answer generation, deny/no-evidence response và follow-up rewrite nếu cần.
+- **Embedding model** dùng riêng cho document chunk embedding và query embedding.
+- **Auxiliary model** (nếu có) chỉ dùng cho query classification / memory summarization / routing; không tạo factual answer.
+- Token budget, output budget và latency budget phải cấu hình riêng cho từng loại model.
+- Đổi embedding model không được ảnh hưởng answer generation, và ngược lại.
+
+### Retrieval / Rerank / Citation Policy
+- Retrieval v1 dùng metadata filter + vector search trước khi build evidence; access policy phải được re-check trước expose.
+- `top_k`, similarity threshold, max evidence tokens và filter ordering phải config được.
+- Rerank MVP là rule-based/lightweight; không dùng LLM reranker trong v1.
+- Citation chỉ hợp lệ nếu reference tới `chunk_id` / `document_id` / page-or-section metadata tồn tại trong authorized evidence bundle.
+- Không chấp nhận citation do LLM tự bịa; answer post-processor phải validate citation ids trước khi trả response.
+- Nếu evidence không trực tiếp support answer, trả `insufficient_evidence`; nếu query ngoài corpus, trả `unsupported_scope`.
+
+### Data Lifecycle / Versioning / Security Policy
+- Mỗi document/index phải có version để hỗ trợ re-index idempotent và invalidation an toàn.
+- Retrieval filter phải include `policy_version` và `index_version`; session memory stale phải bị bỏ qua.
+- Prompt builder chỉ nhận authorized evidence; không gửi raw restricted content hoặc PII vào prompt/telemetry mặc định.
+- Error taxonomy phải bao phủ: unsupported source / unsupported mime / parse failed / OCR required / policy denied / insufficient evidence / embedding failed / vector store unavailable / LLM unavailable.
+- Config strategy phải rõ: `answer_model_name`, `embedding_model_name`, `chunk_max_tokens`, `retrieval_top_k`, `retrieval_score_threshold`, `max_context_tokens`, `session_ttl_seconds`, `langsmith_enabled`.
+- Phải có eval/fixture strategy để kiểm thử deny/leak/no-evidence cases bằng dataset cố định.
 
 ---
 
@@ -263,12 +329,12 @@ Wave 4 (Index + retrieve)
 7. Implement indexing/storage abstraction
 8. Implement role-aware retrieval
 
-Wave 5 (LangGraph orchestration)
-9. Implement LangGraph query flow
+Wave 5 (LangGraph orchestration + checkpoint/session memory)
+9. Implement LangGraph query flow + checkpoint/session memory with stable `thread_id`
 10. Implement answer generation + citation enforcement
 
 Wave 6 (Audit + observability)
-11. Implement audit logging
+11. Implement audit logging + memory-safe audit policy
 12. Implement LangSmith observability layer
 
 Wave 7 (Extension boundary)
@@ -290,9 +356,9 @@ F4. Scope fidelity check
 - **6**: phụ thuộc 5, mở đường cho 7+
 - **7**: phụ thuộc 6, mở đường cho 8+
 - **8**: phụ thuộc 7, mở đường cho 9+
-- **9**: phụ thuộc 8, mở đường cho 10+
+- **9**: phụ thuộc 8, mở đường cho 10+ và memory/session integration
 - **10**: phụ thuộc 9, mở đường cho 11+
-- **11**: phụ thuộc 6, 8, 10
+- **11**: phụ thuộc 6, 8, 9, 10
 - **12**: phụ thuộc 11 và toàn bộ contract/pipeline trước đó
 - **13**: phụ thuộc 12 và toàn bộ contract/pipeline trước đó
 - **F1-F4**: chạy sau khi 1-13 hoàn thành
@@ -311,7 +377,7 @@ F4. Scope fidelity check
 
 ## TODOs
 
-- [x] 1. Định nghĩa contracts lõi và normalized data model
+- [ ] 1. Định nghĩa contracts lõi và normalized data model
 
   **Trạng thái**: DONE — đã xác minh trong codebase.
 
@@ -321,7 +387,7 @@ F4. Scope fidelity check
   - `app/agentic/contracts/chunk.py`: `DocumentChunk`, `RetrievalCandidate`, `RetrievalRequest`, `RetrievalOutcome` với `chunk_id`, `chunker_version`, citation và access policy.
   - `app/agentic/contracts/access_policy.py`: `AccessPolicyMetadata`, `Classification`, `VisibilityScope`, `UserAccessContext`; validate fail-closed cho role/department/owner/manager scope.
   - `app/agentic/contracts/retrieval.py`: `RetrievalFilter`, `EvidenceBundle`.
-  - `app/agentic/contracts/answer.py`: `AnswerResult`, `AnswerCitation` với citation-enforced response statuses.
+  - `app/agentic/contracts/answer.py`: `AnswerResult`, `AnswerCitation` với citation-enforced response statuses gồm tối thiểu `answered`, `insufficient_evidence`, `insufficient_permission`, `unsupported_scope`.
   - `app/agentic/contracts/audit.py`: `AuditEvent` cho ingest/parse/retrieval/answer events.
   - `app/agentic/contracts/graph_state.py`: serializable `GraphState` không phụ thuộc LangGraph runtime object.
   - `tests/unit/ai/test_contracts.py`: test normalized PDF-like document hợp lệ, fail-closed khi thiếu scope metadata, và yêu cầu `access_policy`.
@@ -419,6 +485,15 @@ F4. Scope fidelity check
 
 - [ ] 2. Tạo ingestion entrypoint source-agnostic
 
+  **Trạng thái**: DONE — đã xác minh trong codebase.
+
+  **Bằng chứng implementation**:
+  - `app/agentic/ingestion/ingest_source.py`: `IngestSource.ingest()` nhận `SourceMetadata` generic cùng `AccessPolicyMetadata`, trả `IngestionResult` có checksum, status `pending_parse`, parser target, source và policy metadata.
+  - `app/agentic/ingestion/source_registry.py`: `SourceRegistry` dispatch theo `source_type` / `mime_type`, v1 chỉ nhận `uploaded_file` PDF/DOCX và reject unsupported source/mime bằng controlled `ValueError`.
+  - `app/agentic/ingestion/checksum.py`: checksum SHA-256 ổn định từ source metadata khi input chưa có checksum.
+  - `tests/unit/ai/test_ingestion.py`: test PDF/DOCX happy path, XLSX reject, external URI reject trong v1, và bắt buộc truyền access policy.
+  - `.omo/evidence/task-2-docx-ok.txt` và `.omo/evidence/task-2-xlsx-reject.txt`: evidence QA cho DOCX accepted và XLSX rejected.
+
   **Việc cần làm**:
   - Tạo entrypoint nhận source generic.
   - Dispatch theo `source_type` / `mime_type`.
@@ -454,9 +529,10 @@ F4. Scope fidelity check
   - `tests/unit/ai/test_ingestion.py`
 
   **Acceptance Criteria**:
-  - [ ] Entry point nhận PDF/DOCX metadata.
+  - [ ] Entry point nhận PDF/DOCX metadata cho `uploaded_file` trong scope v1.
   - [ ] Trả về ingestion result có checksum/status/parser target.
-  - [ ] Unsupported type trả controlled error.
+  - [ ] Ingestion result giữ lại `source` và `access_policy` metadata để parse/index stages dùng tiếp.
+  - [ ] Unsupported `source_type` hoặc MIME ngoài scope trả controlled error.
 
   **QA Scenarios**:
   ```
@@ -485,6 +561,18 @@ F4. Scope fidelity check
   - Pre-commit: ingestion tests
 
 - [ ] 3. Implement PDF parser + normalizer cho PDF text-based
+
+  **Trạng thái**: DONE — đã xác minh trong codebase.
+
+  **Bằng chứng implementation**:
+  - `app/agentic/adapters/parsers/base.py`: `BaseParser` và `ParserError` làm boundary cho parser adapter và controlled failure.
+  - `app/agentic/adapters/parsers/pdf_parser.py`: `PdfTextParser.parse()` dùng LangChain `PyPDFLoader` cho PDF text-based, chuẩn hóa page metadata về 1-based citation, và fail closed với `ocr_not_supported_yet` khi không có text extractable.
+  - `app/agentic/parsing/parser_registry.py`: registry parser cho MIME `application/pdf`.
+  - `app/agentic/parsing/parse_document.py`: `parse_document()` dispatch parser theo MIME; `normalize_document()` chuyển `ParsedDocument` thành `NormalizedDocument` với `ContentBlock` và `CitationMetadata(...)` từ extracted block metadata.
+  - `app/agentic/parsing/normalize_document.py`: wrapper normalize để giữ module boundary rõ ràng.
+  - `tests/unit/ai/test_parsing_pdf.py`: test parse PDF text-based, normalize thành block có page citation, và reject PDF không có text.
+  - `tests/fixtures/ai/sample_text.pdf` và `tests/fixtures/ai/sample_scanned_or_empty.pdf`: fixtures cho happy path và no-text failure path.
+  - `.omo/evidence/task-3-pdf-ok.txt` và `.omo/evidence/task-3-pdf-no-text.txt`: evidence QA cho parse success và no-text controlled failure.
 
   **Việc cần làm**:
   - Chọn parser library phù hợp cho PDF text-based.
@@ -558,6 +646,16 @@ F4. Scope fidelity check
 
 - [ ] 4. Implement DOCX parser + normalizer
 
+  **Trạng thái**: DONE — đã xác minh trong codebase.
+
+  **Bằng chứng implementation**:
+  - `app/agentic/adapters/parsers/docx_parser.py`: `DocxParser.parse()` đọc `.docx` từ zip/XML, giữ structure cho heading / paragraph / table và reject `.doc` legacy bằng controlled `ParserError`.
+  - `app/agentic/parsing/parser_registry.py`: routing parser theo MIME cho cả PDF, DOCX và `.doc` legacy vào parser phù hợp.
+  - `app/agentic/parsing/parse_document.py`: `normalize_document()` dùng `extracted_metadata["blocks"]` để map parser-specific structure thành `ContentBlock` / `CitationMetadata` chuẩn chung.
+  - `tests/unit/ai/test_parsing_docx.py`: test DOCX happy path và reject `.doc` legacy.
+  - `tests/fixtures/ai/sample.docx`: fixture DOCX cho heading / paragraph / table.
+  - `.omo/evidence/task-4-docx-ok.txt` và `.omo/evidence/task-4-doc-legacy.txt`: evidence QA cho parse success và legacy reject.
+
   **Việc cần làm**:
   - Parse `.docx`
   - Normalize heading / paragraph / table thành content blocks
@@ -622,13 +720,26 @@ F4. Scope fidelity check
   - Message: `feat(rag): add docx parser`
   - Pre-commit: parser tests
 
-- [ ] 5. Implement chunking + citation propagation
+- [x] 5. Implement chunking + citation propagation
+
+  **Trạng thái**: DONE — đã triển khai trong codebase.
+
+  **Bằng chứng implementation**:
+  - `app/agentic/chunking/__init__.py`: public chunking API `ChunkConfig`, `DocumentChunker`, `chunk_document`, tokenizer adapters.
+  - `app/agentic/chunking/chunk_config.py`: versioned token budget config với `chunker_version`, `max_chunk_tokens`, `overlap_tokens`, `tokenizer_policy` default theo HuggingFace policy.
+  - `app/agentic/chunking/tokenizer.py`: tokenizer adapter boundary; ưu tiên `transformers.AutoTokenizer` cho `intfloat/multilingual-e5-base`, fallback an toàn sang whitespace tokenizer khi runtime không có dependency/model cache.
+  - `app/agentic/chunking/chunk_document.py`: token-aware chunking từ `NormalizedDocument.blocks`, giữ `document_id`, `chunk_id`, `chunk_index`, `token_count`, `chunker_version`, access policy và provenance citation/metadata.
+  - `app/agentic/contracts/chunk.py`: `DocumentChunk` là output contract retrieval-ready cho chunk stage.
+  - `tests/unit/ai/test_chunking.py`: test chunking PDF và DOCX normalized input, verify token budget + citation/provenance retention + adapter fallback.
+  - `app/agentic/contracts/document.py`: `NormalizedDocument`/`ContentBlock`/`CitationMetadata` là input chuẩn hóa cho chunking.
 
   **Việc cần làm**:
-  - Chia normalized content thành chunk retrieval-ready
-  - Giữ document/page/section/title provenance trong từng chunk
-  - Version hóa chunking strategy
-  - Đảm bảo citation còn dùng được sau chunking
+  - Chia normalized content thành chunk retrieval-ready theo **token budget**, không chỉ theo ký tự.
+  - Giữ document/page/section/title provenance trong từng chunk.
+  - Version hóa chunking strategy và lưu `token_count`/`chunker_version`.
+  - Đảm bảo citation còn dùng được sau chunking.
+  - Chốt tokenizer policy dùng cho chunk sizing để cùng chuẩn với model strategy của MVP.
+  - Thiết kế ngưỡng chunk overlap / max chunk tokens / max evidence tokens cho retrieval sau này.
 
   **Không được làm**:
   - Không embed/retrieve ở task này
@@ -657,9 +768,11 @@ F4. Scope fidelity check
   - `tests/unit/ai/test_chunking.py`
 
   **Acceptance Criteria**:
-  - [ ] Chunk có content, chunk_id, document_id, citation metadata.
-  - [ ] Chunking có version/config.
-  - [ ] Provenance đủ để cite page/section sau retrieval.
+  - [x] Chunk có content, chunk_id, document_id, citation metadata.
+  - [x] Chunking có version/config.
+  - [x] Provenance đủ để cite page/section sau retrieval.
+  - [x] Mỗi chunk có `token_count`, `chunker_version`, và token budget config rõ ràng.
+  - [x] Chunking vượt threshold phải split theo token-aware policy, không chỉ theo character count.
 
   **QA Scenarios**:
   ```
@@ -687,7 +800,16 @@ F4. Scope fidelity check
   - Message: `feat(rag): add chunking`
   - Pre-commit: chunking tests
 
-- [ ] 6. Implement access-policy tagging + deny-by-default
+- [x] 6. Implement access-policy tagging + deny-by-default
+
+  **Trạng thái**: DONE — đã triển khai fail-closed access-control primitives.
+
+  **Bằng chứng implementation**:
+  - `app/agentic/access_control/__init__.py`: public API cho access-control layer.
+  - `app/agentic/access_control/resolve_policy.py`: resolve `AccessPolicyMetadata` từ `NormalizedDocument`, `DocumentChunk`, `DocumentRecord`; thiếu policy raise controlled error.
+  - `app/agentic/access_control/evaluate_access.py`: `evaluate_access()` fail-closed, hỗ trợ global, role, department và deny rõ ràng cho unsupported owner/manager placeholder.
+  - `app/agentic/access_control/build_retrieval_filter.py`: tạo adapter-neutral `RetrievalFilterExpression` cho global/role/department prefilter.
+  - `tests/unit/ai/test_access_control.py`: test allow department, deny missing policy, và filter role/global semantics.
 
   **Việc cần làm**:
   - Gắn access policy metadata vào document/chunk
@@ -727,9 +849,9 @@ F4. Scope fidelity check
   - `tests/unit/ai/test_access_control.py`
 
   **Acceptance Criteria**:
-  - [ ] Chunk thiếu access metadata không retrievable.
-  - [ ] Access evaluator hỗ trợ ít nhất admin/global, department-scoped, owner-only.
-  - [ ] Access evaluator trả reason code allow/deny rõ ràng.
+  - [x] Chunk thiếu access metadata không retrievable.
+  - [x] Access evaluator hỗ trợ ít nhất admin/global, department-scoped, owner-only placeholder.
+  - [x] Access evaluator trả reason code allow/deny rõ ràng.
 
   **QA Scenarios**:
   ```
@@ -756,16 +878,34 @@ F4. Scope fidelity check
   - Message: `feat(rag): add access control`
   - Pre-commit: access-control tests
 
-- [ ] 7. Implement indexing/storage abstraction
+- [x] 7. Implement indexing/storage abstraction
+
+  **Trạng thái**: DONE — đã triển khai indexing/storage boundary và nối sang backend pgvector/PostgreSQL thật.
+
+  **Bằng chứng implementation**:
+  - `app/agentic/indexing/__init__.py`: public indexing API.
+  - `app/agentic/indexing/index_status.py`: `IndexStatus` và `IndexRecord` lưu parser/chunker/index/policy versions, token_count, trạng thái active/stale-like metadata.
+  - `app/agentic/indexing/index_document.py`: protocols cho document storage, chunk storage, embedding provider, vector store; `index_document()` tạo `DocumentRecord` + `IndexRecord` stable/idempotent-friendly.
+  - `app/agentic/adapters/storage/__init__.py` và `base.py`: adapter boundary cho document/chunk storage.
+  - `app/agentic/adapters/storage/local_storage.py`: local in-memory concrete adapters cho document/chunk persistence với stable key theo `document_id` / `chunk_id`.
+  - `app/agentic/adapters/storage/sqlalchemy_storage.py`: concrete async SQLAlchemy adapters cho document/chunk persistence trên PostgreSQL.
+  - `app/agentic/adapters/vector_store/pgvector_store.py`: pgvector-backed embedding persistence adapter.
+  - `app/infrastructure/database/models/agentic_document_model.py`, `agentic_chunk_model.py`, `agentic_chunk_embedding_model.py`: ORM models cho 3 bảng agentic.
+  - `alembic/versions/2c9f3f7b8e21_create_agentic_pgvector_tables.py`: tạo extension `vector`, 3 bảng, JSONB/GIN indexes, và HNSW vector index.
+  - `tests/unit/ai/test_indexing.py` và `tests/unit/ai/test_pgvector_storage.py`: test persist stable identity, retry-safe upsert, và embedding-dimension validation.
+  - Docker verification: `docker-compose.yml` dùng `pgvector/pgvector:pg16`; migration chạy thành công trên container `masterop_db`; `vector` extension, 3 tables, và indexes đã được xác nhận tồn tại trong Postgres.
 
   **Việc cần làm**:
-  - Tạo abstraction cho document storage / chunk storage / vector index reference
-  - Chốt default v1 nhưng vẫn có adapter boundary
-  - Lưu parser/chunker/index versions và indexing status
-  - Bảo đảm retry-safe, không duplicate chunk identity
+  - Tạo abstraction cho document storage / chunk storage / vector index reference.
+  - Chốt default MVP với đúng **một concrete adapter cho mỗi capability liên quan** và vẫn có adapter boundary.
+  - Lưu parser/chunker/index versions, `policy_version`, `index_version`, và indexing status.
+  - Bảo đảm retry-safe, không duplicate chunk identity, và hỗ trợ re-index idempotent.
+  - Ưu tiên adapter mặc định đơn giản, local/dev-friendly; không mở matrix nhiều provider trong MVP.
+  - Đảm bảo vector metadata/index state hỗ trợ lookup theo `chunk_id`, `document_id`, `token_count`, `source_type`, `mime_type`.
 
   **Không được làm**:
   - Không build nhiều backend production cùng lúc trong v1
+  - Không implement nhiều concrete adapters cho cùng một capability trong MVP
   - Không lưu chunk retrievable mà thiếu access metadata
   - Không để indexing status bị ẩn khỏi pipeline
 
@@ -791,23 +931,21 @@ F4. Scope fidelity check
   - `app/agentic/adapters/storage/__init__.py`
   - `app/agentic/adapters/storage/base.py`
   - `app/agentic/adapters/storage/local_storage.py`
-  - `app/agentic/adapters/storage/s3_storage.py`
-  - `app/agentic/adapters/storage/minio_storage.py`
   - `app/agentic/adapters/vector_store/__init__.py`
   - `app/agentic/adapters/vector_store/base.py`
-  - `app/agentic/adapters/vector_store/pgvector_store.py`
-  - `app/agentic/adapters/vector_store/qdrant_store.py`
-  - `app/agentic/adapters/vector_store/weaviate_store.py`
+  - `app/agentic/adapters/vector_store/default_vector_store.py`
   - `app/agentic/adapters/embeddings/__init__.py`
   - `app/agentic/adapters/embeddings/base.py`
-  - `app/agentic/adapters/embeddings/openai_embeddings.py`
-  - `app/agentic/adapters/embeddings/local_embeddings.py`
+  - `app/agentic/adapters/embeddings/default_embeddings.py`
   - `tests/unit/ai/test_indexing.py`
 
   **Acceptance Criteria**:
-  - [ ] Document/chunk persist được với stable id.
-  - [ ] Có indexing status và version metadata.
-  - [ ] Retry indexing không tạo duplicate record.
+  - [x] Document/chunk persist được với stable id.
+  - [x] Có indexing status và version metadata.
+  - [x] Retry indexing không tạo duplicate record.
+  - [x] Embedding adapter và vector store adapter tách biệt với answer LLM adapter.
+  - [x] Indexed metadata có `token_count`, `policy_version`, `index_version`, và active/stale state.
+  - [x] Re-index cùng document/version không làm stale chunk retrievable trong local adapter MVP.
 
   **QA Scenarios**:
   ```
@@ -838,10 +976,15 @@ F4. Scope fidelity check
 - [ ] 8. Implement role-aware retrieval
 
   **Việc cần làm**:
-  - Implement retrieval dùng metadata filters từ access control
-  - Retrieval chỉ trả evidence đã được phép
-  - Trả về evidence bundle có citation hoặc deny/no-evidence semantics
-  - Tách retrieval khỏi answer generation
+  - Implement retrieval dùng metadata filters từ access control.
+  - Retrieval chỉ trả evidence đã được phép.
+  - Trả về evidence bundle có citation hoặc deny/no-evidence semantics.
+  - Tách retrieval khỏi answer generation.
+  - Hỗ trợ lookup/fetch-by-chunk-id cho các `last_cited_chunk_ids` từ session memory, nhưng luôn re-check access policy trước khi trả evidence.
+  - Chừa điểm cắm cho retrieval cache có phân quyền nếu sau này bật Redis cache layer.
+  - Thiết lập mặc định cho `top_k`, similarity threshold, max evidence tokens, và filter ordering.
+  - Cho phép rerank lightweight/rule-based sau filter nhưng trước khi dựng evidence bundle.
+  - Không cho chunk dưới threshold hoặc ngoài budget đi vào context cuối.
 
   **Không được làm**:
   - Không cho unauthorized chunks vào LLM context
@@ -874,6 +1017,10 @@ F4. Scope fidelity check
   - [ ] User hợp lệ chỉ lấy được chunk được phép.
   - [ ] User không hợp lệ không lấy được restricted chunk.
   - [ ] Retrieval response có citation hoặc deny/no-evidence rõ ràng.
+  - [ ] Fetch-by-chunk-id từ session memory vẫn re-check quyền và không trả stale/unauthorized chunk.
+  - [ ] Retrieval dùng `top_k`, score threshold, max evidence tokens, và config filter ordering.
+  - [ ] Không chunk nào ngoài budget/threshold được đưa vào evidence bundle cuối.
+  - [ ] Rerank MVP không dùng LLM và luôn chạy sau access filtering.
 
   **QA Scenarios**:
   ```
@@ -902,24 +1049,49 @@ F4. Scope fidelity check
   - Message: `feat(rag): add role-aware retrieval`
   - Pre-commit: retrieval tests
 
-- [ ] 9. Implement LangGraph query flow cố định
+- [ ] 9. Implement LangGraph query flow + checkpoint/session memory with stable `thread_id`
 
   **Việc cần làm**:
-  - Tạo `rag_graph.py` và các node trong `orchestration/nodes/`
-  - LangGraph state phải explicit, serializable
+  - Tạo `rag_graph.py` và các node trong `orchestration/nodes/`.
+  - LangGraph state phải explicit, serializable.
+  - Graph invoke phải truyền `configurable.thread_id` ổn định cho mỗi conversation/session.
   - Flow tối thiểu:
     - load user context
     - classify query
-    - retrieve evidence
+    - hydrate checkpoint/session state từ `thread_id`
+    - rewrite follow-up query bằng `topic_summary` / recent turns khi query phụ thuộc ngữ cảnh
+    - ưu tiên fetch-by-chunk-id nếu session state có `last_cited_chunk_ids` phù hợp
+    - fallback sang vector retrieval khi không đủ cited chunk refs hoặc cần evidence mới
     - validate policy/no-evidence
     - generate answer
+    - update checkpoint/session state bằng summary + cited refs + status an toàn
     - audit event
+  - Query rewrite chỉ làm rõ intent, không tạo factual answer và không mở rộng scope.
+  - Query ngoài phạm vi tài liệu indexed phải trả `unsupported_scope` hoặc `insufficient_evidence`.
+  - Answer generation phải dùng model tách biệt với embedding model.
+  - Prompt/context budget phải được quản lý riêng trong graph trước khi gọi answer model.
   - Có conditional branch cho deny và no-evidence
+  - Session memory chỉ dùng làm context phụ trợ, không thay thế retrieval/citation
+  - Memory record tối thiểu gồm: `thread_id`, `session_id`, `user_id`, `topic_summary`, `recent_turns`, `last_answer_status`, `last_cited_documents`, `last_cited_chunk_ids`, `policy_version`, `index_version`, `expires_at`
+  - **Checkpoint backend (MVP)**:
+    - Default production/backend: PostgreSQL checkpointer
+    - Default dev/test local: `InMemorySaver`
+    - Redis là backend tùy chọn cho checkpoint/session cache; không bắt buộc cho semantics của graph state
+    - Nếu dùng PostgreSQL backend, checkpoint rows phải key theo `thread_id` và có invalidation theo `policy_version` / `index_version`
+    - Nếu dùng Redis, key phải permission-aware: `rag:session:{user_id}:{thread_id}`
+    - Value fields: `thread_id`, `session_id`, `user_id`, `topic_summary`, `recent_turns`, `last_answer_status`, `last_cited_documents`, `last_cited_chunk_ids`, `policy_version`, `index_version`, `expires_at`
+    - TTL: default short-lived TTL; refresh khi session còn active, hard-expire khi hết hạn
+    - Invalidation: bỏ qua state cũ khi `policy_version` hoặc `index_version` thay đổi, hoặc khi user/session không khớp
+    - Security rule: không lưu raw restricted chunk text hay evidence đầy đủ; chỉ lưu metadata + refs đủ để rewrite/fetch-by-id an toàn
 
   **Không được làm**:
   - Không để LangGraph node ôm business logic quá dày
   - Không bỏ qua authorization checks trong graph
   - Không trộn ingestion pipeline vào query graph runtime
+  - Không dùng session memory làm evidence hoặc nguồn trả lời không citation
+  - Không lưu raw restricted chunk text dài hạn trong Redis/session memory
+  - Không route sang DB/API/backend tools trong MVP
+  - Query ngoài phạm vi tài liệu indexed phải trả insufficient evidence hoặc unsupported scope
 
   **Recommended Agent Profile**:
   - **Category**: `deep`
@@ -944,17 +1116,39 @@ F4. Scope fidelity check
   - `app/agentic/orchestration/nodes/__init__.py`
   - `app/agentic/orchestration/nodes/load_user_context.py`
   - `app/agentic/orchestration/nodes/classify_query.py`
+  - `app/agentic/orchestration/nodes/route_query.py`
   - `app/agentic/orchestration/nodes/retrieve_evidence.py`
   - `app/agentic/orchestration/nodes/validate_policy.py`
   - `app/agentic/orchestration/nodes/generate_answer.py`
   - `app/agentic/orchestration/nodes/deny_request.py`
   - `app/agentic/orchestration/nodes/audit_event.py`
+  - `app/agentic/memory/__init__.py`
+  - `app/agentic/memory/memory_policy.py`
+  - `app/agentic/memory/session_memory.py`
+  - `app/agentic/memory/memory_summary.py`
+  - `app/agentic/memory/checkpoint_policy.py`
+  - `app/agentic/adapters/checkpoint/__init__.py`
+  - `app/agentic/adapters/checkpoint/base.py`
+  - `app/agentic/adapters/checkpoint/inmemory_checkpointer.py`
+  - `app/agentic/adapters/checkpoint/postgres_checkpointer.py`
+  - `app/agentic/adapters/checkpoint/redis_checkpointer.py` (optional backend, defer after MVP if PostgreSQL backend đủ)
+  - `tests/unit/ai/test_session_memory.py`
+  - `tests/unit/ai/test_checkpoint_policy.py`
   - `tests/integration/ai/test_graph_flow.py`
 
   **Acceptance Criteria**:
   - [ ] Query chạy qua đúng các stage của graph.
   - [ ] Graph branch đúng ở deny/no-evidence.
   - [ ] Graph state inspect/debug được.
+  - [ ] Graph dùng `thread_id` ổn định để hydrate và persist checkpoint/session state giữa nhiều lượt chat.
+  - [ ] Session/checkpoint memory có TTL, giới hạn số turn/summary size nếu backend hỗ trợ, và key theo user/thread/policy context.
+  - [ ] Session/checkpoint record tối thiểu có `topic_summary`, `last_cited_chunk_ids`, `last_cited_documents`, `last_answer_status`, `policy_version`, `index_version`.
+  - [ ] Nếu dùng Redis backend, key dùng format `rag:session:{user_id}:{thread_id}` và state bị bỏ qua khi `policy_version`/`index_version` không khớp.
+  - [ ] Follow-up query có thể được rewrite từ session context; khi có cited refs phù hợp thì ưu tiên fetch-by-id trước, không phù hợp thì fallback sang vector retrieval.
+  - [ ] Query ngoài phạm vi tài liệu indexed trả `unsupported_scope` hoặc `insufficient_evidence`, không route sang DB/API tool.
+  - [ ] Session/checkpoint memory chỉ bổ sung context phụ trợ; answer vẫn phải có authorized evidence/citation hoặc explicit deny/no-evidence.
+  - [ ] Graph quản lý prompt/context token budget trước khi gọi answer LLM.
+  - [ ] Query rewrite lưu cả original query và rewritten query để audit/debug, không sinh factual answer.
 
   **QA Scenarios**:
   ```
@@ -977,6 +1171,38 @@ F4. Scope fidelity check
       3. Assert answer node không nhận restricted chunks.
     Expected Result: Graph fail closed khi deny.
     Evidence: .omo/evidence/task-9-deny-branch.txt
+
+  Scenario: session memory được hydrate nhưng không bypass retrieval
+    Tool: Bash / project test runner
+    Preconditions: Có session trước đó chứa summary ngắn và query follow-up hợp lệ.
+    Steps:
+      1. Ghi session memory cho `user_id/session_id` với `topic_summary`, `last_cited_documents`, `last_cited_chunk_ids` và `policy_version/index_version` tham chiếu tới một tài liệu đã hỏi trước đó.
+      2. Chạy follow-up query qua graph.
+      3. Assert graph dùng session memory để rewrite/ngầm làm rõ query và vẫn tạo evidence bundle hợp lệ.
+      4. Assert output cuối vẫn có citation từ evidence hiện tại.
+    Expected Result: Session memory chỉ giúp continuity, không thay evidence.
+    Evidence: .omo/evidence/task-9-session-context.txt
+
+  Scenario: session memory hết TTL thì graph vẫn hoạt động an toàn
+    Tool: Bash / project test runner
+    Preconditions: Có session memory đã expire hoặc không tồn tại.
+    Steps:
+      1. Chạy follow-up query khi session memory đã hết TTL.
+      2. Assert graph không crash và fallback về flow retrieval chuẩn.
+      3. Assert không có dữ liệu session cũ bị dùng lại.
+    Expected Result: Hết TTL không làm sai quyền hoặc sai ngữ cảnh.
+    Evidence: .omo/evidence/task-9-session-ttl.txt
+
+  Scenario: cited chunk refs hợp lệ được ưu tiên fetch-by-id trước vector search
+    Tool: Bash / project test runner
+    Preconditions: Có session memory chứa `last_cited_chunk_ids` hợp lệ và user vẫn trong đúng scope.
+    Steps:
+      1. Chạy follow-up query kiểu "giải thích kỹ hơn đoạn đó".
+      2. Assert graph thử lookup/fetch các cited chunk ids trước.
+      3. Assert nếu evidence từ cited refs đủ thì không cần vector search rộng.
+      4. Assert nếu cited refs không đủ hoặc stale thì graph fallback sang vector retrieval.
+    Expected Result: Cơ chế memory tối ưu retrieval nhưng vẫn an toàn và grounded.
+    Evidence: .omo/evidence/task-9-fetch-by-id.txt
   ```
 
   **Commit**: YES
@@ -986,12 +1212,17 @@ F4. Scope fidelity check
 - [ ] 10. Implement answer generation + citation enforcement
 
   **Việc cần làm**:
-  - Tạo answer generator chỉ dùng authorized evidence bundles
-  - Bắt buộc citation trong câu trả lời
+  - Tạo answer generator chỉ dùng authorized evidence bundles.
+  - Bắt buộc citation trong câu trả lời.
   - Có explicit response cho:
     - insufficient evidence
     - insufficient permission
-  - Giữ generation tách khỏi retrieval/policy
+    - unsupported scope
+  - Giữ generation tách khỏi retrieval/policy.
+  - Cho phép dùng session summary để làm rõ follow-up wording, nhưng factual claims chỉ được lấy từ authorized evidence bundle.
+  - Validate citation ids/page/section metadata trước khi return response.
+  - Chốt answer LLM riêng, tách khỏi embedding model và auxiliary model.
+  - Tôn trọng output token reserve và context budget trước khi sinh câu trả lời.
 
   **Không được làm**:
   - Không trả lời bằng “trí nhớ” không citation
@@ -1020,15 +1251,18 @@ F4. Scope fidelity check
   - `app/agentic/generation/prompts.py`
   - `app/agentic/adapters/llm/__init__.py`
   - `app/agentic/adapters/llm/base.py`
-  - `app/agentic/adapters/llm/openai_llm.py`
-  - `app/agentic/adapters/llm/anthropic_llm.py`
-  - `app/agentic/adapters/llm/local_llm.py`
+  - `app/agentic/adapters/llm/default_llm.py`
   - `tests/unit/ai/test_generation.py`
 
   **Acceptance Criteria**:
   - [ ] Answer có citation từ authorized sources.
   - [ ] Query thiếu evidence trả explicit insufficient-evidence.
   - [ ] Query thiếu quyền trả explicit insufficient-permission.
+  - [ ] Session summary có thể hỗ trợ rewrite/follow-up wording nhưng không tạo ra factual claim ngoài evidence bundle.
+  - [ ] Query yêu cầu dữ liệu ngoài indexed evidence, ví dụ dữ liệu DB realtime/reporting, phải trả unsupported scope hoặc insufficient evidence trong MVP.
+  - [ ] Citation validator reject citation không nằm trong authorized evidence bundle.
+  - [ ] Answer LLM config tách biệt với embedding model config.
+  - [ ] Output token reserve và max context tokens được enforce trước khi gọi LLM.
 
   **QA Scenarios**:
   ```
@@ -1065,12 +1299,15 @@ F4. Scope fidelity check
     - retrieval access
     - deny
     - answer generation summary
+    - session memory write/expire nếu có
   - Ghi lại:
     - user
     - source/document
     - decision
     - timestamp
+    - memory policy / TTL summary khi liên quan
   - Không log raw restricted content mặc định
+  - Không dùng session memory làm nguồn audit thay cho DB audit
 
   **Không được làm**:
   - Không bỏ qua deny events
@@ -1101,6 +1338,7 @@ F4. Scope fidelity check
   - [ ] Ingest/retrieve/deny events đều được log.
   - [ ] Log có user, source/document, decision, timestamp.
   - [ ] Không log sensitive payload mặc định.
+  - [ ] Session memory write/expire events (nếu có) chỉ log metadata an toàn, không log raw restricted content.
 
   **QA Scenarios**:
   ```
@@ -1136,6 +1374,8 @@ F4. Scope fidelity check
   - Thêm redaction helper để không gửi raw restricted content, PII, salary/legal/security-sensitive data lên LangSmith mặc định.
   - Trace các nhánh answered / denied / insufficient_evidence để debug graph flow.
   - Tách rõ LangSmith observability khỏi audit log nội bộ.
+  - Đảm bảo telemetry mặc định chỉ nhận metadata đã redact, không nhận raw prompt/evidence trừ khi bật debug có kiểm soát.
+  - Cung cấp cờ config bật/tắt tracing riêng, không ảnh hưởng logic production.
 
   **Không được làm**:
   - Không dùng LangSmith thay audit log nội bộ.
@@ -1172,8 +1412,11 @@ F4. Scope fidelity check
   **Acceptance Criteria**:
   - [ ] LangSmith tracing có thể bật/tắt qua config.
   - [ ] LangGraph run trace ghi nhận node flow, branch, answer status, latency, retrieval/filter counts.
+  - [ ] Trace payload mặc định không chứa raw restricted chunks, PII, hoặc full prompt.
+  - [ ] Redaction helper có test cho prompt/evidence/memory metadata.
   - [ ] Redaction mặc định không gửi raw restricted content hoặc PII lên LangSmith.
   - [ ] Audit log nội bộ vẫn tồn tại độc lập và không phụ thuộc LangSmith.
+  - [ ] Trace metadata cho session memory chỉ ở mức `session_id`/TTL/turn count an toàn, không chứa raw sensitive content mặc định.
 
   **QA Scenarios**:
   ```
@@ -1211,12 +1454,14 @@ F4. Scope fidelity check
     - PPTX
     - Notion
     - Confluence
-    - DB/API records
+    - DB/API records (deferred after MVP)
     - model provider mới
     - vector DB mới
     - storage backend mới
-  - Document rõ cách một adapter mới cắm vào pipeline
-  - Bảo đảm thêm source/adapter mới không cần sửa contract lõi
+    - session/memory store mới
+    - tool mới cho query DB/reporting (deferred after MVP)
+  - Document rõ cách một adapter/tool mới cắm vào pipeline
+  - Bảo đảm thêm source/adapter/memory store/tool mới không cần sửa contract lõi
 
   **Không được làm**:
   - Không implement future connectors ở v1
@@ -1248,6 +1493,8 @@ F4. Scope fidelity check
   - [ ] Source/adapter mới có thể được thêm qua boundary đã định nghĩa.
   - [ ] Pipeline stages giữ nguyên khi thêm source mới.
   - [ ] Có tài liệu/interface note chỉ rõ điểm cắm adapter mới.
+  - [ ] Có guideline rõ để thêm session/memory store mới mà không đổi LangGraph flow hoặc retrieval policy lõi.
+  - [ ] Có ghi chú deferred rằng DB/API tools sau MVP phải đi qua whitelist và không dùng raw SQL từ graph.
 
   **QA Scenarios**:
   ```
@@ -1268,6 +1515,16 @@ F4. Scope fidelity check
       2. Assert chỉ PDF/DOCX active mặc định trong v1.
     Expected Result: Future adapters chưa bị activate.
     Evidence: .omo/evidence/task-13-v1-scope.txt
+
+  Scenario: memory store mới cắm được qua boundary mà không đổi core flow
+    Tool: Bash / project test runner
+    Preconditions: Có mock session store theo interface memory/session adapter.
+    Steps:
+      1. Tạo mock session store mới theo interface đã định nghĩa.
+      2. Gắn mock store vào graph/session layer.
+      3. Assert LangGraph flow và retrieval policy lõi không phải sửa.
+    Expected Result: Memory layer mở rộng được mà không phá core pipeline.
+    Evidence: .omo/evidence/task-13-memory-boundary.txt
   ```
 
   **Commit**: YES
@@ -1290,12 +1547,13 @@ F4. Scope fidelity check
   Output: `Pipeline Stages [N/N] | Evidence [N/N] | VERDICT: APPROVE/REJECT`
 
 - [ ] F2. **Kiểm tra authorization leak** — `unspecified-high`
-  Test với identity kiểu admin/manager/employee. Xác minh unauthorized user không retrieve được chunk restricted và không leak qua answer text, citations, logs, metadata.
+  Test với identity kiểu admin/manager/employee. Xác minh unauthorized user không retrieve được chunk restricted và không leak qua answer text, citations, logs, metadata, session memory hoặc Redis cache/session layer.
 
   **Acceptance Criteria**:
   - [ ] Authorized identity chỉ thấy chunk trong scope.
   - [ ] Unauthorized identity không thấy restricted content ở bất kỳ output nào.
   - [ ] Tất cả deny path đều có reason và audit event.
+  - [ ] Session memory/cache không bypass retrieval-time authorization hoặc citation enforcement.
 
   Output: `Access Tests [N/N] | Leak Checks [N/N] | VERDICT: APPROVE/REJECT`
 
@@ -1310,7 +1568,7 @@ F4. Scope fidelity check
   Output: `Tests [PASS/FAIL] | Build [PASS/FAIL] | Quality [PASS/FAIL] | VERDICT`
 
 - [ ] F4. **Kiểm tra fidelity với scope đã chốt** — `deep`
-  So sánh implementation với plan này. Xác minh v1 vẫn chỉ PDF/DOCX, LangGraph vẫn fixed, các adapter khác vẫn replaceable, không creep sang OCR/Notion/XLSX/DB hoặc CRUD/admin không liên quan.
+  So sánh implementation với plan này. Xác minh v1 vẫn chỉ PDF/DOCX, LangGraph vẫn fixed, các adapter khác vẫn replaceable, không creep sang OCR/Notion/XLSX/DB hoặc CRUD/admin không liên quan, và DB/tool layer vẫn là deferred item ngoài MVP.
 
   **Acceptance Criteria**:
   - [ ] Active adapters của v1 chỉ là PDF text-based và DOCX.
@@ -1330,6 +1588,16 @@ F4. Scope fidelity check
 
 ---
 
+## Deferred after MVP
+
+- DB/tool layer cho action history, snapshot và aggregation
+- DB/API record sources
+- Tool routing trong LangGraph
+- Query whitelist/use-case layer cho backend nghiệp vụ
+- OCR, XLSX, PPTX, Notion, Confluence
+
+---
+
 ## Success Criteria
 
 ### Verification Commands
@@ -1338,10 +1606,11 @@ F4. Scope fidelity check
 ```
 
 ### Final Checklist
-- [ ] PDF/DOCX ingest end-to-end
-- [ ] Role-aware retrieval chặn unauthorized content
-- [ ] LangGraph là orchestration fixed choice
-- [ ] Model/vector DB/parser/storage đổi được qua adapter/config
-- [ ] Answer luôn có citation hoặc deny/no-evidence rõ ràng
-- [ ] Audit log ghi lại access decisions
-- [ ] LangSmith trace/debug layer hoạt động với redaction và không thay audit log nội bộ
+- PDF/DOCX ingest end-to-end
+- Role-aware retrieval chặn unauthorized content
+- LangGraph là orchestration fixed choice
+- Model/vector DB/parser/storage đổi được qua adapter/config
+- Mỗi capability chính trong MVP chỉ có một concrete adapter mặc định.
+- Answer luôn có citation hoặc deny/no-evidence rõ ràng
+- Audit log ghi lại access decisions
+- LangSmith trace/debug layer hoạt động với redaction và không thay audit log nội bộ

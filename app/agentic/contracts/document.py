@@ -6,7 +6,7 @@ from enum import StrEnum
 from typing import Any, Literal
 from uuid import uuid4
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field
 
 from app.agentic.contracts.access_policy import AccessPolicyMetadata
 from app.agentic.contracts.source import SourceMetadata
@@ -29,6 +29,7 @@ class CitationMetadata(BaseModel):
 
     page_number: int | None = Field(default=None, ge=1)
     section_path: tuple[str, ...] = Field(default_factory=tuple)
+    block_anchor: str | None = Field(default=None, min_length=1)
 
 
 class ContentBlock(BaseModel):
