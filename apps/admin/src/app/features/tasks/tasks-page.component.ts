@@ -12,8 +12,13 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
+import { DepartmentResponse } from '../../models/rbac.models';
 import { TaskCreateRequest, TaskFilters, TaskResponse, TaskStatus, TaskUpdateRequest } from '../../models/task.models';
+import { UserListItem } from '../../models/user.models';
+import { AuthStoreService } from '../../services/auth-store.service';
+import { RbacApiService } from '../../services/rbac-api.service';
 import { TaskApiService } from '../../services/task-api.service';
+import { UserApiService } from '../../services/user-api.service';
 import { runAdminAsync } from '../../shared/async-state';
 import { ADMIN_DATE_FORMAT } from '../../shared/date-formats';
 import { ADMIN_PAGE_COMMON_STYLES } from '../../shared/admin-page-styles';
@@ -32,6 +37,8 @@ type TaskFormState = {
 	estimated_hours: number | null;
 };
 
+type SelectOption = { label: string; value: number };
+
 const STATUS_COLOR: Record<string, string> = { pending: 'orange', in_progress: 'blue', completed: 'green', cancelled: 'default' };
 const STATUS_LABEL: Record<string, string> = { pending: 'Chờ xử lý', in_progress: 'Đang thực hiện', completed: 'Hoàn thành', cancelled: 'Đã hủy' };
 const PRIORITY_OPTIONS = ['high', 'medium', 'low'] as const;
@@ -45,7 +52,7 @@ const EMPTY_TASK_FORM: TaskFormState = { task_code: '', title: '', description: 
 		<section class="page-root" data-testid="tasks-page">
 			<div class="page-header">
 				<div><p class="eyebrow">Operations</p><h2>Quản lý công việc</h2><p class="subtitle">Theo dõi và điều phối công việc trong tổ chức.</p></div>
-				<button nz-button nzType="primary" (click)="openCreateTask()" data-testid="create-task-btn"><span nz-icon nzType="plus"></span> Tạo công việc</button>
+				<button *ngIf="canCreateTask()" nz-button nzType="primary" (click)="openCreateTask()" data-testid="create-task-btn"><span nz-icon nzType="plus"></span> Tạo công việc</button>
 			</div>
 
 			<nz-card class="filter-card" [nzBordered]="false"><div class="filter-row">
@@ -66,7 +73,7 @@ const EMPTY_TASK_FORM: TaskFormState = { task_code: '', title: '', description: 
 						<button *ngIf="t.status === 'pending'" nz-button nzType="text" nzSize="small" (click)="action(t,'start')" nz-tooltip="Bắt đầu" class="action-primary" [attr.aria-label]="'Bắt đầu công việc ' + t.title" [attr.data-testid]="'start-task-'+t.id"><span nz-icon nzType="play-circle"></span></button>
 						<button *ngIf="t.status === 'in_progress'" nz-button nzType="text" nzSize="small" (click)="action(t,'complete')" nz-tooltip="Hoàn thành" class="action-success" [attr.aria-label]="'Hoàn thành công việc ' + t.title" [attr.data-testid]="'complete-task-'+t.id"><span nz-icon nzType="check-circle"></span></button>
 						<button *ngIf="t.status === 'pending' || t.status === 'in_progress'" nz-button nzDanger nzType="text" nzSize="small" (click)="action(t,'cancel')" nz-tooltip="Hủy" [attr.aria-label]="'Hủy công việc ' + t.title" [attr.data-testid]="'cancel-task-'+t.id"><span nz-icon nzType="close-circle"></span></button>
-						<button nz-button nzDanger nzType="text" nzSize="small" (click)="confirmDeleteTask(t)" nz-tooltip="Xóa" [attr.aria-label]="'Xóa công việc ' + t.title" [attr.data-testid]="'delete-task-'+t.id"><span nz-icon nzType="delete"></span></button>
+						<button *ngIf="canDeleteTask()" nz-button nzDanger nzType="text" nzSize="small" (click)="confirmDeleteTask(t)" nz-tooltip="Xóa" [attr.aria-label]="'Xóa công việc ' + t.title" [attr.data-testid]="'delete-task-'+t.id"><span nz-icon nzType="delete"></span></button>
 					</td></tr></tbody>
 				</nz-table>
 			</nz-card>
@@ -76,8 +83,8 @@ const EMPTY_TASK_FORM: TaskFormState = { task_code: '', title: '', description: 
 				<label class="form-field"><span>Tiêu đề *</span><input nz-input [(ngModel)]="taskForm.title" data-testid="task-form-title" /></label>
 				<label class="form-field field-span-2"><span>Mô tả</span><textarea nz-input rows="3" [(ngModel)]="taskForm.description" data-testid="task-form-description"></textarea></label>
 				<label class="form-field"><span>Ưu tiên</span><nz-select [(ngModel)]="taskForm.priority" nzAllowClear nzPlaceHolder="Chọn ưu tiên" data-testid="task-form-priority"><nz-option *ngFor="let priority of priorityOptions" [nzValue]="priority" [nzLabel]="priority"></nz-option></nz-select></label>
-				<label class="form-field"><span>Người thực hiện</span><input nz-input type="number" [(ngModel)]="taskForm.assignee_id" data-testid="task-form-assignee" /></label>
-				<label class="form-field"><span>Phòng ban</span><input nz-input type="number" [(ngModel)]="taskForm.department_id" data-testid="task-form-department" /></label>
+				<label class="form-field"><span>Người thực hiện</span><nz-select [(ngModel)]="taskForm.assignee_id" nzAllowClear nzShowSearch nzPlaceHolder="Chọn người thực hiện" [nzLoading]="usersLoading()" [nzNotFoundContent]="usersLoading() ? 'Đang tải người dùng...' : 'Không có người dùng phù hợp'" data-testid="task-form-assignee"><nz-option *ngFor="let user of assigneeOptions()" [nzValue]="user.value" [nzLabel]="user.label"></nz-option></nz-select></label>
+				<label class="form-field"><span>Phòng ban</span><nz-select [(ngModel)]="taskForm.department_id" nzAllowClear nzShowSearch nzPlaceHolder="Chọn phòng ban" [nzLoading]="departmentsLoading()" [nzNotFoundContent]="departmentsLoading() ? 'Đang tải phòng ban...' : 'Không có phòng ban phù hợp'" data-testid="task-form-department"><nz-option *ngFor="let department of departmentOptions()" [nzValue]="department.value" [nzLabel]="department.label"></nz-option></nz-select></label>
 				<label class="form-field"><span>Ngày bắt đầu</span><input nz-input type="date" [(ngModel)]="taskForm.start_date" data-testid="task-form-start-date" /></label>
 				<label class="form-field"><span>Hạn chót</span><input nz-input type="date" [(ngModel)]="taskForm.due_date" data-testid="task-form-due-date" /></label>
 				<label class="form-field"><span>Giờ ước tính</span><input nz-input type="number" [(ngModel)]="taskForm.estimated_hours" data-testid="task-form-estimated-hours" /></label>
@@ -85,7 +92,7 @@ const EMPTY_TASK_FORM: TaskFormState = { task_code: '', title: '', description: 
 
 			<nz-modal [(nzVisible)]="showDetailModal" nzTitle="Chi tiết công việc" (nzOnCancel)="showDetailModal = false" [nzFooter]="null" data-testid="task-detail-modal"><ng-container *nzModalContent><nz-descriptions *ngIf="selectedTask() as task" nzSize="small" [nzColumn]="1" nzBordered><nz-descriptions-item nzTitle="Mã công việc">{{ task.task_code || '—' }}</nz-descriptions-item><nz-descriptions-item nzTitle="Tiêu đề">{{ task.title }}</nz-descriptions-item><nz-descriptions-item nzTitle="Trạng thái">{{ statusLabel(task.status) }}</nz-descriptions-item><nz-descriptions-item nzTitle="Ưu tiên">{{ task.priority || '—' }}</nz-descriptions-item><nz-descriptions-item nzTitle="Người thực hiện">{{ task.assignee_name || (task.assignee_id ? ('ID: ' + task.assignee_id) : '—') }}</nz-descriptions-item><nz-descriptions-item nzTitle="Phòng ban">{{ task.department_id || '—' }}</nz-descriptions-item><nz-descriptions-item nzTitle="Ngày bắt đầu">{{ task.start_date ? (task.start_date | date:ADMIN_DATE_FORMAT) : '—' }}</nz-descriptions-item><nz-descriptions-item nzTitle="Hạn chót">{{ task.due_date ? (task.due_date | date:ADMIN_DATE_FORMAT) : '—' }}</nz-descriptions-item><nz-descriptions-item nzTitle="Giờ ước tính">{{ task.estimated_hours ?? '—' }}</nz-descriptions-item><nz-descriptions-item nzTitle="Mô tả">{{ task.description || '—' }}</nz-descriptions-item></nz-descriptions></ng-container></nz-modal>
 
-			<nz-modal [(nzVisible)]="showAssignModal" nzTitle="Phân công công việc" (nzOnOk)="submitAssignTask()" (nzOnCancel)="closeAssignModal()" [nzOkLoading]="saving()" nzOkText="Lưu" data-testid="task-assign-modal"><ng-container *nzModalContent><p class="muted" style="margin-bottom:1rem">Cập nhật assignee cho <strong class="text-strong">{{ selectedTask()?.title }}</strong></p><label class="form-field"><span>Assignee ID *</span><input nz-input type="number" [(ngModel)]="assignAssigneeId" data-testid="task-assign-assignee" /></label></ng-container></nz-modal>
+			<nz-modal [(nzVisible)]="showAssignModal" nzTitle="Phân công công việc" (nzOnOk)="submitAssignTask()" (nzOnCancel)="closeAssignModal()" [nzOkLoading]="saving()" nzOkText="Lưu" data-testid="task-assign-modal"><ng-container *nzModalContent><p class="muted" style="margin-bottom:1rem">Cập nhật assignee cho <strong class="text-strong">{{ selectedTask()?.title }}</strong></p><label class="form-field"><span>Người thực hiện</span><nz-select [(ngModel)]="assignAssigneeId" nzAllowClear nzShowSearch nzPlaceHolder="Chọn người thực hiện" [nzLoading]="usersLoading()" [nzNotFoundContent]="usersLoading() ? 'Đang tải người dùng...' : 'Không có người dùng phù hợp'" data-testid="task-assign-assignee"><nz-option *ngFor="let user of assigneeOptions()" [nzValue]="user.value" [nzLabel]="user.label"></nz-option></nz-select></label></ng-container></nz-modal>
 		</section>
 	`,
 	styles: [ADMIN_PAGE_COMMON_STYLES, `
@@ -101,7 +108,14 @@ const EMPTY_TASK_FORM: TaskFormState = { task_code: '', title: '', description: 
 export class TasksPageComponent implements OnInit {
 	protected readonly ADMIN_DATE_FORMAT = ADMIN_DATE_FORMAT;
 	readonly priorityOptions = PRIORITY_OPTIONS;
+	readonly usersLoading = signal(false);
+	readonly departmentsLoading = signal(false);
+	readonly assigneeOptions = signal<SelectOption[]>([]);
+	readonly departmentOptions = signal<SelectOption[]>([]);
 	private readonly taskApi = inject(TaskApiService);
+	private readonly userApi = inject(UserApiService);
+	private readonly rbacApi = inject(RbacApiService);
+	private readonly authStore = inject(AuthStoreService);
 	private readonly message = inject(NzMessageService);
 	private readonly modal = inject(NzModalService);
 
@@ -119,7 +133,14 @@ export class TasksPageComponent implements OnInit {
 	taskForm: TaskFormState = { ...EMPTY_TASK_FORM };
 	assignAssigneeId: number | null = null;
 
-	ngOnInit(): void { this.load(); }
+	ngOnInit(): void {
+		this.loadOptions();
+		this.load();
+	}
+
+	async loadOptions(): Promise<void> {
+		await Promise.all([this.loadUsers(), this.loadDepartments()]);
+	}
 
 	async load(): Promise<void> {
 		await runAdminAsync(this.taskApi.listTasks(), {
@@ -132,7 +153,7 @@ export class TasksPageComponent implements OnInit {
 
 	applyFilters(): void { let list = this.all(); if (this.filters.status) list = list.filter(t => t.status === this.filters.status); this.filtered.set(list); }
 	resetFilters(): void { this.filters = {}; this.applyFilters(); }
-	openCreateTask(): void { this.formMode = 'create'; this.selectedTask.set(null); this.taskForm = { ...EMPTY_TASK_FORM }; this.showFormModal = true; }
+	openCreateTask(): void { if (!this.canCreateTask()) return; this.formMode = 'create'; this.selectedTask.set(null); this.taskForm = { ...EMPTY_TASK_FORM }; this.showFormModal = true; }
 	openEditTask(task: TaskResponse): void { this.formMode = 'edit'; this.selectedTask.set(task); this.taskForm = { task_code: task.task_code ?? '', title: task.title, description: task.description ?? '', priority: task.priority ?? '', assignee_id: task.assignee_id, department_id: task.department_id, start_date: task.start_date ?? '', due_date: task.due_date ?? '', estimated_hours: task.estimated_hours ?? null }; this.showFormModal = true; }
 	openTaskDetail(task: TaskResponse): void { this.selectedTask.set(task); this.showDetailModal = true; }
 	openAssignTask(task: TaskResponse): void { this.selectedTask.set(task); this.assignAssigneeId = task.assignee_id; this.showAssignModal = true; }
@@ -162,7 +183,7 @@ export class TasksPageComponent implements OnInit {
 	}
 
 	async submitAssignTask(): Promise<void> {
-		if (this.assignAssigneeId == null) { this.message.warning('Vui lòng nhập Assignee ID.'); return; }
+		if (this.assignAssigneeId == null) { this.message.warning('Vui lòng chọn người thực hiện.'); return; }
 		await runAdminAsync(this.taskApi.assignTask(this.selectedTask()!.id, this.assignAssigneeId), {
 			pending: this.saving,
 			fallbackMessage: 'Phân công task thất bại.',
@@ -176,12 +197,34 @@ export class TasksPageComponent implements OnInit {
 		});
 	}
 
-	confirmDeleteTask(task: TaskResponse): void { this.modal.confirm({ nzTitle: `Xóa task "${task.title}"?`, nzOkDanger: true, nzOkText: 'Xóa', nzOnOk: async () => { await runAdminAsync(this.taskApi.deleteTask(task.id), { fallbackMessage: 'Xóa task thất bại.', onSuccess: () => { this.all.update(list => list.filter(t => t.id !== task.id)); this.applyFilters(); this.message.success('Đã xóa task.'); }, onError: (feedback, message) => this.message.error(feedback.action === 'toast-only' ? feedback.message : message) }); } }); }
+	confirmDeleteTask(task: TaskResponse): void { if (!this.canDeleteTask()) return; this.modal.confirm({ nzTitle: `Xóa task "${task.title}"?`, nzOkDanger: true, nzOkText: 'Xóa', nzOnOk: async () => { await runAdminAsync(this.taskApi.deleteTask(task.id), { fallbackMessage: 'Xóa task thất bại.', onSuccess: () => { this.all.update(list => list.filter(t => t.id !== task.id)); this.applyFilters(); this.message.success('Đã xóa task.'); }, onError: (feedback, message) => this.message.error(feedback.action === 'toast-only' ? feedback.message : message) }); } }); }
 	action(task: TaskResponse, type: 'start' | 'complete' | 'cancel'): void { const labels = { start: 'Bắt đầu', complete: 'Hoàn thành', cancel: 'Hủy' }; this.modal.confirm({ nzTitle: `${labels[type]} task "${task.title}"?`, nzOkDanger: type === 'cancel', nzOkText: labels[type], nzOnOk: async () => { const request = type === 'start' ? this.taskApi.startTask(task.id) : type === 'complete' ? this.taskApi.completeTask(task.id) : this.taskApi.cancelTask(task.id); await runAdminAsync(request, { fallbackMessage: 'Thao tác thất bại.', onSuccess: (updated) => { this.upsert(updated); this.applyFilters(); this.message.success('Cập nhật thành công.'); }, onError: (feedback, message) => this.message.error(feedback.action === 'toast-only' ? feedback.message : message) }); } }); }
+	canCreateTask(): boolean { return this.authStore.hasPermission('create_task'); }
+	canDeleteTask(): boolean { return this.canCreateTask(); }
 	statusColor(s: TaskStatus): string { return STATUS_COLOR[s] ?? 'default'; }
 	statusLabel(s: TaskStatus): string { return STATUS_LABEL[s] ?? s; }
 	priorityColor(p: string): string { const m: Record<string, string> = { high: 'red', medium: 'orange', low: 'cyan' }; return m[p.toLowerCase()] ?? 'default'; }
 
+	private async loadUsers(): Promise<void> {
+		await runAdminAsync(this.userApi.listUsers({ is_active: true }), {
+			pending: this.usersLoading,
+			fallbackMessage: 'Không thể tải danh sách người thực hiện.',
+			onSuccess: (users) => this.assigneeOptions.set(users.map((user) => this.toUserOption(user))),
+			onError: (feedback, message) => this.message.error(feedback.action === 'toast-only' ? feedback.message : message)
+		});
+	}
+
+	private async loadDepartments(): Promise<void> {
+		await runAdminAsync(this.rbacApi.listDepartments(), {
+			pending: this.departmentsLoading,
+			fallbackMessage: 'Không thể tải danh sách phòng ban.',
+			onSuccess: (departments) => this.departmentOptions.set(departments.map((department) => this.toDepartmentOption(department))),
+			onError: (feedback, message) => this.message.error(feedback.action === 'toast-only' ? feedback.message : message)
+		});
+	}
+
+	private toUserOption(user: UserListItem): SelectOption { return { value: user.id, label: `${user.full_name} · ${user.employee_code}` }; }
+	private toDepartmentOption(department: DepartmentResponse): SelectOption { return { value: department.id, label: department.name }; }
 	private upsert(task: TaskResponse): void { this.all.update(list => list.map(t => t.id === task.id ? task : t)); }
 	private toCreatePayload(): TaskCreateRequest { return { task_code: this.taskForm.task_code.trim(), title: this.taskForm.title.trim(), description: this.taskForm.description.trim() || undefined, priority: this.taskForm.priority || undefined, assignee_id: this.taskForm.assignee_id ?? undefined, department_id: this.taskForm.department_id ?? undefined, start_date: this.taskForm.start_date || undefined, due_date: this.taskForm.due_date || undefined, estimated_hours: this.taskForm.estimated_hours ?? undefined }; }
 	private toUpdatePayload(): TaskUpdateRequest { return { title: this.taskForm.title.trim(), description: this.taskForm.description.trim() || undefined, priority: this.taskForm.priority || undefined, assignee_id: this.taskForm.assignee_id, department_id: this.taskForm.department_id, start_date: this.taskForm.start_date || undefined, due_date: this.taskForm.due_date || undefined, estimated_hours: this.taskForm.estimated_hours }; }

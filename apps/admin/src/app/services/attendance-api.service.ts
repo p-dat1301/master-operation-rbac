@@ -29,4 +29,13 @@ export class AttendanceApiService extends BaseApiService {
 
 		return this.http.get<AttendanceResponse[]>(this.buildUrl('/api/v1/attendance/heatmap'), { params });
 	}
+
+	checkin(location?: string): Observable<AttendanceResponse> {
+		return this.post<{ location?: string }, AttendanceResponse>('/api/v1/attendance/checkin', { location });
+	}
+
+	checkout(): Observable<AttendanceResponse> {
+		return this.post<Record<string, never>, AttendanceResponse>('/api/v1/attendance/checkout', {});
+	}
 }
+

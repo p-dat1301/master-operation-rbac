@@ -3,7 +3,7 @@ import { Inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { API_BASE_URL } from '../core/tokens/api-base-url.token';
-import { LeaveBalanceResponse, LeaveBalanceUpdatePayload, LeaveFilters, LeaveRequestResponse, LeaveReviewPayload, LeaveUpdatePayload } from '../models/leave.models';
+import { LeaveBalanceResponse, LeaveBalanceUpdatePayload, LeaveCreatePayload, LeaveFilters, LeaveRequestResponse, LeaveReviewPayload, LeaveUpdatePayload } from '../models/leave.models';
 import { BaseApiService } from './base-api.service';
 
 @Injectable({
@@ -21,6 +21,10 @@ export class LeaveApiService extends BaseApiService {
 		if (filters?.user_id != null) params = params.set('user_id', filters.user_id);
 		if (filters?.leave_type) params = params.set('leave_type', filters.leave_type);
 		return this.http.get<LeaveRequestResponse[]>(this.buildUrl('/api/v1/leaves/'), { params });
+	}
+
+	createLeave(payload: LeaveCreatePayload): Observable<LeaveRequestResponse> {
+		return this.post<LeaveCreatePayload, LeaveRequestResponse>('/api/v1/leaves/', payload);
 	}
 
 	reviewLeave(id: number, payload: LeaveReviewPayload): Observable<LeaveRequestResponse> {

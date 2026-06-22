@@ -24,6 +24,13 @@ export interface LeaveReviewPayload {
 	rejected_reason?: string;
 }
 
+export interface LeaveCreatePayload {
+	leave_type: LeaveType;
+	start_date: string;
+	end_date: string;
+	reason?: string | null;
+}
+
 export interface LeaveUpdatePayload {
 	leave_type: LeaveType;
 	start_date: string;

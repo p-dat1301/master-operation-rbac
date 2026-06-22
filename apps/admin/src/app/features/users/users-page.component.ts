@@ -11,7 +11,9 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
+import { DepartmentResponse, RoleResponse } from '../../models/rbac.models';
 import { UserCreateRequest, UserFilters, UserListItem, UserUpdateRequest } from '../../models/user.models';
+import { RbacApiService } from '../../services/rbac-api.service';
 import { UserApiService } from '../../services/user-api.service';
 import { runAdminAsync } from '../../shared/async-state';
 import { ADMIN_PAGE_COMMON_STYLES } from '../../shared/admin-page-styles';
@@ -135,6 +137,9 @@ export const EMPTY_USER_FORM: UserFormState = {
 				[saving]="saving()"
 				[selectedUser]="selectedUser()"
 				[newPassword]="newPassword"
+				[roles]="roles()"
+				[departments]="departments()"
+				[allUsers]="allUsers()"
 				[formVisible]="showFormModal"
 				[detailVisible]="showDetailModal"
 				[resetVisible]="showResetModal"
@@ -163,10 +168,13 @@ export const EMPTY_USER_FORM: UserFormState = {
 })
 export class UsersPageComponent implements OnInit {
 	private readonly userApi = inject(UserApiService);
+	private readonly rbacApi = inject(RbacApiService);
 	private readonly message = inject(NzMessageService);
 	private readonly modal = inject(NzModalService);
 
 	readonly allUsers = signal<UserListItem[]>([]);
+	readonly roles = signal<RoleResponse[]>([]);
+	readonly departments = signal<DepartmentResponse[]>([]);
 	readonly filteredUsers = signal<UserListItem[]>([]);
 	readonly loading = signal(false);
 	readonly saving = signal(false);
@@ -185,6 +193,7 @@ export class UsersPageComponent implements OnInit {
 
 	ngOnInit(): void {
 		this.loadUsers();
+		this.loadFormOptions();
 	}
 
 	private async loadUsers(): Promise<void> {
@@ -197,6 +206,21 @@ export class UsersPageComponent implements OnInit {
 			},
 			onError: (feedback, message) => this.message.error(feedback.action === 'toast-only' ? feedback.message : message)
 		});
+	}
+
+	private async loadFormOptions(): Promise<void> {
+		await Promise.all([
+			runAdminAsync(this.rbacApi.listRoles(), {
+				fallbackMessage: 'Không thể tải danh sách vai trò.',
+				onSuccess: (roles) => this.roles.set(roles),
+				onError: (feedback, message) => this.message.error(feedback.action === 'toast-only' ? feedback.message : message)
+			}),
+			runAdminAsync(this.rbacApi.listDepartments(), {
+				fallbackMessage: 'Không thể tải danh sách phòng ban.',
+				onSuccess: (departments) => this.departments.set(departments),
+				onError: (feedback, message) => this.message.error(feedback.action === 'toast-only' ? feedback.message : message)
+			})
+		]);
 	}
 
 	applyFilters(): void {

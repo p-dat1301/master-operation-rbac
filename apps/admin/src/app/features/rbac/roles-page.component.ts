@@ -15,7 +15,7 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
 import { firstValueFrom } from 'rxjs';
 
-import { PermissionResponse, RoleCreateRequest, RoleResponse } from '../../models/rbac.models';
+import { PermissionResponse, RoleCreateRequest, RoleResponse, RoleUpdateRequest } from '../../models/rbac.models';
 import { RbacApiService } from '../../services/rbac-api.service';
 import { mapAdminHttpError } from '../../shared/http-error-mapper';
 import { ADMIN_PAGE_COMMON_STYLES } from '../../shared/admin-page-styles';
@@ -59,7 +59,7 @@ import { ADMIN_PAGE_COMMON_STYLES } from '../../shared/admin-page-styles';
 							<th>Tên role</th>
 							<th>Display name</th>
 							<th nzWidth="180px">Permissions</th>
-							<th nzWidth="140px" nzAlign="right">Hành động</th>
+							<th nzWidth="180px" nzAlign="right">Hành động</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -72,7 +72,10 @@ import { ADMIN_PAGE_COMMON_STYLES } from '../../shared/admin-page-styles';
 									<span nz-icon nzType="key"></span> Permissions
 								</button>
 							</td>
-							<td nzAlign="right">
+							<td nzAlign="right" class="role-actions">
+								<button nz-button nzType="text" nzSize="small" (click)="openEditModal(role)" nz-tooltip="Sửa role" [attr.data-testid]="'edit-role-'+role.id">
+									<span nz-icon nzType="edit"></span>
+								</button>
 								<button nz-button nzDanger nzType="text" nzSize="small" (click)="deleteRole(role)" nz-tooltip="Xóa role" [attr.data-testid]="'delete-role-'+role.id">
 									<span nz-icon nzType="delete"></span>
 								</button>
@@ -92,6 +95,21 @@ import { ADMIN_PAGE_COMMON_STYLES } from '../../shared/admin-page-styles';
 						<label class="form-field">
 							<span class="field-label">Display name <span class="required">*</span></span>
 							<input nz-input [(ngModel)]="createForm.display_name" placeholder="e.g. HR Manager" id="role-display-input" />
+						</label>
+					</div>
+				</ng-container>
+			</nz-modal>
+
+			<nz-modal [(nzVisible)]="showEditModal" [nzTitle]="'Sửa role — ' + (editingRole()?.display_name ?? '')" (nzOnOk)="submitEdit()" (nzOnCancel)="closeEditModal()" [nzOkLoading]="saving()" nzOkText="Lưu" id="edit-role-modal">
+				<ng-container *nzModalContent>
+					<div class="modal-form">
+						<label class="form-field">
+							<span class="field-label">Tên role <span class="required">*</span></span>
+							<input nz-input [(ngModel)]="editForm.name" placeholder="e.g. hr_manager" id="edit-role-name-input" />
+						</label>
+						<label class="form-field">
+							<span class="field-label">Display name <span class="required">*</span></span>
+							<input nz-input [(ngModel)]="editForm.display_name" placeholder="e.g. HR Manager" id="edit-role-display-input" />
 						</label>
 					</div>
 				</ng-container>
@@ -119,6 +137,7 @@ import { ADMIN_PAGE_COMMON_STYLES } from '../../shared/admin-page-styles';
 	styles: [
 		ADMIN_PAGE_COMMON_STYLES,
 		`
+			.role-actions { white-space:nowrap }
 			.role-code { background:rgba(125,211,252,.12); color:var(--admin-action-primary-strong); padding:.2rem .55rem; border-radius:.4rem; font-size:.86rem; font-weight:700 }
 			.display-name { color:var(--admin-text-primary); font-weight:700; font-size:.92rem }
 			:host ::ng-deep .ant-table-thead > tr > th { background:rgba(8,15,28,.78) !important; color:var(--admin-text-strong) !important; font-weight:700; font-size:.84rem; letter-spacing:.02em }
@@ -152,6 +171,7 @@ export class RolesPageComponent implements OnInit {
 	readonly loading = signal(false);
 	readonly saving = signal(false);
 	readonly selectedRole = signal<RoleResponse | null>(null);
+	readonly editingRole = signal<RoleResponse | null>(null);
 	readonly rolePermissions = signal<PermissionResponse[]>([]);
 	readonly allPermissions = signal<PermissionResponse[]>([]);
 	readonly permLoading = signal(false);
@@ -159,8 +179,10 @@ export class RolesPageComponent implements OnInit {
 
 	selectedPermIds = new Set<number>();
 	showCreateModal = false;
+	showEditModal = false;
 	showPermModal = false;
 	createForm: RoleCreateRequest = { name: '', display_name: '' };
+	editForm: RoleUpdateRequest = { name: '', display_name: '' };
 
 	get permissionModalTitle(): string {
 		return 'Permissions — ' + (this.selectedRole()?.display_name ?? '');
@@ -201,6 +223,17 @@ export class RolesPageComponent implements OnInit {
 		this.showCreateModal = true;
 	}
 
+	openEditModal(role: RoleResponse): void {
+		this.editingRole.set(role);
+		this.editForm = { name: role.name, display_name: role.display_name };
+		this.showEditModal = true;
+	}
+
+	closeEditModal(): void {
+		this.showEditModal = false;
+		this.editingRole.set(null);
+	}
+
 	async submitCreate(): Promise<void> {
 		if (!this.createForm.name || !this.createForm.display_name) {
 			this.message.warning('Vui lòng điền đầy đủ thông tin.');
@@ -214,6 +247,32 @@ export class RolesPageComponent implements OnInit {
 			this.message.success(`Role "${created.display_name}" đã được tạo.`);
 		} catch (error) {
 			this.showApiError(error, 'Tạo role thất bại.');
+		} finally {
+			this.saving.set(false);
+		}
+	}
+
+	async submitEdit(): Promise<void> {
+		const editing = this.editingRole();
+		if (!editing) {
+			return;
+		}
+		const payload: RoleUpdateRequest = {
+			name: this.editForm.name.trim(),
+			display_name: this.editForm.display_name.trim()
+		};
+		if (!payload.name || !payload.display_name) {
+			this.message.warning('Vui lòng điền đầy đủ thông tin.');
+			return;
+		}
+		this.saving.set(true);
+		try {
+			const updated = await firstValueFrom(this.rbacApi.updateRole(editing.id, payload));
+			this.roles.update((list) => list.map((item) => item.id === updated.id ? updated : item));
+			this.closeEditModal();
+			this.message.success(`Role "${updated.display_name}" đã được cập nhật.`);
+		} catch (error) {
+			this.showApiError(error, 'Cập nhật role thất bại.');
 		} finally {
 			this.saving.set(false);
 		}
