@@ -3,7 +3,7 @@ import { Inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { API_BASE_URL } from '../core/tokens/api-base-url.token';
-import { LeaveBalanceResponse, LeaveFilters, LeaveRequestResponse } from '../models/leave.models';
+import { LeaveBalanceResponse, LeaveBalanceUpdatePayload, LeaveFilters, LeaveRequestResponse, LeaveReviewPayload, LeaveUpdatePayload } from '../models/leave.models';
 import { BaseApiService } from './base-api.service';
 
 @Injectable({
@@ -23,12 +23,16 @@ export class LeaveApiService extends BaseApiService {
 		return this.http.get<LeaveRequestResponse[]>(this.buildUrl('/api/v1/leaves/'), { params });
 	}
 
-	approveLeave(id: number): Observable<LeaveRequestResponse> {
-		return this.http.put<LeaveRequestResponse>(this.buildUrl(`/api/v1/leaves/${id}/approve`), {});
+	reviewLeave(id: number, payload: LeaveReviewPayload): Observable<LeaveRequestResponse> {
+		return this.http.put<LeaveRequestResponse>(this.buildUrl(`/api/v1/leaves/${id}/review`), payload);
 	}
 
-	rejectLeave(id: number, reason?: string): Observable<LeaveRequestResponse> {
-		return this.http.put<LeaveRequestResponse>(this.buildUrl(`/api/v1/leaves/${id}/reject`), { reason });
+	updateLeave(id: number, payload: LeaveUpdatePayload): Observable<LeaveRequestResponse> {
+		return this.http.put<LeaveRequestResponse>(this.buildUrl(`/api/v1/leaves/${id}`), payload);
+	}
+
+	cancelLeave(id: number): Observable<LeaveRequestResponse> {
+		return this.http.put<LeaveRequestResponse>(this.buildUrl(`/api/v1/leaves/${id}/cancel`), {});
 	}
 
 	// ── Leave Balances ────────────────────────────────────────────────────
@@ -44,7 +48,7 @@ export class LeaveApiService extends BaseApiService {
 		return this.http.get<LeaveBalanceResponse>(this.buildUrl(`/api/v1/leave-balances/users/${userId}`), { params });
 	}
 
-	private buildUrl(path: string): string {
-		return `${(this as unknown as { apiBaseUrl: string }).apiBaseUrl}${path}`;
+	updateUserLeaveBalance(userId: number, payload: LeaveBalanceUpdatePayload): Observable<LeaveBalanceResponse> {
+		return this.http.put<LeaveBalanceResponse>(this.buildUrl(`/api/v1/leave-balances/users/${userId}`), payload);
 	}
 }

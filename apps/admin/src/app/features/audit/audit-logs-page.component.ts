@@ -11,6 +11,7 @@ import { firstValueFrom } from 'rxjs';
 import { AuditLogResponse } from '../../models/audit.models';
 import { AuditApiService } from '../../services/audit-api.service';
 import { ADMIN_DATETIME_SECONDS_FORMAT } from '../../shared/date-formats';
+import { ADMIN_PAGE_COMMON_STYLES } from '../../shared/admin-page-styles';
 
 @Component({
 	selector: 'app-audit-logs-page',
@@ -63,19 +64,11 @@ import { ADMIN_DATETIME_SECONDS_FORMAT } from '../../shared/date-formats';
 			</nz-card>
 		</section>
 	`,
-	styles: [`
-		.page-root { display:grid; gap:1.5rem }
-		.page-header { display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; flex-wrap:wrap }
-		h2 { margin:.2rem 0 0; font-size:clamp(1.4rem,2.5vw,2rem); color:#f8fafc }
-		.eyebrow { margin:0; font-size:.76rem; font-weight:700; letter-spacing:.18em; text-transform:uppercase; color:#7dd3fc }
-		.subtitle { margin:.4rem 0 0; color:rgba(226,232,240,.65); font-size:.9rem }
-		.total-chip { display:flex; align-items:center; gap:.5rem; padding:.6rem 1rem; border-radius:1rem; background:rgba(148,163,184,.08); border:1px solid rgba(148,163,184,.15); color:rgba(226,232,240,.75); font-size:.9rem }
-		.table-card { background:rgba(15,23,42,.72); border-radius:1.2rem }
-		.idx-col { color:rgba(148,163,184,.6); font-size:.82rem }
-		.time-col { font-family:monospace; font-size:.82rem; color:rgba(148,163,184,.8) }
-		.actor-name { color:#f1f5f9; font-weight:500 }
-		.actor-id { font-size:.78rem; color:rgba(148,163,184,.55); margin-left:.3rem }
-		.muted { color:rgba(226,232,240,.65); font-size:.85rem }
+	styles: [ADMIN_PAGE_COMMON_STYLES, `
+		.total-chip { display:flex; align-items:center; gap:.5rem; padding:.6rem 1rem; border-radius:1rem; background:var(--admin-surface-field); border:1px solid var(--admin-border-subtle); color:var(--admin-text-secondary); font-size:.9rem }
+		.time-col { font-family:monospace; font-size:.82rem; color:var(--admin-text-muted) }
+		.actor-name { color:var(--admin-text-primary); font-weight:600 }
+		.actor-id { font-size:.78rem; color:var(--admin-text-muted); margin-left:.3rem }
 	`]
 })
 export class AuditLogsPageComponent implements OnInit {

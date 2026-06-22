@@ -5,9 +5,9 @@ from sqlalchemy import delete
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.agentic.adapters.storage.models import AgenticChunkEmbeddingModel, EMBEDDING_DIMENSION
 from app.agentic.contracts.chunk import DocumentChunk
-from app.agentic.indexing.index_document import VectorStoreAdapter
-from app.infrastructure.database.models.agentic_chunk_embedding_model import AgenticChunkEmbeddingModel, EMBEDDING_DIMENSION
+from app.agentic.pipeline.indexing import VectorStoreAdapter
 
 
 class PGVectorStoreAdapter(VectorStoreAdapter):

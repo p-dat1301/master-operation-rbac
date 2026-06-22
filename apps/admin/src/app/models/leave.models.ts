@@ -3,6 +3,7 @@ export type LeaveType = 'annual' | 'sick' | 'unpaid' | 'other';
 
 export interface LeaveRequestResponse {
 	id: number;
+	requester_id?: number;
 	user_id: number;
 	user_name: string | null;
 	leave_type: LeaveType;
@@ -10,8 +11,24 @@ export interface LeaveRequestResponse {
 	end_date: string;
 	reason: string | null;
 	status: LeaveStatus;
+	department_id?: number | null;
+	reviewed_by?: number | null;
 	approved_by: number | null;
-	created_at: string;
+	rejected_reason?: string | null;
+	reviewed_at?: string | null;
+	created_at: string | null;
+}
+
+export interface LeaveReviewPayload {
+	action: 'approve' | 'reject';
+	rejected_reason?: string;
+}
+
+export interface LeaveUpdatePayload {
+	leave_type: LeaveType;
+	start_date: string;
+	end_date: string;
+	reason?: string | null;
 }
 
 export interface LeaveBalanceResponse {
@@ -20,7 +37,14 @@ export interface LeaveBalanceResponse {
 	year: number;
 	total_days: number;
 	used_days: number;
+	pending_days: number;
 	remaining_days: number;
+}
+
+export interface LeaveBalanceUpdatePayload {
+	year: number;
+	total_days: number;
+	used_days: number;
 }
 
 export interface LeaveFilters {

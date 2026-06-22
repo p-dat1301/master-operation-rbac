@@ -13,7 +13,7 @@ from app.agentic.contracts import (
     SourceType,
     VisibilityScope,
 )
-from app.agentic.parsing.parse_document import normalize_document, parse_document
+from app.agentic.pipeline.parsing import normalize_document, parse_document
 
 
 PDF_TEXT_BYTES = b'''%PDF-1.4

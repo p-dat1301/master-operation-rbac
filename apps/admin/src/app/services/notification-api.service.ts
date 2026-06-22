@@ -25,8 +25,4 @@ export class NotificationApiService extends BaseApiService {
 	markAllAsRead(): Observable<{ marked_count: number }> {
 		return this.http.put<{ marked_count: number }>(this.buildUrl('/api/v1/notifications/read-all'), {});
 	}
-
-	private buildUrl(path: string): string {
-		return `${(this as unknown as { apiBaseUrl: string }).apiBaseUrl}${path}`;
-	}
 }

@@ -1,4 +1,4 @@
 """Vector store adapter interface."""
-from app.agentic.indexing.index_document import VectorStoreAdapter
+from app.agentic.pipeline.indexing import VectorStoreAdapter
 
 __all__ = ["VectorStoreAdapter"]

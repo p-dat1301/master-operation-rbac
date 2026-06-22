@@ -13,7 +13,7 @@ import {
   CloseCircleOutline, CloseOutline, CheckOutline, DatabaseOutline,
   DashboardOutline, DeleteOutline, EyeOutline, FileSearchOutline,
   KeyOutline, LockOutline, MenuFoldOutline, MenuUnfoldOutline,
-  PlayCircleOutline, PlusOutline, ReloadOutline, SafetyCertificateOutline,
+  MessageOutline, PlayCircleOutline, PlusOutline, ReloadOutline, SafetyCertificateOutline,
   StopOutline, SyncOutline, TeamOutline, TranslationOutline
 } from '@ant-design/icons-angular/icons';
 
@@ -36,7 +36,7 @@ export const appConfig: ApplicationConfig = {
       BellOutline, TeamOutline, SafetyCertificateOutline, KeyOutline,
       CheckSquareOutline, CalendarOutline, FileSearchOutline, DatabaseOutline,
       PlusOutline, DeleteOutline, ReloadOutline, SyncOutline,
-      PlayCircleOutline, CheckCircleOutline, CloseCircleOutline, CheckOutline, CloseOutline,
+      MessageOutline, PlayCircleOutline, CheckCircleOutline, CloseCircleOutline, CheckOutline, CloseOutline,
       StopOutline, LockOutline, EyeOutline
     ]),
     importProvidersFrom(NzModalModule),

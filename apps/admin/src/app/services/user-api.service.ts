@@ -49,8 +49,4 @@ export class UserApiService extends BaseApiService {
 	resetPassword(id: number, new_password: string): Observable<UserListItem> {
 		return this.http.put<UserListItem>(this.buildUrl(`/api/v1/users/${id}/reset-password`), { new_password });
 	}
-
-	private buildUrl(path: string): string {
-		return `${(this as unknown as { apiBaseUrl: string }).apiBaseUrl}${path}`;
-	}
 }

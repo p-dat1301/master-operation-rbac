@@ -21,6 +21,10 @@ export class BaseApiService {
 		return this.http.post<TResponse>(this.resolveUrl(path), body);
 	}
 
+	protected buildUrl(path: string): string {
+		return this.resolveUrl(path);
+	}
+
 	private resolveUrl(path: string): string {
 		return `${this.apiBaseUrl}${path}`;
 	}

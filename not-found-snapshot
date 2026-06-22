@@ -1,0 +1,7 @@
+- generic [ref=e4]:
+  - img [ref=e7]
+  - generic [ref=e66]: Không tìm thấy trang
+  - generic [ref=e67]: Trang quản trị bạn yêu cầu không tồn tại.
+  - link "Quay về trang tổng quan" [ref=e69] [cursor=pointer]:
+    - /url: /
+    - generic [ref=e70]: Về tổng quan

@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 
 import { LoginResponse, UserResponse } from '../models/auth.models';
 import { AuthApiService } from './auth-api.service';
@@ -49,10 +49,32 @@ describe('AuthStoreService', () => {
 
 		await service.login({ email: 'admin@company.vn', password: 'Admin@123' });
 
-		expect(authApiMock.login).toHaveBeenCalled();
-		expect(authApiMock.me).toHaveBeenCalled();
+		expect(authApiMock.login).toHaveBeenCalledWith({ email: 'admin@company.vn', password: 'Admin@123' });
+		expect(authApiMock.me).toHaveBeenCalledTimes(1);
 		expect(service.currentUser()).toEqual(currentUser);
 		expect(service.hasPermission('system.config.manage')).toBe(true);
 		expect(localStorage.getItem('master-operation.admin.token')).toBe('token-123');
+		expect(service.isAuthenticated()).toBe(true);
+	});
+
+	it('clears stored session when ensureAuthenticated cannot load current user', async () => {
+		localStorage.setItem('master-operation.admin.token', 'token-123');
+		authApiMock.me.mockReturnValueOnce(throwError(() => new Error('boom')));
+
+		const service = TestBed.inject(AuthStoreService);
+
+		expect(await service.ensureAuthenticated()).toBe(false);
+		expect(service.token()).toBeNull();
+		expect(service.currentUser()).toBeNull();
+		expect(localStorage.getItem('master-operation.admin.token')).toBeNull();
+	});
+
+	it('reads token from storage on initialization', () => {
+		localStorage.setItem('master-operation.admin.token', 'persisted-token');
+
+		const service = TestBed.inject(AuthStoreService);
+
+		expect(service.hasSession()).toBe(true);
+		expect(service.token()).toBe('persisted-token');
 	});
 });

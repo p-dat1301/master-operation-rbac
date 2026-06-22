@@ -1,0 +1,505 @@
+- generic [ref=e21]:
+  - generic [ref=e24]:
+    - generic [ref=e25]:
+      - generic [ref=e26]: MO
+      - generic [ref=e27]:
+        - paragraph [ref=e28]: RBAC Console
+        - heading "Master Operation" [level=1] [ref=e29]
+    - list [ref=e30]:
+      - listitem [ref=e31] [cursor=pointer]:
+        - generic [ref=e32]:
+          - img "dashboard" [ref=e33]:
+            - img [ref=e34]
+          - text: Dashboard
+      - listitem [ref=e36] [cursor=pointer]:
+        - generic [ref=e37]:
+          - img "bell" [ref=e38]:
+            - img [ref=e39]
+          - text: Thông báo
+      - listitem [ref=e41] [cursor=pointer]:
+        - generic [ref=e42]:
+          - img "team" [ref=e43]:
+            - img [ref=e44]
+          - text: Người dùng
+      - listitem [ref=e46] [cursor=pointer]:
+        - generic [ref=e47]:
+          - img "team" [ref=e48]:
+            - img [ref=e49]
+          - text: Departments
+      - listitem [ref=e51] [cursor=pointer]:
+        - generic [ref=e52]:
+          - img "safety-certificate" [ref=e53]:
+            - img [ref=e54]
+          - text: Roles
+      - listitem [ref=e56] [cursor=pointer]:
+        - generic [ref=e57]:
+          - img "key" [ref=e58]:
+            - img [ref=e59]
+          - text: Permissions
+      - listitem [active] [ref=e61] [cursor=pointer]:
+        - generic [ref=e62]:
+          - img "check-square" [ref=e63]:
+            - img [ref=e64]
+          - text: Công việc
+      - listitem [ref=e67] [cursor=pointer]:
+        - generic [ref=e68]:
+          - img "calendar" [ref=e69]:
+            - img [ref=e70]
+          - text: Nghỉ phép
+      - listitem [ref=e72] [cursor=pointer]:
+        - generic [ref=e73]:
+          - img "appstore" [ref=e74]:
+            - img [ref=e75]
+          - text: Menu sync
+      - listitem [ref=e77] [cursor=pointer]:
+        - generic [ref=e78]:
+          - img "translation" [ref=e79]:
+            - img [ref=e80]
+          - text: i18n sync
+      - listitem [ref=e83] [cursor=pointer]:
+        - generic [ref=e84]:
+          - img "file-search" [ref=e85]:
+            - img [ref=e86]
+          - text: Audit Logs
+    - generic [ref=e88]:
+      - paragraph [ref=e89]: Angular 21 + NG ZORRO
+      - generic [ref=e90]: System config workspace
+  - generic [ref=e91]:
+    - generic [ref=e92]:
+      - generic [ref=e93]:
+        - button "Toggle navigation" [ref=e94] [cursor=pointer]:
+          - img "menu-fold" [ref=e95]:
+            - img [ref=e96]
+        - generic [ref=e98]:
+          - paragraph [ref=e99]: Admin control plane
+          - heading "Công việc" [level=2] [ref=e513]
+      - generic [ref=e101]:
+        - generic [ref=e102]:
+          - strong [ref=e103]: Admin User
+          - generic [ref=e104]: admin
+        - button "Sign out" [ref=e105] [cursor=pointer]:
+          - generic [ref=e106]: Sign out
+        - generic [ref=e107]: Local workspace
+    - generic [ref=e109]:
+      - generic [ref=e110]:
+        - generic [ref=e111]:
+          - text: Admin
+          - generic [ref=e112]: /
+        - generic [ref=e514]:
+          - text: Operations
+          - generic [ref=e515]: /
+        - generic [ref=e516]: Công việc
+      - generic [ref=e518]:
+        - generic [ref=e519]:
+          - generic [ref=e520]:
+            - paragraph [ref=e521]: Operations
+            - heading "Quản lý công việc" [level=2] [ref=e522]
+            - paragraph [ref=e523]: Theo dõi và điều phối công việc trong tổ chức.
+          - button "plus Tạo công việc" [ref=e524] [cursor=pointer]:
+            - img "plus" [ref=e525]:
+              - img [ref=e526]
+            - generic [ref=e529]: Tạo công việc
+        - generic [ref=e532]:
+          - generic [ref=e533]:
+            - generic [ref=e534]: Trạng thái
+            - generic [ref=e535] [cursor=pointer]:
+              - generic [ref=e537]:
+                - textbox "Trạng thái Tất cả down" [ref=e539]
+                - generic: Tất cả
+              - img "down" [ref=e540]:
+                - img [ref=e541]
+          - button "reload Đặt lại" [ref=e543] [cursor=pointer]:
+            - img "reload" [ref=e544]:
+              - img [ref=e545]
+            - generic [ref=e547]: Đặt lại
+          - button "sync Tải lại" [ref=e548] [cursor=pointer]:
+            - img "sync" [ref=e549]:
+              - img [ref=e550]
+            - generic [ref=e552]: Tải lại
+        - generic [ref=e557]:
+          - table [ref=e561]:
+            - rowgroup [ref=e570]:
+              - row "# Tiêu đề Trạng thái Ưu tiên Người thực hiện Hạn chót Hành động" [ref=e571]:
+                - columnheader "#" [ref=e572]
+                - columnheader "Tiêu đề" [ref=e573]
+                - columnheader "Trạng thái" [ref=e574]
+                - columnheader "Ưu tiên" [ref=e575]
+                - columnheader "Người thực hiện" [ref=e576]
+                - columnheader "Hạn chót" [ref=e577]
+                - columnheader "Hành động" [ref=e578]
+            - rowgroup [ref=e579]:
+              - row "1 RBAC API verification task TASK-RBAC-API-VERIFY todo high — — Xem chi tiết công việc RBAC API verification task Chỉnh sửa công việc RBAC API verification task Phân công công việc RBAC API verification task Xóa công việc RBAC API verification task" [ref=e580]:
+                - cell "1" [ref=e581]
+                - cell "RBAC API verification task TASK-RBAC-API-VERIFY" [ref=e582]:
+                  - generic [ref=e583]: RBAC API verification task
+                  - generic [ref=e584]: TASK-RBAC-API-VERIFY
+                - cell "todo" [ref=e585]:
+                  - generic [ref=e586]: todo
+                - cell "high" [ref=e587]:
+                  - generic [ref=e588]: high
+                - cell "—" [ref=e589]
+                - cell "—" [ref=e590]
+                - cell "Xem chi tiết công việc RBAC API verification task Chỉnh sửa công việc RBAC API verification task Phân công công việc RBAC API verification task Xóa công việc RBAC API verification task" [ref=e591]:
+                  - button "Xem chi tiết công việc RBAC API verification task" [ref=e592] [cursor=pointer]:
+                    - img "eye" [ref=e593]:
+                      - img [ref=e594]
+                  - button "Chỉnh sửa công việc RBAC API verification task" [ref=e596] [cursor=pointer]:
+                    - img "edit" [ref=e597]:
+                      - img [ref=e598]
+                  - button "Phân công công việc RBAC API verification task" [ref=e600] [cursor=pointer]:
+                    - img "swap" [ref=e601]:
+                      - img [ref=e602]
+                  - button "Xóa công việc RBAC API verification task" [ref=e604] [cursor=pointer]:
+                    - img "delete" [ref=e605]:
+                      - img [ref=e606]
+              - row "2 verify TASK-VERIFY-1781190451 todo high — — Xem chi tiết công việc verify Chỉnh sửa công việc verify Phân công công việc verify Xóa công việc verify" [ref=e608]:
+                - cell "2" [ref=e609]
+                - cell "verify TASK-VERIFY-1781190451" [ref=e610]:
+                  - generic [ref=e611]: verify
+                  - generic [ref=e612]: TASK-VERIFY-1781190451
+                - cell "todo" [ref=e613]:
+                  - generic [ref=e614]: todo
+                - cell "high" [ref=e615]:
+                  - generic [ref=e616]: high
+                - cell "—" [ref=e617]
+                - cell "—" [ref=e618]
+                - cell "Xem chi tiết công việc verify Chỉnh sửa công việc verify Phân công công việc verify Xóa công việc verify" [ref=e619]:
+                  - button "Xem chi tiết công việc verify" [ref=e620] [cursor=pointer]:
+                    - img "eye" [ref=e621]:
+                      - img [ref=e622]
+                  - button "Chỉnh sửa công việc verify" [ref=e624] [cursor=pointer]:
+                    - img "edit" [ref=e625]:
+                      - img [ref=e626]
+                  - button "Phân công công việc verify" [ref=e628] [cursor=pointer]:
+                    - img "swap" [ref=e629]:
+                      - img [ref=e630]
+                  - button "Xóa công việc verify" [ref=e632] [cursor=pointer]:
+                    - img "delete" [ref=e633]:
+                      - img [ref=e634]
+              - row "3 manager check TASK-MANAGER-CHECK todo high — — Xem chi tiết công việc manager check Chỉnh sửa công việc manager check Phân công công việc manager check Xóa công việc manager check" [ref=e636]:
+                - cell "3" [ref=e637]
+                - cell "manager check TASK-MANAGER-CHECK" [ref=e638]:
+                  - generic [ref=e639]: manager check
+                  - generic [ref=e640]: TASK-MANAGER-CHECK
+                - cell "todo" [ref=e641]:
+                  - generic [ref=e642]: todo
+                - cell "high" [ref=e643]:
+                  - generic [ref=e644]: high
+                - cell "—" [ref=e645]
+                - cell "—" [ref=e646]
+                - cell "Xem chi tiết công việc manager check Chỉnh sửa công việc manager check Phân công công việc manager check Xóa công việc manager check" [ref=e647]:
+                  - button "Xem chi tiết công việc manager check" [ref=e648] [cursor=pointer]:
+                    - img "eye" [ref=e649]:
+                      - img [ref=e650]
+                  - button "Chỉnh sửa công việc manager check" [ref=e652] [cursor=pointer]:
+                    - img "edit" [ref=e653]:
+                      - img [ref=e654]
+                  - button "Phân công công việc manager check" [ref=e656] [cursor=pointer]:
+                    - img "swap" [ref=e657]:
+                      - img [ref=e658]
+                  - button "Xóa công việc manager check" [ref=e660] [cursor=pointer]:
+                    - img "delete" [ref=e661]:
+                      - img [ref=e662]
+              - row "4 verify TASK-VERIFY-1781190481 todo high — — Xem chi tiết công việc verify Chỉnh sửa công việc verify Phân công công việc verify Xóa công việc verify" [ref=e664]:
+                - cell "4" [ref=e665]
+                - cell "verify TASK-VERIFY-1781190481" [ref=e666]:
+                  - generic [ref=e667]: verify
+                  - generic [ref=e668]: TASK-VERIFY-1781190481
+                - cell "todo" [ref=e669]:
+                  - generic [ref=e670]: todo
+                - cell "high" [ref=e671]:
+                  - generic [ref=e672]: high
+                - cell "—" [ref=e673]
+                - cell "—" [ref=e674]
+                - cell "Xem chi tiết công việc verify Chỉnh sửa công việc verify Phân công công việc verify Xóa công việc verify" [ref=e675]:
+                  - button "Xem chi tiết công việc verify" [ref=e676] [cursor=pointer]:
+                    - img "eye" [ref=e677]:
+                      - img [ref=e678]
+                  - button "Chỉnh sửa công việc verify" [ref=e680] [cursor=pointer]:
+                    - img "edit" [ref=e681]:
+                      - img [ref=e682]
+                  - button "Phân công công việc verify" [ref=e684] [cursor=pointer]:
+                    - img "swap" [ref=e685]:
+                      - img [ref=e686]
+                  - button "Xóa công việc verify" [ref=e688] [cursor=pointer]:
+                    - img "delete" [ref=e689]:
+                      - img [ref=e690]
+              - row "5 Test Task S4 Manager TASK-S4-MGR todo high — — Xem chi tiết công việc Test Task S4 Manager Chỉnh sửa công việc Test Task S4 Manager Phân công công việc Test Task S4 Manager Xóa công việc Test Task S4 Manager" [ref=e692]:
+                - cell "5" [ref=e693]
+                - cell "Test Task S4 Manager TASK-S4-MGR" [ref=e694]:
+                  - generic [ref=e695]: Test Task S4 Manager
+                  - generic [ref=e696]: TASK-S4-MGR
+                - cell "todo" [ref=e697]:
+                  - generic [ref=e698]: todo
+                - cell "high" [ref=e699]:
+                  - generic [ref=e700]: high
+                - cell "—" [ref=e701]
+                - cell "—" [ref=e702]
+                - cell "Xem chi tiết công việc Test Task S4 Manager Chỉnh sửa công việc Test Task S4 Manager Phân công công việc Test Task S4 Manager Xóa công việc Test Task S4 Manager" [ref=e703]:
+                  - button "Xem chi tiết công việc Test Task S4 Manager" [ref=e704] [cursor=pointer]:
+                    - img "eye" [ref=e705]:
+                      - img [ref=e706]
+                  - button "Chỉnh sửa công việc Test Task S4 Manager" [ref=e708] [cursor=pointer]:
+                    - img "edit" [ref=e709]:
+                      - img [ref=e710]
+                  - button "Phân công công việc Test Task S4 Manager" [ref=e712] [cursor=pointer]:
+                    - img "swap" [ref=e713]:
+                      - img [ref=e714]
+                  - button "Xóa công việc Test Task S4 Manager" [ref=e716] [cursor=pointer]:
+                    - img "delete" [ref=e717]:
+                      - img [ref=e718]
+              - row "6 chk TASK-CHK todo medium — — Xem chi tiết công việc chk Chỉnh sửa công việc chk Phân công công việc chk Xóa công việc chk" [ref=e720]:
+                - cell "6" [ref=e721]
+                - cell "chk TASK-CHK" [ref=e722]:
+                  - generic [ref=e723]: chk
+                  - generic [ref=e724]: TASK-CHK
+                - cell "todo" [ref=e725]:
+                  - generic [ref=e726]: todo
+                - cell "medium" [ref=e727]:
+                  - generic [ref=e728]: medium
+                - cell "—" [ref=e729]
+                - cell "—" [ref=e730]
+                - cell "Xem chi tiết công việc chk Chỉnh sửa công việc chk Phân công công việc chk Xóa công việc chk" [ref=e731]:
+                  - button "Xem chi tiết công việc chk" [ref=e732] [cursor=pointer]:
+                    - img "eye" [ref=e733]:
+                      - img [ref=e734]
+                  - button "Chỉnh sửa công việc chk" [ref=e736] [cursor=pointer]:
+                    - img "edit" [ref=e737]:
+                      - img [ref=e738]
+                  - button "Phân công công việc chk" [ref=e740] [cursor=pointer]:
+                    - img "swap" [ref=e741]:
+                      - img [ref=e742]
+                  - button "Xóa công việc chk" [ref=e744] [cursor=pointer]:
+                    - img "delete" [ref=e745]:
+                      - img [ref=e746]
+              - row "7 verify TASK-VERIFY-1781190664 todo high — — Xem chi tiết công việc verify Chỉnh sửa công việc verify Phân công công việc verify Xóa công việc verify" [ref=e748]:
+                - cell "7" [ref=e749]
+                - cell "verify TASK-VERIFY-1781190664" [ref=e750]:
+                  - generic [ref=e751]: verify
+                  - generic [ref=e752]: TASK-VERIFY-1781190664
+                - cell "todo" [ref=e753]:
+                  - generic [ref=e754]: todo
+                - cell "high" [ref=e755]:
+                  - generic [ref=e756]: high
+                - cell "—" [ref=e757]
+                - cell "—" [ref=e758]
+                - cell "Xem chi tiết công việc verify Chỉnh sửa công việc verify Phân công công việc verify Xóa công việc verify" [ref=e759]:
+                  - button "Xem chi tiết công việc verify" [ref=e760] [cursor=pointer]:
+                    - img "eye" [ref=e761]:
+                      - img [ref=e762]
+                  - button "Chỉnh sửa công việc verify" [ref=e764] [cursor=pointer]:
+                    - img "edit" [ref=e765]:
+                      - img [ref=e766]
+                  - button "Phân công công việc verify" [ref=e768] [cursor=pointer]:
+                    - img "swap" [ref=e769]:
+                      - img [ref=e770]
+                  - button "Xóa công việc verify" [ref=e772] [cursor=pointer]:
+                    - img "delete" [ref=e773]:
+                      - img [ref=e774]
+              - row "8 Test Task S4 Manager TASK-S4-MGR-1781190715 todo high — — Xem chi tiết công việc Test Task S4 Manager Chỉnh sửa công việc Test Task S4 Manager Phân công công việc Test Task S4 Manager Xóa công việc Test Task S4 Manager" [ref=e776]:
+                - cell "8" [ref=e777]
+                - cell "Test Task S4 Manager TASK-S4-MGR-1781190715" [ref=e778]:
+                  - generic [ref=e779]: Test Task S4 Manager
+                  - generic [ref=e780]: TASK-S4-MGR-1781190715
+                - cell "todo" [ref=e781]:
+                  - generic [ref=e782]: todo
+                - cell "high" [ref=e783]:
+                  - generic [ref=e784]: high
+                - cell "—" [ref=e785]
+                - cell "—" [ref=e786]
+                - cell "Xem chi tiết công việc Test Task S4 Manager Chỉnh sửa công việc Test Task S4 Manager Phân công công việc Test Task S4 Manager Xóa công việc Test Task S4 Manager" [ref=e787]:
+                  - button "Xem chi tiết công việc Test Task S4 Manager" [ref=e788] [cursor=pointer]:
+                    - img "eye" [ref=e789]:
+                      - img [ref=e790]
+                  - button "Chỉnh sửa công việc Test Task S4 Manager" [ref=e792] [cursor=pointer]:
+                    - img "edit" [ref=e793]:
+                      - img [ref=e794]
+                  - button "Phân công công việc Test Task S4 Manager" [ref=e796] [cursor=pointer]:
+                    - img "swap" [ref=e797]:
+                      - img [ref=e798]
+                  - button "Xóa công việc Test Task S4 Manager" [ref=e800] [cursor=pointer]:
+                    - img "delete" [ref=e801]:
+                      - img [ref=e802]
+              - row "9 Test Task S4 Manager TASK-S4-MGR-1781190742 todo high — — Xem chi tiết công việc Test Task S4 Manager Chỉnh sửa công việc Test Task S4 Manager Phân công công việc Test Task S4 Manager Xóa công việc Test Task S4 Manager" [ref=e804]:
+                - cell "9" [ref=e805]
+                - cell "Test Task S4 Manager TASK-S4-MGR-1781190742" [ref=e806]:
+                  - generic [ref=e807]: Test Task S4 Manager
+                  - generic [ref=e808]: TASK-S4-MGR-1781190742
+                - cell "todo" [ref=e809]:
+                  - generic [ref=e810]: todo
+                - cell "high" [ref=e811]:
+                  - generic [ref=e812]: high
+                - cell "—" [ref=e813]
+                - cell "—" [ref=e814]
+                - cell "Xem chi tiết công việc Test Task S4 Manager Chỉnh sửa công việc Test Task S4 Manager Phân công công việc Test Task S4 Manager Xóa công việc Test Task S4 Manager" [ref=e815]:
+                  - button "Xem chi tiết công việc Test Task S4 Manager" [ref=e816] [cursor=pointer]:
+                    - img "eye" [ref=e817]:
+                      - img [ref=e818]
+                  - button "Chỉnh sửa công việc Test Task S4 Manager" [ref=e820] [cursor=pointer]:
+                    - img "edit" [ref=e821]:
+                      - img [ref=e822]
+                  - button "Phân công công việc Test Task S4 Manager" [ref=e824] [cursor=pointer]:
+                    - img "swap" [ref=e825]:
+                      - img [ref=e826]
+                  - button "Xóa công việc Test Task S4 Manager" [ref=e828] [cursor=pointer]:
+                    - img "delete" [ref=e829]:
+                      - img [ref=e830]
+              - row "10 Final Verify TASK-FINAL-VERIFY todo high — — Xem chi tiết công việc Final Verify Chỉnh sửa công việc Final Verify Phân công công việc Final Verify Xóa công việc Final Verify" [ref=e832]:
+                - cell "10" [ref=e833]
+                - cell "Final Verify TASK-FINAL-VERIFY" [ref=e834]:
+                  - generic [ref=e835]: Final Verify
+                  - generic [ref=e836]: TASK-FINAL-VERIFY
+                - cell "todo" [ref=e837]:
+                  - generic [ref=e838]: todo
+                - cell "high" [ref=e839]:
+                  - generic [ref=e840]: high
+                - cell "—" [ref=e841]
+                - cell "—" [ref=e842]
+                - cell "Xem chi tiết công việc Final Verify Chỉnh sửa công việc Final Verify Phân công công việc Final Verify Xóa công việc Final Verify" [ref=e843]:
+                  - button "Xem chi tiết công việc Final Verify" [ref=e844] [cursor=pointer]:
+                    - img "eye" [ref=e845]:
+                      - img [ref=e846]
+                  - button "Chỉnh sửa công việc Final Verify" [ref=e848] [cursor=pointer]:
+                    - img "edit" [ref=e849]:
+                      - img [ref=e850]
+                  - button "Phân công công việc Final Verify" [ref=e852] [cursor=pointer]:
+                    - img "swap" [ref=e853]:
+                      - img [ref=e854]
+                  - button "Xóa công việc Final Verify" [ref=e856] [cursor=pointer]:
+                    - img "delete" [ref=e857]:
+                      - img [ref=e858]
+              - row "11 With dept TASK-DEPT-1781191365693864959 todo high — — Xem chi tiết công việc With dept Chỉnh sửa công việc With dept Phân công công việc With dept Xóa công việc With dept" [ref=e860]:
+                - cell "11" [ref=e861]
+                - cell "With dept TASK-DEPT-1781191365693864959" [ref=e862]:
+                  - generic [ref=e863]: With dept
+                  - generic [ref=e864]: TASK-DEPT-1781191365693864959
+                - cell "todo" [ref=e865]:
+                  - generic [ref=e866]: todo
+                - cell "high" [ref=e867]:
+                  - generic [ref=e868]: high
+                - cell "—" [ref=e869]
+                - cell "—" [ref=e870]
+                - cell "Xem chi tiết công việc With dept Chỉnh sửa công việc With dept Phân công công việc With dept Xóa công việc With dept" [ref=e871]:
+                  - button "Xem chi tiết công việc With dept" [ref=e872] [cursor=pointer]:
+                    - img "eye" [ref=e873]:
+                      - img [ref=e874]
+                  - button "Chỉnh sửa công việc With dept" [ref=e876] [cursor=pointer]:
+                    - img "edit" [ref=e877]:
+                      - img [ref=e878]
+                  - button "Phân công công việc With dept" [ref=e880] [cursor=pointer]:
+                    - img "swap" [ref=e881]:
+                      - img [ref=e882]
+                  - button "Xóa công việc With dept" [ref=e884] [cursor=pointer]:
+                    - img "delete" [ref=e885]:
+                      - img [ref=e886]
+              - row "12 RBAC API verification task T76102 todo high — — Xem chi tiết công việc RBAC API verification task Chỉnh sửa công việc RBAC API verification task Phân công công việc RBAC API verification task Xóa công việc RBAC API verification task" [ref=e888]:
+                - cell "12" [ref=e889]
+                - cell "RBAC API verification task T76102" [ref=e890]:
+                  - generic [ref=e891]: RBAC API verification task
+                  - generic [ref=e892]: T76102
+                - cell "todo" [ref=e893]:
+                  - generic [ref=e894]: todo
+                - cell "high" [ref=e895]:
+                  - generic [ref=e896]: high
+                - cell "—" [ref=e897]
+                - cell "—" [ref=e898]
+                - cell "Xem chi tiết công việc RBAC API verification task Chỉnh sửa công việc RBAC API verification task Phân công công việc RBAC API verification task Xóa công việc RBAC API verification task" [ref=e899]:
+                  - button "Xem chi tiết công việc RBAC API verification task" [ref=e900] [cursor=pointer]:
+                    - img "eye" [ref=e901]:
+                      - img [ref=e902]
+                  - button "Chỉnh sửa công việc RBAC API verification task" [ref=e904] [cursor=pointer]:
+                    - img "edit" [ref=e905]:
+                      - img [ref=e906]
+                  - button "Phân công công việc RBAC API verification task" [ref=e908] [cursor=pointer]:
+                    - img "swap" [ref=e909]:
+                      - img [ref=e910]
+                  - button "Xóa công việc RBAC API verification task" [ref=e912] [cursor=pointer]:
+                    - img "delete" [ref=e913]:
+                      - img [ref=e914]
+              - row "13 RBAC API verification task TASK-79449 todo high — — Xem chi tiết công việc RBAC API verification task Chỉnh sửa công việc RBAC API verification task Phân công công việc RBAC API verification task Xóa công việc RBAC API verification task" [ref=e916]:
+                - cell "13" [ref=e917]
+                - cell "RBAC API verification task TASK-79449" [ref=e918]:
+                  - generic [ref=e919]: RBAC API verification task
+                  - generic [ref=e920]: TASK-79449
+                - cell "todo" [ref=e921]:
+                  - generic [ref=e922]: todo
+                - cell "high" [ref=e923]:
+                  - generic [ref=e924]: high
+                - cell "—" [ref=e925]
+                - cell "—" [ref=e926]
+                - cell "Xem chi tiết công việc RBAC API verification task Chỉnh sửa công việc RBAC API verification task Phân công công việc RBAC API verification task Xóa công việc RBAC API verification task" [ref=e927]:
+                  - button "Xem chi tiết công việc RBAC API verification task" [ref=e928] [cursor=pointer]:
+                    - img "eye" [ref=e929]:
+                      - img [ref=e930]
+                  - button "Chỉnh sửa công việc RBAC API verification task" [ref=e932] [cursor=pointer]:
+                    - img "edit" [ref=e933]:
+                      - img [ref=e934]
+                  - button "Phân công công việc RBAC API verification task" [ref=e936] [cursor=pointer]:
+                    - img "swap" [ref=e937]:
+                      - img [ref=e938]
+                  - button "Xóa công việc RBAC API verification task" [ref=e940] [cursor=pointer]:
+                    - img "delete" [ref=e941]:
+                      - img [ref=e942]
+              - row "14 RBAC API verification task TASKDEPT80629 todo high — — Xem chi tiết công việc RBAC API verification task Chỉnh sửa công việc RBAC API verification task Phân công công việc RBAC API verification task Xóa công việc RBAC API verification task" [ref=e944]:
+                - cell "14" [ref=e945]
+                - cell "RBAC API verification task TASKDEPT80629" [ref=e946]:
+                  - generic [ref=e947]: RBAC API verification task
+                  - generic [ref=e948]: TASKDEPT80629
+                - cell "todo" [ref=e949]:
+                  - generic [ref=e950]: todo
+                - cell "high" [ref=e951]:
+                  - generic [ref=e952]: high
+                - cell "—" [ref=e953]
+                - cell "—" [ref=e954]
+                - cell "Xem chi tiết công việc RBAC API verification task Chỉnh sửa công việc RBAC API verification task Phân công công việc RBAC API verification task Xóa công việc RBAC API verification task" [ref=e955]:
+                  - button "Xem chi tiết công việc RBAC API verification task" [ref=e956] [cursor=pointer]:
+                    - img "eye" [ref=e957]:
+                      - img [ref=e958]
+                  - button "Chỉnh sửa công việc RBAC API verification task" [ref=e960] [cursor=pointer]:
+                    - img "edit" [ref=e961]:
+                      - img [ref=e962]
+                  - button "Phân công công việc RBAC API verification task" [ref=e964] [cursor=pointer]:
+                    - img "swap" [ref=e965]:
+                      - img [ref=e966]
+                  - button "Xóa công việc RBAC API verification task" [ref=e968] [cursor=pointer]:
+                    - img "delete" [ref=e969]:
+                      - img [ref=e970]
+              - row "15 RBAC API verification task RBAC-7aee4f0c todo high — — Xem chi tiết công việc RBAC API verification task Chỉnh sửa công việc RBAC API verification task Phân công công việc RBAC API verification task Xóa công việc RBAC API verification task" [ref=e972]:
+                - cell "15" [ref=e973]
+                - cell "RBAC API verification task RBAC-7aee4f0c" [ref=e974]:
+                  - generic [ref=e975]: RBAC API verification task
+                  - generic [ref=e976]: RBAC-7aee4f0c
+                - cell "todo" [ref=e977]:
+                  - generic [ref=e978]: todo
+                - cell "high" [ref=e979]:
+                  - generic [ref=e980]: high
+                - cell "—" [ref=e981]
+                - cell "—" [ref=e982]
+                - cell "Xem chi tiết công việc RBAC API verification task Chỉnh sửa công việc RBAC API verification task Phân công công việc RBAC API verification task Xóa công việc RBAC API verification task" [ref=e983]:
+                  - button "Xem chi tiết công việc RBAC API verification task" [ref=e984] [cursor=pointer]:
+                    - img "eye" [ref=e985]:
+                      - img [ref=e986]
+                  - button "Chỉnh sửa công việc RBAC API verification task" [ref=e988] [cursor=pointer]:
+                    - img "edit" [ref=e989]:
+                      - img [ref=e990]
+                  - button "Phân công công việc RBAC API verification task" [ref=e992] [cursor=pointer]:
+                    - img "swap" [ref=e993]:
+                      - img [ref=e994]
+                  - button "Xóa công việc RBAC API verification task" [ref=e996] [cursor=pointer]:
+                    - img "delete" [ref=e997]:
+                      - img [ref=e998]
+          - list [ref=e1001]:
+            - listitem "Trang Trước" [ref=e1002]:
+              - button "left" [disabled] [ref=e1003]:
+                - img "left" [ref=e1004]:
+                  - img [ref=e1005]
+            - listitem "1" [ref=e1007] [cursor=pointer]:
+              - generic [ref=e1008]: "1"
+            - listitem "2" [ref=e1009] [cursor=pointer]:
+              - generic [ref=e1010]: "2"
+            - listitem "3" [ref=e1011] [cursor=pointer]:
+              - generic [ref=e1012]: "3"
+            - listitem "Trang Kế" [ref=e1013] [cursor=pointer]:
+              - button "right" [ref=e1014]:
+                - img "right" [ref=e1015]:
+                  - img [ref=e1016]

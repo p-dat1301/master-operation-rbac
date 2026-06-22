@@ -8,12 +8,32 @@ services:
       - "8000:8000"
     env_file:
       - .env
+    environment:
+      ELASTICSEARCH_HOST: elasticsearch:9200
     volumes:
-      - .:/app
-      - ./migrations:/app/migrations
+      - .:/code
+      - ./migrations:/code/migrations
     depends_on:
       db:
         condition: service_healthy
+      llm_gateway:
+        condition: service_started
+    networks:
+      - masterop_net
+    restart: unless-stopped
+
+  llm_gateway:
+    image: ghcr.io/berriai/litellm:main-latest
+    container_name: masterop_llm_gateway
+    command: ["--config", "/app/config.yaml", "--host", "0.0.0.0", "--port", "4000"]
+    environment:
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      LITELLM_MASTER_KEY: ${RAG_LLM_GATEWAY_API_KEY:-sk-change-me-for-local-gateway}
+    volumes:
+      - ./litellm.config.yaml:/app/config.yaml:ro
+    ports:
+      - "4000:4000"
     networks:
       - masterop_net
     restart: unless-stopped
@@ -47,8 +67,29 @@ services:
       - masterop_net
     restart: unless-stopped
 
+  elasticsearch:
+    image: elasticsearch:8.14.0
+    container_name: masterop_elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - masterop_net
+    restart: unless-stopped
+
 volumes:
   postgres_data:
+  elasticsearch_data:
 
 networks:
   masterop_net:

@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from app.agentic.contracts.chunk import DocumentChunk
 from app.agentic.contracts.document import DocumentRecord
-from app.agentic.indexing.index_document import ChunkStorageAdapter, DocumentStorageAdapter
+from app.agentic.pipeline.indexing import ChunkStorageAdapter, DocumentStorageAdapter
 
 
 class LocalDocumentStorageAdapter(DocumentStorageAdapter):
@@ -24,6 +24,9 @@ class LocalDocumentStorageAdapter(DocumentStorageAdapter):
 class LocalChunkStorageAdapter(ChunkStorageAdapter):
     def __init__(self) -> None:
         self.records: dict[str, DocumentChunk] = {}
+
+    async def get_many_by_chunk_ids(self, chunk_ids: tuple[str, ...]) -> list[DocumentChunk]:
+        return [self.records[chunk_id] for chunk_id in chunk_ids if chunk_id in self.records]
 
     async def list_by_document(self, document_id: str) -> list[DocumentChunk]:
         return [chunk for chunk in self.records.values() if chunk.document_id == document_id]

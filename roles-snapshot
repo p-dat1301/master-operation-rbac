@@ -1,0 +1,164 @@
+- generic [ref=e4]:
+  - generic [ref=e7]:
+    - generic [ref=e8]:
+      - generic [ref=e9]: MO
+      - generic [ref=e10]:
+        - paragraph [ref=e11]: RBAC Console
+        - heading "Master Operation" [level=1] [ref=e12]
+    - list [ref=e13]:
+      - listitem [ref=e14] [cursor=pointer]:
+        - generic [ref=e15]:
+          - img "dashboard" [ref=e16]:
+            - img [ref=e17]
+          - text: Dashboard
+      - listitem [ref=e19] [cursor=pointer]:
+        - generic [ref=e20]:
+          - img "bell" [ref=e21]:
+            - img [ref=e22]
+          - text: Thông báo
+      - listitem [ref=e24] [cursor=pointer]:
+        - generic [ref=e25]:
+          - img "team" [ref=e26]:
+            - img [ref=e27]
+          - text: Người dùng
+      - listitem [ref=e29] [cursor=pointer]:
+        - generic [ref=e30]:
+          - img "team" [ref=e31]:
+            - img [ref=e32]
+          - text: Departments
+      - listitem [ref=e34] [cursor=pointer]:
+        - generic [ref=e35]:
+          - img "safety-certificate" [ref=e36]:
+            - img [ref=e37]
+          - text: Roles
+      - listitem [ref=e39] [cursor=pointer]:
+        - generic [ref=e40]:
+          - img "key" [ref=e41]:
+            - img [ref=e42]
+          - text: Permissions
+      - listitem [ref=e44] [cursor=pointer]:
+        - generic [ref=e45]:
+          - img "check-square" [ref=e46]:
+            - img [ref=e47]
+          - text: Công việc
+      - listitem [ref=e50] [cursor=pointer]:
+        - generic [ref=e51]:
+          - img "calendar" [ref=e52]:
+            - img [ref=e53]
+          - text: Nghỉ phép
+      - listitem [ref=e55] [cursor=pointer]:
+        - generic [ref=e56]:
+          - img "appstore" [ref=e57]:
+            - img [ref=e58]
+          - text: Menu sync
+      - listitem [ref=e60] [cursor=pointer]:
+        - generic [ref=e61]:
+          - img "translation" [ref=e62]:
+            - img [ref=e63]
+          - text: i18n sync
+      - listitem [ref=e66] [cursor=pointer]:
+        - generic [ref=e67]:
+          - img "file-search" [ref=e68]:
+            - img [ref=e69]
+          - text: Audit Logs
+    - generic [ref=e71]:
+      - paragraph [ref=e72]: Angular 21 + NG ZORRO
+      - generic [ref=e73]: System config workspace
+  - generic [ref=e74]:
+    - generic [ref=e75]:
+      - generic [ref=e76]:
+        - button "Toggle navigation" [ref=e77] [cursor=pointer]:
+          - img "menu-fold" [ref=e78]:
+            - img [ref=e79]
+        - generic [ref=e81]:
+          - paragraph [ref=e82]: Admin control plane
+          - heading "Roles" [level=2] [ref=e83]
+      - generic [ref=e84]:
+        - generic [ref=e85]:
+          - strong [ref=e86]: Admin User
+          - generic [ref=e87]: admin
+        - button "Sign out" [ref=e88] [cursor=pointer]:
+          - generic [ref=e89]: Sign out
+        - generic [ref=e90]: Local workspace
+    - generic [ref=e92]:
+      - generic [ref=e93]:
+        - generic [ref=e94]:
+          - text: Admin
+          - generic [ref=e95]: /
+        - generic [ref=e96]:
+          - text: RBAC
+          - generic [ref=e97]: /
+        - generic [ref=e98]: Roles
+      - generic [ref=e101]:
+        - generic [ref=e102]:
+          - generic [ref=e103]:
+            - paragraph [ref=e104]: RBAC Management
+            - heading "Roles" [level=2] [ref=e105]
+            - paragraph [ref=e106]: Quản lý vai trò và phân quyền trong hệ thống.
+          - button "plus Tạo role mới" [ref=e107] [cursor=pointer]:
+            - img "plus" [ref=e108]:
+              - img [ref=e109]
+            - generic [ref=e112]: Tạo role mới
+        - generic [ref=e117]:
+          - table [ref=e121]:
+            - rowgroup [ref=e128]:
+              - row "# Tên role Display name Permissions Hành động" [ref=e129]:
+                - columnheader "#" [ref=e130]
+                - columnheader "Tên role" [ref=e131]
+                - columnheader "Display name" [ref=e132]
+                - columnheader "Permissions" [ref=e133]
+                - columnheader "Hành động" [ref=e134]
+            - rowgroup [ref=e135]:
+              - row "1 admin Administrator key Permissions delete" [ref=e136]:
+                - cell "1" [ref=e137]
+                - cell "admin" [ref=e138]:
+                  - code [ref=e139]: admin
+                - cell "Administrator" [ref=e140]
+                - cell "key Permissions" [ref=e141]:
+                  - button "key Permissions" [ref=e142] [cursor=pointer]:
+                    - img "key" [ref=e143]:
+                      - img [ref=e144]
+                    - generic [ref=e146]: Permissions
+                - cell "delete" [ref=e147]:
+                  - button "delete" [ref=e148] [cursor=pointer]:
+                    - img "delete" [ref=e149]:
+                      - img [ref=e150]
+              - row "2 manager Manager Updated key Permissions delete" [ref=e152]:
+                - cell "2" [ref=e153]
+                - cell "manager" [ref=e154]:
+                  - code [ref=e155]: manager
+                - cell "Manager Updated" [ref=e156]
+                - cell "key Permissions" [ref=e157]:
+                  - button "key Permissions" [ref=e158] [cursor=pointer]:
+                    - img "key" [ref=e159]:
+                      - img [ref=e160]
+                    - generic [ref=e162]: Permissions
+                - cell "delete" [ref=e163]:
+                  - button "delete" [ref=e164] [cursor=pointer]:
+                    - img "delete" [ref=e165]:
+                      - img [ref=e166]
+              - row "3 employee Employee key Permissions delete" [ref=e168]:
+                - cell "3" [ref=e169]
+                - cell "employee" [ref=e170]:
+                  - code [ref=e171]: employee
+                - cell "Employee" [ref=e172]
+                - cell "key Permissions" [ref=e173]:
+                  - button "key Permissions" [ref=e174] [cursor=pointer]:
+                    - img "key" [ref=e175]:
+                      - img [ref=e176]
+                    - generic [ref=e178]: Permissions
+                - cell "delete" [ref=e179]:
+                  - button "delete" [ref=e180] [cursor=pointer]:
+                    - img "delete" [ref=e181]:
+                      - img [ref=e182]
+          - list [ref=e185]:
+            - listitem "Trang Trước" [ref=e186]:
+              - button "left" [disabled] [ref=e187]:
+                - img "left" [ref=e188]:
+                  - img [ref=e189]
+            - listitem "1" [ref=e191] [cursor=pointer]:
+              - generic [ref=e192]: "1"
+            - listitem "Trang Kế" [ref=e193]:
+              - button "right" [disabled] [ref=e194]:
+                - img "right" [ref=e195]:
+                  - img [ref=e196]

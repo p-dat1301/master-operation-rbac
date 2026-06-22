@@ -21,7 +21,7 @@ class AnswerCitation(BaseModel):
 class AnswerResult(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True, protected_namespaces=())
 
-    status: Literal["answered", "insufficient_evidence", "insufficient_permission"]
+    status: Literal["answered", "insufficient_evidence", "insufficient_permission", "unsupported_scope"]
     answer: str
     citations: tuple[AnswerCitation, ...] = Field(default_factory=tuple)
     evidence_bundle: EvidenceBundle | None = None

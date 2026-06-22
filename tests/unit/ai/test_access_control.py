@@ -1,8 +1,7 @@
 """Unit tests for access-control primitives."""
 from __future__ import annotations
 
-from app.agentic.access_control import build_retrieval_filter, evaluate_access, resolve_policy
-from app.agentic.access_control.resolve_policy import AccessPolicyResolutionError
+from app.agentic.pipeline.access_control import build_retrieval_filter, evaluate_access, resolve_policy, AccessPolicyResolutionError
 from app.agentic.contracts import (
     AccessPolicyMetadata,
     Classification,
@@ -59,6 +58,24 @@ def test_authorized_department_chunk_is_allowed() -> None:
     assert resolve_policy(chunk).department_id == 10
 
 
+def test_owner_scoped_chunk_is_only_allowed_for_matching_user() -> None:
+    chunk = _chunk(
+        AccessPolicyMetadata(
+            classification=Classification.CONFIDENTIAL,
+            visibility_scope=VisibilityScope.OWNER,
+            owner_id=42,
+        )
+    )
+
+    allow_decision = evaluate_access(chunk, UserAccessContext(user_id=42, role_names=("employee",), department_id=10))
+    deny_decision = evaluate_access(chunk, UserAccessContext(user_id=7, role_names=("employee",), department_id=10))
+
+    assert allow_decision.allowed is True
+    assert allow_decision.reason_code == "allow_owner"
+    assert deny_decision.allowed is False
+    assert deny_decision.reason_code == "deny_owner_mismatch"
+
+
 def test_missing_policy_fails_closed() -> None:
     chunk = _chunk(None)
     user = UserAccessContext(user_id=1, role_names=("employee",), department_id=10)
@@ -75,7 +92,7 @@ def test_missing_policy_fails_closed() -> None:
         raise AssertionError("expected missing access policy failure")
 
 
-def test_role_filter_contains_global_and_role_clauses() -> None:
+def test_role_filter_contains_global_role_and_owner_clauses() -> None:
     user = UserAccessContext(user_id=7, role_names=("manager", "hr"), department_id=None)
 
     retrieval_filter = build_retrieval_filter(user)
@@ -83,3 +100,4 @@ def test_role_filter_contains_global_and_role_clauses() -> None:
     assert retrieval_filter.clauses[0] == {"visibility_scope": "global"}
     assert retrieval_filter.clauses[1]["visibility_scope"] == "role"
     assert retrieval_filter.clauses[1]["allowed_roles_any"] == ("hr", "manager")
+    assert retrieval_filter.clauses[2] == {"visibility_scope": "owner", "owner_id": 7}

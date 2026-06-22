@@ -1,26 +1,37 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
+import { NzIconModule } from 'ng-zorro-antd/icon';
+import { NzInputModule } from 'ng-zorro-antd/input';
 import { NzMessageService } from 'ng-zorro-antd/message';
+import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzTagModule } from 'ng-zorro-antd/tag';
+import { NzTooltipModule } from 'ng-zorro-antd/tooltip';
 import { firstValueFrom } from 'rxjs';
 
-import { PermissionResponse } from '../../models/rbac.models';
+import { PermissionResponse, PermissionWriteRequest } from '../../models/rbac.models';
 import { RbacApiService } from '../../services/rbac-api.service';
+import { mapAdminHttpError } from '../../shared/http-error-mapper';
+import { ADMIN_PAGE_COMMON_STYLES } from '../../shared/admin-page-styles';
 
 @Component({
 	selector: 'app-permissions-page',
 	standalone: true,
-	imports: [CommonModule, NzCardModule, NzTableModule, NzTagModule],
+	imports: [CommonModule, FormsModule, NzButtonModule, NzCardModule, NzIconModule, NzInputModule, NzModalModule, NzTableModule, NzTagModule, NzTooltipModule],
 	template: `
 		<section class="page-root" data-testid="permissions-page">
 			<div class="page-header">
 				<div>
 					<p class="eyebrow">RBAC Management</p>
 					<h2>Permissions</h2>
-					<p class="subtitle">Danh sách tất cả permission trong hệ thống (read-only).</p>
+					<p class="subtitle">Quản lý danh sách quyền trong hệ thống.</p>
 				</div>
+				<button nz-button nzType="primary" nzSize="large" (click)="openCreateModal()" data-testid="create-permission-btn">
+					<span nz-icon nzType="plus"></span> Tạo permission
+				</button>
 			</div>
 
 			<nz-card class="table-card" [nzBordered]="false">
@@ -34,10 +45,11 @@ import { RbacApiService } from '../../services/rbac-api.service';
 				>
 					<thead>
 						<tr>
-							<th nzWidth="60px">#</th>
-							<th>Permission key</th>
-							<th>Mô tả</th>
-							<th nzWidth="140px">Module</th>
+						<th nzWidth="60px">#</th>
+						<th>Mã quyền</th>
+						<th>Mô tả</th>
+						<th nzWidth="140px">Nhóm</th>
+						<th nzWidth="140px" nzAlign="right">Hành động</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -46,47 +58,68 @@ import { RbacApiService } from '../../services/rbac-api.service';
 							<td><code class="perm-code">{{ p.code }}</code></td>
 							<td><span class="desc">{{ p.description || '—' }}</span></td>
 							<td><nz-tag [nzColor]="getModuleColor(p.code)">{{ getModule(p.code) }}</nz-tag></td>
+							<td nzAlign="right" class="actions">
+								<button nz-button nzType="text" nzSize="small" (click)="openEditModal(p)" nz-tooltip="Sửa permission" [attr.data-testid]="'edit-permission-'+p.id">
+									<span nz-icon nzType="edit"></span>
+								</button>
+								<button nz-button nzDanger nzType="text" nzSize="small" (click)="deletePermission(p)" nz-tooltip="Xóa permission" [attr.data-testid]="'delete-permission-'+p.id">
+									<span nz-icon nzType="delete"></span>
+								</button>
+							</td>
 						</tr>
 					</tbody>
 				</nz-table>
 			</nz-card>
+
+			<nz-modal
+				[(nzVisible)]="showModal"
+				[nzTitle]="editingPermission() ? 'Sửa permission' : 'Tạo permission'"
+				(nzOnOk)="submitPermission()"
+				(nzOnCancel)="closeModal()"
+				[nzOkLoading]="saving()"
+				[nzOkText]="editingPermission() ? 'Lưu' : 'Tạo'"
+				data-testid="permission-modal"
+			>
+				<ng-container *nzModalContent>
+					<div class="modal-form">
+						<label class="form-field">
+							<span class="field-label">Permission key <span class="required">*</span></span>
+							<input nz-input [(ngModel)]="form.code" placeholder="e.g. audit:view" data-testid="permission-code-input" />
+						</label>
+						<label class="form-field">
+							<span class="field-label">Mô tả</span>
+							<textarea nz-input rows="3" [(ngModel)]="form.description" placeholder="Mô tả quyền" data-testid="permission-description-input"></textarea>
+						</label>
+					</div>
+				</ng-container>
+			</nz-modal>
 		</section>
 	`,
-	styles: [`
-		.page-root { display:grid; gap:1.5rem }
-		.page-header { display:flex; align-items:flex-start; justify-content:space-between; gap:1rem }
-		h2 { margin:.2rem 0 0; font-size:clamp(1.4rem,2.5vw,2rem); color:#f8fafc }
-		.eyebrow { margin:0; font-size:.76rem; font-weight:700; letter-spacing:.18em; text-transform:uppercase; color:#7dd3fc }
-		.subtitle { margin:.4rem 0 0; color:rgba(226,232,240,.65); font-size:.9rem }
-		.table-card { background:rgba(15,23,42,.72); border-radius:1.2rem }
-
-		.idx { color:#334155; font-size:.82rem; font-weight:600 }
-		.perm-code {
-			background:rgba(139,92,246,.12); color:#581c87;
-			padding:.2rem .55rem; border-radius:.4rem; font-size:.84rem; font-weight:600;
-		}
-		.desc { color:#111827; font-size:.9rem; font-weight:500 }
-
-		:host ::ng-deep .ant-table-thead > tr > th {
-			background:#f1f5f9 !important; color:#1e293b !important;
-			font-weight:700; font-size:.84rem;
-		}
-		:host ::ng-deep .ant-table,
-		:host ::ng-deep .ant-table-container,
-		:host ::ng-deep .ant-table-content,
-		:host ::ng-deep .ant-table-tbody,
-		:host ::ng-deep .ant-table-cell { color:#111827 !important; }
-		:host ::ng-deep .ant-table-tbody > tr > td { color:#111827 !important; }
-		:host ::ng-deep .ant-table-tbody > tr:hover > td { background:#f1f5f9 !important; }
-		:host ::ng-deep .ant-empty-description { color:#334155 !important; }
+	styles: [ADMIN_PAGE_COMMON_STYLES, `
+		.actions { white-space:nowrap }
+		.modal-form { display:grid; gap:1rem }
+		.field-label { font-size:.9rem; font-weight:600; color:var(--admin-text-strong) }
+		.required { color:var(--admin-action-danger) }
+		:host ::ng-deep .ant-table-thead > tr > th { background:rgba(8,15,28,.78) !important; color:var(--admin-text-strong) !important; font-weight:700; font-size:.84rem; }
+		:host ::ng-deep .ant-table, :host ::ng-deep .ant-table-container, :host ::ng-deep .ant-table-content, :host ::ng-deep .ant-table-tbody, :host ::ng-deep .ant-table-cell { color:var(--admin-text-primary) !important; }
+		:host ::ng-deep .ant-table-tbody > tr > td { color:var(--admin-text-primary) !important; }
+		:host ::ng-deep .ant-table-tbody > tr:hover > td { background:rgba(8,15,28,.68) !important; }
+		:host ::ng-deep .ant-empty-description { color:var(--admin-text-muted) !important; }
+		.perm-code { background:rgba(125,211,252,.12); color:var(--admin-action-primary-strong); padding:.2rem .55rem; border-radius:.4rem; font-size:.84rem; font-weight:600; }
 	`]
 })
 export class PermissionsPageComponent implements OnInit {
 	private readonly rbacApi = inject(RbacApiService);
 	private readonly message = inject(NzMessageService);
+	private readonly modal = inject(NzModalService);
 
 	readonly permissions = signal<PermissionResponse[]>([]);
+	readonly editingPermission = signal<PermissionResponse | null>(null);
 	readonly loading = signal(false);
+	readonly saving = signal(false);
+
+	showModal = false;
+	form: PermissionWriteRequest = { code: '', description: null };
 
 	ngOnInit(): void { this.loadPermissions(); }
 
@@ -95,8 +128,68 @@ export class PermissionsPageComponent implements OnInit {
 		try {
 			const result = await firstValueFrom(this.rbacApi.listPermissions());
 			this.permissions.set(result);
-		} catch { this.message.error('Không thể tải danh sách permissions.'); }
+		} catch (error) { this.showApiError(error, 'Không thể tải danh sách permissions.'); }
 		finally { this.loading.set(false); }
+	}
+
+	openCreateModal(): void {
+		this.editingPermission.set(null);
+		this.form = { code: '', description: null };
+		this.showModal = true;
+	}
+
+	openEditModal(permission: PermissionResponse): void {
+		this.editingPermission.set(permission);
+		this.form = { code: permission.code, description: permission.description };
+		this.showModal = true;
+	}
+
+	closeModal(): void {
+		this.showModal = false;
+	}
+
+	async submitPermission(): Promise<void> {
+		const code = this.form.code.trim();
+		if (!code) {
+			this.message.warning('Vui lòng nhập permission key.');
+			return;
+		}
+		if (!/^[a-z][a-z0-9:_-]*$/.test(code)) {
+			this.message.warning('Permission key chỉ nên dùng chữ thường, số, dấu : _ -.');
+			return;
+		}
+		const payload: PermissionWriteRequest = { code, description: this.form.description?.trim() || null };
+		const editing = this.editingPermission();
+		this.saving.set(true);
+		try {
+			if (editing) {
+				const updated = await firstValueFrom(this.rbacApi.updatePermission(editing.id, payload));
+				this.permissions.update((list) => list.map((item) => item.id === updated.id ? updated : item));
+				this.message.success(`Đã cập nhật permission "${updated.code}".`);
+			} else {
+				const created = await firstValueFrom(this.rbacApi.createPermission(payload));
+				this.permissions.update((list) => [...list, created]);
+				this.message.success(`Đã tạo permission "${created.code}".`);
+			}
+			this.closeModal();
+		} catch (error) { this.showApiError(error, editing ? 'Cập nhật permission thất bại.' : 'Tạo permission thất bại.'); }
+		finally { this.saving.set(false); }
+	}
+
+	deletePermission(permission: PermissionResponse): void {
+		this.modal.confirm({
+			nzTitle: `Xóa permission "${permission.code}"?`,
+			nzContent: 'Chỉ xóa khi backend cho phép và permission không còn được gán cho role.',
+			nzOkDanger: true,
+			nzOkText: 'Xóa',
+			nzOnOk: async () => {
+				try {
+					await firstValueFrom(this.rbacApi.deletePermission(permission.id));
+					this.permissions.update((list) => list.filter((item) => item.id !== permission.id));
+					this.message.success('Đã xóa permission.');
+				} catch (error) { this.showApiError(error, 'Xóa permission thất bại.'); }
+			}
+		});
 	}
 
 	getModule(code: string | undefined | null): string {
@@ -113,5 +206,10 @@ export class PermissionsPageComponent implements OnInit {
 			audit: 'red', system: 'purple', postman: 'default'
 		};
 		return palette[mod] ?? 'default';
+	}
+
+	private showApiError(error: unknown, fallback: string): void {
+		const feedback = mapAdminHttpError(error);
+		this.message.error(feedback.action === 'toast-only' ? feedback.message : fallback);
 	}
 }

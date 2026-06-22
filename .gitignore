@@ -9,3 +9,6 @@ __pycache__/
 *.pyc
 *.pyo
 .playwright-mcp/
+.env
+.env.*
+!.env.example

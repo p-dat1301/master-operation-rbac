@@ -3,7 +3,7 @@ import { Inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { API_BASE_URL } from '../core/tokens/api-base-url.token';
-import { PermissionResponse, RoleCreateRequest, RoleResponse, RoleUpdateRequest } from '../models/rbac.models';
+import { DepartmentResponse, PermissionResponse, PermissionWriteRequest, RoleCreateRequest, RoleResponse, RoleUpdateRequest } from '../models/rbac.models';
 import { BaseApiService } from './base-api.service';
 
 @Injectable({
@@ -39,6 +39,18 @@ export class RbacApiService extends BaseApiService {
 		return this.get<PermissionResponse[]>('/api/v1/permissions/');
 	}
 
+	createPermission(data: PermissionWriteRequest): Observable<PermissionResponse> {
+		return this.post<PermissionWriteRequest, PermissionResponse>('/api/v1/permissions/', data);
+	}
+
+	updatePermission(id: number, data: PermissionWriteRequest): Observable<PermissionResponse> {
+		return this.http.put<PermissionResponse>(`${this.base}/api/v1/permissions/${id}`, data);
+	}
+
+	deletePermission(id: number): Observable<unknown> {
+		return this.http.delete(`${this.base}/api/v1/permissions/${id}`);
+	}
+
 	listRolePermissions(roleId: number): Observable<PermissionResponse[]> {
 		return this.get<PermissionResponse[]>(`/api/v1/roles/${roleId}/permissions`);
 	}
@@ -49,5 +61,9 @@ export class RbacApiService extends BaseApiService {
 
 	removePermissionFromRole(roleId: number, permissionId: number): Observable<PermissionResponse[]> {
 		return this.http.delete<PermissionResponse[]>(`${this.base}/api/v1/roles/${roleId}/permissions/${permissionId}`);
+	}
+
+	listDepartments(): Observable<DepartmentResponse[]> {
+		return this.get<DepartmentResponse[]>('/api/v1/departments/');
 	}
 }

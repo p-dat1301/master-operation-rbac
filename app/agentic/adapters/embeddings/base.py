@@ -1,4 +1,4 @@
 """Embedding provider interface."""
-from app.agentic.indexing.index_document import EmbeddingProvider
+from app.agentic.pipeline.indexing import EmbeddingProvider
 
 __all__ = ["EmbeddingProvider"]

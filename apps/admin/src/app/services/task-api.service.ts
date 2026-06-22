@@ -3,7 +3,7 @@ import { Inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { API_BASE_URL } from '../core/tokens/api-base-url.token';
-import { TaskFilters, TaskResponse } from '../models/task.models';
+import { TaskCreateRequest, TaskFilters, TaskResponse, TaskUpdateRequest } from '../models/task.models';
 import { BaseApiService } from './base-api.service';
 
 @Injectable({
@@ -26,6 +26,14 @@ export class TaskApiService extends BaseApiService {
 		return this.get<TaskResponse>(`/api/v1/tasks/${id}`);
 	}
 
+	createTask(data: TaskCreateRequest): Observable<TaskResponse> {
+		return this.http.post<TaskResponse>(this.buildUrl('/api/v1/tasks/'), data);
+	}
+
+	updateTask(id: number, data: TaskUpdateRequest): Observable<TaskResponse> {
+		return this.http.put<TaskResponse>(this.buildUrl(`/api/v1/tasks/${id}`), data);
+	}
+
 	assignTask(id: number, assignee_id: number): Observable<TaskResponse> {
 		return this.http.put<TaskResponse>(this.buildUrl(`/api/v1/tasks/${id}/assign`), { assignee_id });
 	}
@@ -44,9 +52,5 @@ export class TaskApiService extends BaseApiService {
 
 	deleteTask(id: number): Observable<unknown> {
 		return this.http.delete(this.buildUrl(`/api/v1/tasks/${id}`));
-	}
-
-	private buildUrl(path: string): string {
-		return `${(this as unknown as { apiBaseUrl: string }).apiBaseUrl}${path}`;
 	}
 }

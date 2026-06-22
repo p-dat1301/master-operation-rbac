@@ -1,26 +1,12 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { permissionGuard } from './core/guards/permission.guard';
-import { LoginPageComponent } from './features/auth/login-page.component';
-import { DashboardPageComponent } from './features/dashboard/dashboard-page.component';
-import { I18nSyncPageComponent } from './features/config/i18n-sync-page.component';
-import { MenuSyncPageComponent } from './features/config/menu-sync-page.component';
-import { AuditLogsPageComponent } from './features/audit/audit-logs-page.component';
-import { LeavesPageComponent } from './features/leaves/leaves-page.component';
-import { NotificationsPageComponent } from './features/notifications/notifications-page.component';
-import { PermissionsPageComponent } from './features/rbac/permissions-page.component';
-import { RolesPageComponent } from './features/rbac/roles-page.component';
-import { TasksPageComponent } from './features/tasks/tasks-page.component';
-import { UsersPageComponent } from './features/users/users-page.component';
-import { ForbiddenPageComponent } from './features/system/forbidden-page.component';
-import { NotFoundPageComponent } from './features/system/not-found-page.component';
-import { UnauthorizedPageComponent } from './features/system/unauthorized-page.component';
 import { AdminShellComponent } from './layouts/admin-shell/admin-shell.component';
 
 export const routes: Routes = [
 	{
 		path: 'login',
-		component: LoginPageComponent
+		loadComponent: () => import('./features/auth/login-page.component').then((m) => m.LoginPageComponent)
 	},
 	{
 		path: '',
@@ -29,65 +15,95 @@ export const routes: Routes = [
 		children: [
 			{
 				path: '',
-				component: DashboardPageComponent,
+				loadComponent: () => import('./features/dashboard/dashboard-page.component').then((m) => m.DashboardPageComponent),
 				data: { title: 'Dashboard' }
 			},
 			// ── Configuration ──────────────────────────────────────────────────────
 			{
 				path: 'config/menu-sync',
-				component: MenuSyncPageComponent,
+				loadComponent: () => import('./features/config/menu-sync-page.component').then((m) => m.MenuSyncPageComponent),
 				canActivate: [permissionGuard('system.config.manage')],
 				data: { title: 'Menu sync' }
 			},
 			{
 				path: 'config/i18n-sync',
-				component: I18nSyncPageComponent,
+				loadComponent: () => import('./features/config/i18n-sync-page.component').then((m) => m.I18nSyncPageComponent),
 				canActivate: [permissionGuard('system.config.manage')],
 				data: { title: 'i18n sync' }
 			},
 			// ── Users ──────────────────────────────────────────────────────────────
 			{
 				path: 'users',
-				component: UsersPageComponent,
+				loadComponent: () => import('./features/users/users-page.component').then((m) => m.UsersPageComponent),
 				canActivate: [permissionGuard('manage_org')],
 				data: { title: 'Quản lý người dùng' }
 			},
 			// ── RBAC ───────────────────────────────────────────────────────────────
 			{
 				path: 'rbac/roles',
-				component: RolesPageComponent,
+				loadComponent: () => import('./features/rbac/roles-page.component').then((m) => m.RolesPageComponent),
 				canActivate: [permissionGuard('manage_org')],
 				data: { title: 'Roles' }
 			},
 			{
 				path: 'rbac/permissions',
-				component: PermissionsPageComponent,
+				loadComponent: () => import('./features/rbac/permissions-page.component').then((m) => m.PermissionsPageComponent),
 				canActivate: [permissionGuard('manage_org')],
 				data: { title: 'Permissions' }
+			},
+			{
+				path: 'system/departments',
+				loadComponent: () => import('./features/system/departments-page.component').then((m) => m.DepartmentsPageComponent),
+				canActivate: [permissionGuard('manage_org')],
+				data: { title: 'Departments' }
 			},
 			// ── Operations ─────────────────────────────────────────────────────────
 			{
 				path: 'tasks',
-				component: TasksPageComponent,
+				loadComponent: () => import('./features/tasks/tasks-page.component').then((m) => m.TasksPageComponent),
 				canActivate: [permissionGuard('create_task')],
 				data: { title: 'Công việc' }
 			},
 			{
 				path: 'leaves',
-				component: LeavesPageComponent,
+				loadComponent: () => import('./features/leaves/leaves-page.component').then((m) => m.LeavesPageComponent),
 				canActivate: [permissionGuard('approve_leave')],
 				data: { title: 'Đơn nghỉ phép' }
+			},
+			{
+				path: 'attendance',
+				loadComponent: () => import('./features/attendance/attendance-page.component').then((m) => m.AttendancePageComponent),
+				canActivate: [permissionGuard('view_attendance_self')],
+				data: { title: 'Attendance' }
 			},
 			// ── Notifications (auth-only, no special permission) ────────────────────
 			{
 				path: 'notifications',
-				component: NotificationsPageComponent,
+				loadComponent: () => import('./features/notifications/notifications-page.component').then((m) => m.NotificationsPageComponent),
 				data: { title: 'Thông báo' }
+			},
+			{
+				path: 'chat',
+				loadComponent: () => import('./features/chat/chat-window.component').then((m) => m.ChatWindowComponent),
+				canActivate: [authGuard],
+				data: { title: 'Chat' }
+			},
+			{
+				path: 'agentic/conversations',
+				loadComponent: () => import('./features/chat/agentic-conversations-page.component').then((m) => m.AgenticConversationsPageComponent),
+				canActivate: [authGuard],
+				data: { title: 'Conversations' }
+			},
+			{
+				path: 'agentic/documents',
+				loadComponent: () => import('./features/chat/agentic-documents-page.component').then((m) => m.AgenticDocumentsPageComponent),
+				canActivate: [authGuard],
+				data: { title: 'Documents' }
 			},
 			// ── Audit ──────────────────────────────────────────────────────────────
 			{
 				path: 'audit-logs',
-				component: AuditLogsPageComponent,
+				loadComponent: () => import('./features/audit/audit-logs-page.component').then((m) => m.AuditLogsPageComponent),
 				canActivate: [permissionGuard('audit:view')],
 				data: { title: 'Audit Logs' }
 			}
@@ -95,15 +111,15 @@ export const routes: Routes = [
 	},
 	{
 		path: 'unauthorized',
-		component: UnauthorizedPageComponent
+		loadComponent: () => import('./features/system/unauthorized-page.component').then((m) => m.UnauthorizedPageComponent)
 	},
 	{
 		path: 'forbidden',
-		component: ForbiddenPageComponent
+		loadComponent: () => import('./features/system/forbidden-page.component').then((m) => m.ForbiddenPageComponent)
 	},
 	{
 		path: 'not-found',
-		component: NotFoundPageComponent
+		loadComponent: () => import('./features/system/not-found-page.component').then((m) => m.NotFoundPageComponent)
 	},
 	{
 		path: '**',

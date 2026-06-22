@@ -1,37 +1,26 @@
 import { CommonModule } from '@angular/common';
 import { Component, HostListener, OnInit, inject } from '@angular/core';
-import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { filter } from 'rxjs';
 import { NzBreadCrumbModule } from 'ng-zorro-antd/breadcrumb';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzLayoutModule } from 'ng-zorro-antd/layout';
-import { NzMenuModule } from 'ng-zorro-antd/menu';
 
 import { AuthStoreService } from '../../services/auth-store.service';
+import { ADMIN_PAGE_COMMON_STYLES } from '../../shared/admin-page-styles';
+import { AdminShellNavComponent, type ShellNavItem } from './admin-shell-nav.component';
 
-type ShellNavItem = {
-	label: string;
-	icon: string;
+type ShellRouteMeta = {
 	route: string;
-	permission?: string;
-	group?: string;
+	title: string;
+	breadcrumbs: string[];
 };
 
 @Component({
 	selector: 'app-admin-shell',
 	standalone: true,
-	imports: [
-		CommonModule,
-		RouterOutlet,
-		RouterLink,
-		RouterLinkActive,
-		NzLayoutModule,
-		NzMenuModule,
-		NzIconModule,
-		NzBreadCrumbModule,
-		NzButtonModule
-	],
+	imports: [CommonModule, RouterOutlet, NzLayoutModule, NzButtonModule, NzIconModule, NzBreadCrumbModule, AdminShellNavComponent],
 	template: `
 		<nz-layout class="shell-layout">
 			<nz-sider
@@ -43,25 +32,7 @@ type ShellNavItem = {
 				[nzWidth]="272"
 				[nzTrigger]="null"
 			>
-				<div class="sider-brand">
-					<div class="brand-mark">MO</div>
-					<div *ngIf="!siderCollapsed" class="brand-copy">
-						<p class="brand-eyebrow">RBAC Console</p>
-						<h1>Master Operation</h1>
-					</div>
-				</div>
-
-				<ul nz-menu nzTheme="dark" nzMode="inline" [nzInlineCollapsed]="siderCollapsed" class="shell-menu">
-					<li *ngFor="let item of navItems" nz-menu-item [routerLink]="item.route" routerLinkActive="ant-menu-item-selected" [routerLinkActiveOptions]="{ exact: item.route === '/' }">
-						<span nz-icon [nzType]="item.icon"></span>
-						<span>{{ item.label }}</span>
-					</li>
-				</ul>
-
-				<div class="sider-footer" *ngIf="!siderCollapsed">
-					<p>Angular 21 + NG ZORRO</p>
-					<span>System config workspace</span>
-				</div>
+				<app-admin-shell-nav [navItems]="navItems" [collapsed]="siderCollapsed"></app-admin-shell-nav>
 			</nz-sider>
 
 			<nz-layout>
@@ -101,6 +72,7 @@ type ShellNavItem = {
 		</nz-layout>
 	`,
 	styles: [
+		ADMIN_PAGE_COMMON_STYLES,
 		`
 			:host {
 				display: block;
@@ -113,6 +85,7 @@ type ShellNavItem = {
 					radial-gradient(circle at top left, rgba(59, 130, 246, 0.2), transparent 26%),
 					radial-gradient(circle at 100% 0%, rgba(14, 165, 233, 0.14), transparent 22%),
 					#020817;
+				color: var(--admin-text-primary);
 			}
 
 			.shell-sider {
@@ -121,82 +94,22 @@ type ShellNavItem = {
 				height: 100dvh;
 				background: rgba(6, 11, 22, 0.92);
 				backdrop-filter: blur(18px);
-				border-inline-end: 1px solid rgba(148, 163, 184, 0.12);
+				border-inline-end: 1px solid var(--admin-border-subtle);
 			}
 
-			.sider-brand {
-				display: flex;
-				align-items: center;
-				gap: 0.9rem;
-				padding: 1.5rem 1.25rem 1rem;
-			}
-
-			.brand-mark {
-				display: grid;
-				place-items: center;
-				width: 2.75rem;
-				height: 2.75rem;
-				border-radius: 1rem;
-				font-size: 0.9rem;
-				font-weight: 800;
-				letter-spacing: 0.12em;
-				color: #eff6ff;
-				background: linear-gradient(135deg, #0ea5e9, #2563eb);
-				box-shadow: 0 14px 38px rgba(37, 99, 235, 0.35);
-			}
-
-			.brand-eyebrow,
-			.sider-footer p,
-			.sider-footer span,
 			.header-kicker {
 				margin: 0;
-			}
-
-			.brand-copy h1,
-			.header-left h2 {
-				margin: 0;
-			}
-
-			.brand-eyebrow,
-			.header-kicker {
 				font-size: 0.76rem;
 				letter-spacing: 0.18em;
 				text-transform: uppercase;
-				color: rgba(125, 211, 252, 0.72);
+				color: var(--admin-action-primary);
 			}
 
-			.brand-copy h1 {
-				font-size: 1rem;
+			.header-left h2 {
+				margin: 0;
+				font-size: clamp(1.2rem, 2vw, 1.6rem);
 				font-weight: 700;
-				color: #f8fafc;
-			}
-
-			.shell-menu {
-				background: transparent;
-				border-inline-end: 0;
-				padding: 0.75rem;
-			}
-
-			.sider-footer {
-				margin: auto 1rem 1rem;
-				padding: 1rem;
-				border: 1px solid rgba(125, 211, 252, 0.12);
-				border-radius: 1rem;
-				background: rgba(15, 23, 42, 0.55);
-			}
-
-			.sider-footer p {
-				font-size: 0.95rem;
-				font-weight: 600;
-				color: #f8fafc;
-			}
-
-			.sider-footer span {
-				display: block;
-				margin-top: 0.3rem;
-				font-size: 0.85rem;
-				line-height: 1.5;
-				color: rgba(226, 232, 240, 0.72);
+				color: var(--admin-text-primary);
 			}
 
 			.shell-header {
@@ -205,7 +118,7 @@ type ShellNavItem = {
 				line-height: normal;
 				background: rgba(2, 6, 23, 0.35);
 				backdrop-filter: blur(16px);
-				border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+				border-bottom: 1px solid var(--admin-border-subtle);
 				display: flex;
 				align-items: center;
 				justify-content: space-between;
@@ -218,16 +131,29 @@ type ShellNavItem = {
 				gap: 1rem;
 			}
 
-			.header-left h2 {
-				font-size: clamp(1.2rem, 2vw, 1.6rem);
-				font-weight: 700;
-				color: #f8fafc;
-			}
-
 			.header-actions {
 				display: flex;
 				align-items: center;
 				gap: 0.75rem;
+			}
+
+			.identity-chip {
+				display: grid;
+				gap: 0.1rem;
+				padding: 0.5rem 0.85rem;
+				border-radius: 1rem;
+				background: rgba(15, 23, 42, 0.72);
+				border: 1px solid var(--admin-border-subtle);
+			}
+
+			.identity-chip strong {
+				color: var(--admin-text-primary);
+				font-size: 0.88rem;
+			}
+
+			.identity-chip span {
+				color: var(--admin-text-secondary);
+				font-size: 0.78rem;
 			}
 
 			.status-pill {
@@ -254,7 +180,7 @@ type ShellNavItem = {
 			.content-panel {
 				min-height: calc(100dvh - 11rem);
 				padding: clamp(1rem, 2vw, 1.5rem);
-				border: 1px solid rgba(148, 163, 184, 0.12);
+				border: 1px solid var(--admin-border-subtle);
 				border-radius: 1.5rem;
 				background: rgba(8, 15, 28, 0.72);
 				box-shadow: 0 30px 80px rgba(2, 6, 23, 0.4);
@@ -279,22 +205,42 @@ export class AdminShellComponent implements OnInit {
 	protected readonly authStore = inject(AuthStoreService);
 
 	private readonly allNavItems: ShellNavItem[] = [
-		// ── General ────────────────────────────────────────────────────────────
-		{ label: 'Dashboard', icon: 'dashboard', route: '/' },
-		{ label: 'Thông báo', icon: 'bell', route: '/notifications' },
-		// ── HR & Users ─────────────────────────────────────────────────────────
-		{ label: 'Người dùng', icon: 'team', route: '/users', permission: 'manage_org' },
-		// ── RBAC ───────────────────────────────────────────────────────────────
-		{ label: 'Roles', icon: 'safety-certificate', route: '/rbac/roles', permission: 'manage_org' },
-		{ label: 'Permissions', icon: 'key', route: '/rbac/permissions', permission: 'manage_org' },
-		// ── Operations ─────────────────────────────────────────────────────────
-		{ label: 'Công việc', icon: 'check-square', route: '/tasks', permission: 'create_task' },
-		{ label: 'Nghỉ phép', icon: 'calendar', route: '/leaves', permission: 'approve_leave' },
-		// ── Configuration ──────────────────────────────────────────────────────
-		{ label: 'Menu sync', icon: 'appstore', route: '/config/menu-sync', permission: 'system.config.manage' },
-		{ label: 'i18n sync', icon: 'translation', route: '/config/i18n-sync', permission: 'system.config.manage' },
-		// ── Security ───────────────────────────────────────────────────────────
-		{ label: 'Audit Logs', icon: 'file-search', route: '/audit-logs', permission: 'audit:view' }
+		{ label: 'Dashboard', icon: 'dashboard', route: '/', group: 'Workspace' },
+		{ label: 'Thông báo', icon: 'bell', route: '/notifications', group: 'Workspace' },
+		{ label: 'Chat', icon: 'message', route: '/chat', group: 'Agent/AI' },
+		{ label: 'Conversations', icon: 'comment', route: '/agentic/conversations', group: 'Agent/AI' },
+		{ label: 'Documents', icon: 'file-text', route: '/agentic/documents', group: 'Agent/AI' },
+		{ label: 'Người dùng', icon: 'team', route: '/users', permission: 'manage_org', group: 'Organization' },
+		{ label: 'Departments', icon: 'team', route: '/system/departments', permission: 'manage_org', group: 'Organization' },
+		{ label: 'Roles', icon: 'safety-certificate', route: '/rbac/roles', permission: 'manage_org', group: 'Access Control' },
+		{ label: 'Permissions', icon: 'key', route: '/rbac/permissions', permission: 'manage_org', group: 'Access Control' },
+		{ label: 'Công việc', icon: 'check-square', route: '/tasks', permission: 'create_task', group: 'Operations' },
+		{ label: 'Attendance', icon: 'schedule', route: '/attendance', permission: 'view_attendance_self', group: 'Operations' },
+		{ label: 'Nghỉ phép', icon: 'calendar', route: '/leaves', permission: 'approve_leave', group: 'Operations' },
+		{ label: 'Audit Logs', icon: 'file-search', route: '/audit-logs', permission: 'audit:view', group: 'Security' },
+		{ label: 'Menu sync', icon: 'appstore', route: '/config/menu-sync', permission: 'system.config.manage', group: 'Advanced/Admin tools' },
+		{ label: 'i18n sync', icon: 'translation', route: '/config/i18n-sync', permission: 'system.config.manage', group: 'Advanced/Admin tools' }
+	];
+
+	private readonly routeMeta: ShellRouteMeta[] = [
+		{ route: '/', title: 'Dashboard', breadcrumbs: ['Admin', 'Workspace', 'Dashboard'] },
+		{ route: '/agentic/conversations', title: 'Conversations', breadcrumbs: ['Admin', 'Agent/AI', 'Conversations'] },
+		{ route: '/agentic/documents', title: 'Documents', breadcrumbs: ['Admin', 'Agent/AI', 'Documents'] },
+		{ route: '/users', title: 'Quản lý người dùng', breadcrumbs: ['Admin', 'Organization', 'Quản lý người dùng'] },
+		{ route: '/system/departments', title: 'Departments', breadcrumbs: ['Admin', 'Organization', 'Departments'] },
+		{ route: '/rbac/roles', title: 'Roles', breadcrumbs: ['Admin', 'Access Control', 'Roles'] },
+		{ route: '/rbac/permissions', title: 'Permissions', breadcrumbs: ['Admin', 'Access Control', 'Permissions'] },
+		{ route: '/tasks', title: 'Công việc', breadcrumbs: ['Admin', 'Operations', 'Công việc'] },
+		{ route: '/attendance', title: 'Attendance', breadcrumbs: ['Admin', 'Operations', 'Attendance'] },
+		{ route: '/leaves', title: 'Đơn nghỉ phép', breadcrumbs: ['Admin', 'Operations', 'Đơn nghỉ phép'] },
+		{ route: '/notifications', title: 'Thông báo', breadcrumbs: ['Admin', 'Workspace', 'Thông báo'] },
+		{ route: '/chat', title: 'Chat', breadcrumbs: ['Admin', 'Agent/AI', 'Chat'] },
+		{ route: '/audit-logs', title: 'Audit Logs', breadcrumbs: ['Admin', 'Security', 'Audit Logs'] },
+		{ route: '/config/menu-sync', title: 'Menu sync', breadcrumbs: ['Admin', 'Advanced/Admin tools', 'Menu sync'] },
+		{ route: '/config/i18n-sync', title: 'i18n sync', breadcrumbs: ['Admin', 'Advanced/Admin tools', 'i18n sync'] },
+		{ route: '/unauthorized', title: 'Unauthorized', breadcrumbs: ['Admin', 'Unauthorized'] },
+		{ route: '/forbidden', title: 'Forbidden', breadcrumbs: ['Admin', 'Forbidden'] },
+		{ route: '/not-found', title: 'Not found', breadcrumbs: ['Admin', 'Not found'] }
 	];
 
 	breadcrumbs: string[] = ['Admin'];
@@ -336,31 +282,8 @@ export class AdminShellComponent implements OnInit {
 
 	private syncRouteMeta(url: string): void {
 		const cleanUrl = url.split('?')[0] || '/';
-		const matched = this.routeMeta.find((item) => item.route === cleanUrl) ?? this.routeMeta.at(0)!;
+		const matched = this.routeMeta.find((item) => item.route === cleanUrl) ?? this.routeMeta[0];
 		this.breadcrumbs = matched.breadcrumbs;
 		this.pageTitle = matched.title;
 	}
-
-	private readonly routeMeta = [
-		{ route: '/', title: 'Dashboard', breadcrumbs: ['Admin', 'Dashboard'] },
-		// Configuration
-		{ route: '/config/menu-sync', title: 'Menu sync', breadcrumbs: ['Admin', 'Configuration', 'Menu sync'] },
-		{ route: '/config/i18n-sync', title: 'i18n sync', breadcrumbs: ['Admin', 'Configuration', 'i18n sync'] },
-		// Users
-		{ route: '/users', title: 'Quản lý người dùng', breadcrumbs: ['Admin', 'Người dùng'] },
-		// RBAC
-		{ route: '/rbac/roles', title: 'Roles', breadcrumbs: ['Admin', 'RBAC', 'Roles'] },
-		{ route: '/rbac/permissions', title: 'Permissions', breadcrumbs: ['Admin', 'RBAC', 'Permissions'] },
-		// Operations
-		{ route: '/tasks', title: 'Công việc', breadcrumbs: ['Admin', 'Operations', 'Công việc'] },
-		{ route: '/leaves', title: 'Đơn nghỉ phép', breadcrumbs: ['Admin', 'Operations', 'Nghỉ phép'] },
-		// Notifications
-		{ route: '/notifications', title: 'Thông báo', breadcrumbs: ['Admin', 'Thông báo'] },
-		// Audit
-		{ route: '/audit-logs', title: 'Audit Logs', breadcrumbs: ['Admin', 'Security', 'Audit Logs'] },
-		// System
-		{ route: '/unauthorized', title: 'Unauthorized', breadcrumbs: ['Admin', 'Unauthorized'] },
-		{ route: '/forbidden', title: 'Forbidden', breadcrumbs: ['Admin', 'Forbidden'] },
-		{ route: '/not-found', title: 'Not found', breadcrumbs: ['Admin', 'Not found'] }
-	];
 }

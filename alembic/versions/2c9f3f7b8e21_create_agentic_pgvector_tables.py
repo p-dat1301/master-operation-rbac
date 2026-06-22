@@ -18,7 +18,7 @@ branch_labels = None
 depends_on = None
 
 
-EMBEDDING_DIMENSION = 384
+EMBEDDING_DIMENSION = 1024
 
 
 def upgrade() -> None:

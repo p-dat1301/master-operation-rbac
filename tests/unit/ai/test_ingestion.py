@@ -10,7 +10,7 @@ from app.agentic.contracts import (
     SourceType,
     VisibilityScope,
 )
-from app.agentic.ingestion.ingest_source import IngestSource, IngestionStatus
+from app.agentic.pipeline.ingestion import IngestSource, IngestionStatus
 
 
 DEFAULT_POLICY = AccessPolicyMetadata(

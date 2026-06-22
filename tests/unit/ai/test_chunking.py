@@ -6,9 +6,8 @@ from zipfile import ZipFile
 
 from unittest.mock import patch
 
-from app.agentic.chunking.chunk_config import ChunkConfig
-from app.agentic.chunking.chunk_document import chunk_document
-from app.agentic.chunking.tokenizer import (
+from app.agentic.pipeline.chunking import ChunkConfig, chunk_document
+from app.agentic.pipeline.chunking.tokenizer import (
     FALLBACK_TOKENIZER_POLICY,
     TOKENIZER_POLICY,
     WhitespaceTokenizerAdapter,
@@ -21,7 +20,7 @@ from app.agentic.contracts import (
     SourceType,
     VisibilityScope,
 )
-from app.agentic.parsing.parse_document import normalize_document, parse_document
+from app.agentic.pipeline.parsing import normalize_document, parse_document
 
 
 PDF_BYTES = b'''%PDF-1.4
@@ -125,7 +124,7 @@ def test_chunk_document_preserves_pdf_provenance_and_token_budget(tmp_path: Path
     assert chunks[0].metadata["block_ids"]
     assert chunks[0].metadata["parser_name"] == normalized.parser_name
     assert ChunkConfig().tokenizer_policy == TOKENIZER_POLICY
-    assert chunks[0].metadata["embedding_model"] == "intfloat/multilingual-e5-base"
+    assert chunks[0].metadata["embedding_model"] == "intfloat/multilingual-e5-large"
     assert chunks[0].metadata["tokenizer_policy"] in {TOKENIZER_POLICY, FALLBACK_TOKENIZER_POLICY}
 
 

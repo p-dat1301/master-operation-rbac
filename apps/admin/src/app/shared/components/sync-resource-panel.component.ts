@@ -1,7 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { HttpErrorResponse } from '@angular/common/http';
 import { Component, Input, signal } from '@angular/core';
-import { firstValueFrom } from 'rxjs';
 import { NzAlertModule } from 'ng-zorro-antd/alert';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzCardModule } from 'ng-zorro-antd/card';
@@ -9,6 +7,7 @@ import { NzModalService } from 'ng-zorro-antd/modal';
 
 import { SyncSummary } from '../../models/admin-config.models';
 import { AdminConfigSyncService } from '../../services/admin-config-sync.service';
+import { runAdminAsync } from '../async-state';
 import { SyncConfirmDialogComponent } from './sync-confirm-dialog.component';
 
 @Component({
@@ -189,35 +188,24 @@ export class SyncResourcePanelComponent {
 		this.errorMessage.set(null);
 		this.feedbackMessage.set(null);
 
-		try {
-			const summary = await firstValueFrom(
-				this.resource === 'menu' ? this.syncService.syncMenu(false) : this.syncService.syncI18n(false)
-			);
-
-			this.summary.set(summary);
-			this.feedbackType.set('success');
-			this.feedbackMessage.set(`${this.title} completed: created ${summary.created}, updated ${summary.updated}, skipped ${summary.skipped}.`);
-		} catch (error) {
-			const message = this.extractErrorMessage(error);
-			this.errorMessage.set(message);
-			this.feedbackType.set('error');
-			this.feedbackMessage.set(`${this.title} failed: ${message}`);
-		} finally {
-			this.loading.set(false);
-		}
+		await runAdminAsync(
+			this.resource === 'menu' ? this.syncService.syncMenu(false) : this.syncService.syncI18n(false),
+			{
+				pending: this.loading,
+				fallbackMessage: `${this.title} failed.`,
+				onSuccess: (summary) => {
+					this.summary.set(summary);
+					this.feedbackType.set('success');
+					this.feedbackMessage.set(`${this.title} completed: created ${summary.created}, updated ${summary.updated}, skipped ${summary.skipped}.`);
+				},
+				onError: (feedback, message) => {
+					const text = feedback.action === 'toast-only' ? feedback.message : message;
+					this.errorMessage.set(text);
+					this.feedbackType.set('error');
+					this.feedbackMessage.set(`${this.title} failed: ${text}`);
+				}
+			}
+		);
 	}
 
-	private extractErrorMessage(error: unknown): string {
-		if (error instanceof HttpErrorResponse) {
-			const details = error.error as Partial<SyncSummary> | { detail?: string } | null;
-			if (details && 'errors' in details && Array.isArray(details.errors) && details.errors.length) {
-				return details.errors.join(' • ');
-			}
-			if (details && 'detail' in details && typeof details.detail === 'string') {
-				return details.detail;
-			}
-		}
-
-		return 'The sync request failed. Please try again.';
-	}
 }

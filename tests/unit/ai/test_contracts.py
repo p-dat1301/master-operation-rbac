@@ -3,6 +3,7 @@ from pydantic import ValidationError
 
 from app.agentic.contracts import (
     AccessPolicyMetadata,
+    AnswerResult,
     BlockKind,
     CitationMetadata,
     Classification,
@@ -73,6 +74,12 @@ def test_access_policy_fails_closed_when_required_scope_metadata_is_missing():
             visibility_scope=VisibilityScope.ROLE,
         )
 
+    with pytest.raises(ValidationError, match="owner-scoped policy requires owner_id"):
+        AccessPolicyMetadata(
+            classification=Classification.RESTRICTED,
+            visibility_scope=VisibilityScope.OWNER,
+        )
+
 
 def test_normalized_document_requires_access_metadata():
     with pytest.raises(ValidationError, match="access_policy"):
@@ -90,3 +97,12 @@ def test_normalized_document_requires_access_metadata():
                 ),
             ),
         )
+
+
+def test_answer_result_accepts_unsupported_scope_status():
+    result = AnswerResult(
+        status="unsupported_scope",
+        answer="The request is outside the supported scope for this workflow.",
+    )
+
+    assert result.status == "unsupported_scope"

@@ -20,6 +20,7 @@ export class AuthStoreService {
 	readonly initialized = computed(() => this.initializedState());
 	readonly loading = computed(() => this.loadingState());
 	readonly isAuthenticated = computed(() => Boolean(this.tokenState() && this.currentUserState()));
+	readonly hasSession = computed(() => Boolean(this.tokenState()));
 
 	constructor(private readonly authApi: AuthApiService) {}
 
@@ -58,6 +59,10 @@ export class AuthStoreService {
 	}
 
 	logout(): void {
+		this.clearSession();
+	}
+
+	handleUnauthorized(): void {
 		this.clearSession();
 	}
 

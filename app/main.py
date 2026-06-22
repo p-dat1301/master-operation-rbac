@@ -16,6 +16,7 @@ from app.presentation.api.v1 import menu_sync as menu_sync_router
 from app.presentation.api.v1 import notifications as notifications_router
 from app.presentation.api.v1 import permissions as permissions_router
 from app.presentation.api.v1 import roles as roles_router
+from app.presentation.api.v1 import agentic as agentic_router
 from app.presentation.api.v1 import tasks as tasks_router
 from app.presentation.api.v1 import users as users_router
 from app.presentation.middleware.audit_middleware import AuditMiddleware
@@ -33,6 +34,7 @@ app.add_middleware(
 
 app.include_router(auth_router.router)
 app.include_router(users_router.router)
+app.include_router(agentic_router.router)
 app.include_router(tasks_router.router)
 app.include_router(leaves_router.router)
 app.include_router(attendance_router.router)

@@ -34,6 +34,8 @@ describe('auth guards', () => {
 		const result = await TestBed.runInInjectionContext(() => authGuard({} as never, {} as never));
 
 		expect(result).toBe('/unauthorized');
+		expect(authStoreMock.ensureAuthenticated).toHaveBeenCalledTimes(1);
+		expect(routerMock.createUrlTree).toHaveBeenCalledWith(['/unauthorized']);
 	});
 
 	it('redirects authenticated users without permission to forbidden', async () => {
@@ -43,6 +45,7 @@ describe('auth guards', () => {
 		const result = await TestBed.runInInjectionContext(() => permissionGuard('system.config.manage')({} as never, {} as never));
 
 		expect(result).toBe('/forbidden');
+		expect(authStoreMock.hasPermission).toHaveBeenCalledWith('system.config.manage');
 	});
 
 	it('allows authenticated users with permission', async () => {

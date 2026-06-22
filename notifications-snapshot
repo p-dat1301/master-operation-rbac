@@ -1,0 +1,112 @@
+- generic [ref=e4]:
+  - generic [ref=e7]:
+    - generic [ref=e8]:
+      - generic [ref=e9]: MO
+      - generic [ref=e10]:
+        - paragraph [ref=e11]: RBAC Console
+        - heading "Master Operation" [level=1] [ref=e12]
+    - list [ref=e13]:
+      - listitem [ref=e14] [cursor=pointer]:
+        - generic [ref=e15]:
+          - img "dashboard" [ref=e16]:
+            - img [ref=e17]
+          - text: Dashboard
+      - listitem [ref=e19] [cursor=pointer]:
+        - generic [ref=e20]:
+          - img "bell" [ref=e21]:
+            - img [ref=e22]
+          - text: Thông báo
+      - listitem [ref=e24] [cursor=pointer]:
+        - generic [ref=e25]:
+          - img "team" [ref=e26]:
+            - img [ref=e27]
+          - text: Người dùng
+      - listitem [ref=e29] [cursor=pointer]:
+        - generic [ref=e30]:
+          - img "team" [ref=e31]:
+            - img [ref=e32]
+          - text: Departments
+      - listitem [ref=e34] [cursor=pointer]:
+        - generic [ref=e35]:
+          - img "safety-certificate" [ref=e36]:
+            - img [ref=e37]
+          - text: Roles
+      - listitem [ref=e39] [cursor=pointer]:
+        - generic [ref=e40]:
+          - img "key" [ref=e41]:
+            - img [ref=e42]
+          - text: Permissions
+      - listitem [ref=e44] [cursor=pointer]:
+        - generic [ref=e45]:
+          - img "check-square" [ref=e46]:
+            - img [ref=e47]
+          - text: Công việc
+      - listitem [ref=e50] [cursor=pointer]:
+        - generic [ref=e51]:
+          - img "calendar" [ref=e52]:
+            - img [ref=e53]
+          - text: Nghỉ phép
+      - listitem [ref=e55] [cursor=pointer]:
+        - generic [ref=e56]:
+          - img "appstore" [ref=e57]:
+            - img [ref=e58]
+          - text: Menu sync
+      - listitem [ref=e60] [cursor=pointer]:
+        - generic [ref=e61]:
+          - img "translation" [ref=e62]:
+            - img [ref=e63]
+          - text: i18n sync
+      - listitem [ref=e66] [cursor=pointer]:
+        - generic [ref=e67]:
+          - img "file-search" [ref=e68]:
+            - img [ref=e69]
+          - text: Audit Logs
+    - generic [ref=e71]:
+      - paragraph [ref=e72]: Angular 21 + NG ZORRO
+      - generic [ref=e73]: System config workspace
+  - generic [ref=e74]:
+    - generic [ref=e75]:
+      - generic [ref=e76]:
+        - button "Toggle navigation" [ref=e77] [cursor=pointer]:
+          - img "menu-fold" [ref=e78]:
+            - img [ref=e79]
+        - generic [ref=e81]:
+          - paragraph [ref=e82]: Admin control plane
+          - heading "Thông báo" [level=2] [ref=e83]
+      - generic [ref=e84]:
+        - generic [ref=e85]:
+          - strong [ref=e86]: Admin User
+          - generic [ref=e87]: admin
+        - button "Sign out" [ref=e88] [cursor=pointer]:
+          - generic [ref=e89]: Sign out
+        - generic [ref=e90]: Local workspace
+    - generic [ref=e92]:
+      - generic [ref=e93]:
+        - generic [ref=e94]:
+          - text: Admin
+          - generic [ref=e95]: /
+        - generic [ref=e96]: Thông báo
+      - generic [ref=e99]:
+        - generic [ref=e100]:
+          - generic [ref=e101]:
+            - paragraph [ref=e102]: Inbox
+            - heading "Thông báo" [level=2] [ref=e103]
+            - paragraph [ref=e104]: Các thông báo hệ thống gửi đến tài khoản của bạn.
+          - button "check-square Đánh dấu tất cả đã đọc" [disabled] [ref=e106]:
+            - img "check-square":
+              - img
+            - generic: Đánh dấu tất cả đã đọc
+        - table [ref=e115]:
+          - rowgroup [ref=e122]:
+            - row "Tiêu đề Nội dung Thời gian Hành động" [ref=e123]:
+              - columnheader [ref=e124]
+              - columnheader "Tiêu đề" [ref=e125]
+              - columnheader "Nội dung" [ref=e126]
+              - columnheader "Thời gian" [ref=e127]
+              - columnheader "Hành động" [ref=e128]
+          - rowgroup [ref=e129]:
+            - row "Trống" [ref=e130]:
+              - cell "Trống" [ref=e131]:
+                - generic [ref=e133]:
+                  - img [ref=e136]
+                  - paragraph [ref=e142]: Trống

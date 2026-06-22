@@ -17,6 +17,12 @@ from app.agentic.contracts.document import (
     ParsedDocument,
     ParserStatus,
 )
+from app.agentic.contracts.embedding import (
+    EMBEDDING_DIMENSION,
+    EMBEDDING_MODEL_NAME,
+    EMBEDDING_MODEL_VERSION,
+    MAX_EMBEDDING_TOKENS,
+)
 from app.agentic.contracts.graph_state import GraphState
 from app.agentic.contracts.retrieval import EvidenceBundle, RetrievalFilter
 from app.agentic.contracts.source import SourceMetadata, SourceType
@@ -32,8 +38,12 @@ __all__ = [
     "ContentBlock",
     "DocumentChunk",
     "DocumentRecord",
+    "EMBEDDING_DIMENSION",
+    "EMBEDDING_MODEL_NAME",
+    "EMBEDDING_MODEL_VERSION",
     "EvidenceBundle",
     "GraphState",
+    "MAX_EMBEDDING_TOKENS",
     "NormalizedDocument",
     "ParsedDocument",
     "ParserStatus",

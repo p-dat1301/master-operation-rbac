@@ -5,13 +5,12 @@ from sqlalchemy import delete, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.agentic.adapters.storage.models import AgenticChunkModel, AgenticDocumentModel
 from app.agentic.contracts.access_policy import AccessPolicyMetadata
 from app.agentic.contracts.chunk import DocumentChunk
 from app.agentic.contracts.document import CitationMetadata, DocumentRecord
 from app.agentic.contracts.source import SourceMetadata
-from app.agentic.indexing.index_document import ChunkStorageAdapter, DocumentStorageAdapter
-from app.infrastructure.database.models.agentic_chunk_model import AgenticChunkModel
-from app.infrastructure.database.models.agentic_document_model import AgenticDocumentModel
+from app.agentic.pipeline.indexing import ChunkStorageAdapter, DocumentStorageAdapter, PgvectorBackfillAdapter
 
 
 class SQLAlchemyDocumentStorageAdapter(DocumentStorageAdapter):
@@ -37,16 +36,34 @@ class SQLAlchemyDocumentStorageAdapter(DocumentStorageAdapter):
         await self._session.flush()
 
 
-class SQLAlchemyChunkStorageAdapter(ChunkStorageAdapter):
+class SQLAlchemyChunkStorageAdapter(ChunkStorageAdapter, PgvectorBackfillAdapter):
     """Persist retry-safe chunk records with async SQLAlchemy."""
 
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
 
+    async def get_many_by_chunk_ids(self, chunk_ids: tuple[str, ...]) -> list[DocumentChunk]:
+        if not chunk_ids:
+            return []
+        stmt = select(AgenticChunkModel).where(AgenticChunkModel.chunk_id.in_(chunk_ids))
+        result = await self._session.execute(stmt)
+        by_id = {model.chunk_id: _chunk_to_record(model) for model in result.scalars().all()}
+        return [by_id[chunk_id] for chunk_id in chunk_ids if chunk_id in by_id]
+
     async def list_by_document(self, document_id: str) -> list[DocumentChunk]:
         stmt = select(AgenticChunkModel).where(AgenticChunkModel.document_id == document_id).order_by(AgenticChunkModel.chunk_index)
         result = await self._session.execute(stmt)
         return [_chunk_to_record(model) for model in result.scalars().all()]
+
+    async def list_chunks(self, *, limit: int, offset: int) -> tuple[DocumentChunk, ...]:
+        stmt = (
+            select(AgenticChunkModel)
+            .order_by(AgenticChunkModel.document_id, AgenticChunkModel.chunk_index)
+            .limit(limit)
+            .offset(offset)
+        )
+        result = await self._session.execute(stmt)
+        return tuple(_chunk_to_record(model) for model in result.scalars().all())
 
     async def upsert_many(self, chunks: tuple[DocumentChunk, ...]) -> tuple[DocumentChunk, ...]:
         if not chunks:
@@ -64,6 +81,7 @@ class SQLAlchemyChunkStorageAdapter(ChunkStorageAdapter):
 
 
 def _document_values(record: DocumentRecord) -> dict[str, object]:
+
     return {
         "document_id": record.document_id,
         "source": record.source.model_dump(mode="json"),
@@ -123,3 +141,4 @@ def _chunk_to_record(model: AgenticChunkModel) -> DocumentChunk:
         metadata=model.chunk_metadata,
         created_at=model.created_at,
     )
+
