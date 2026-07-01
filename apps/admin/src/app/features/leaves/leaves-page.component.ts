@@ -106,7 +106,7 @@ const EMPTY_LEAVE_FORM: LeaveFormState = { leave_type: 'annual', start_date: '',
 						<button nz-button nzType="default" [disabled]="!canEdit(selected)" (click)="openEdit(selected)">Sửa</button>
 						<button nz-button nzType="default" [disabled]="selected.status !== 'pending'" (click)="cancel(selected)">Hủy</button>
 						<button nz-button nzType="primary" [disabled]="selected.status !== 'pending'" (click)="review(selected,'approve')">Duyệt</button>
-						<button nz-button nzDanger [disabled]="selected.status !== 'pending'" (click)="review(selected,'reject')">Từ chối</button>
+						<button nz-button nzDanger [disabled]="selected.status !== 'pending'" (click)="review(selected,'reject')">Không duyệt</button>
 					</div>
 				</div>
 				<nz-descriptions *ngIf="selectedLeave() as selected" nzBordered nzSize="small" class="detail-card">
@@ -149,7 +149,7 @@ const EMPTY_LEAVE_FORM: LeaveFormState = { leave_type: 'annual', start_date: '',
 							<td nzAlign="right">
 								<button nz-button nzType="text" nzSize="small" (click)="$event.stopPropagation(); openEdit(l)" nz-tooltip="Sửa" [disabled]="!canEdit(l)" [attr.aria-label]="'Sửa đơn nghỉ của ' + (l.user_name || ('ID ' + l.user_id))" [attr.data-testid]="'edit-leave-'+l.id"><span nz-icon nzType="edit"></span></button>
 								<button *ngIf="l.status === 'pending'" nz-button nzType="text" nzSize="small" (click)="$event.stopPropagation(); review(l,'approve')" nz-tooltip="Duyệt" class="action-success" [attr.aria-label]="'Duyệt đơn nghỉ của ' + (l.user_name || ('ID ' + l.user_id))" [attr.data-testid]="'approve-leave-'+l.id"><span nz-icon nzType="check"></span></button>
-								<button *ngIf="l.status === 'pending'" nz-button nzDanger nzType="text" nzSize="small" (click)="$event.stopPropagation(); review(l,'reject')" nz-tooltip="Từ chối" [attr.aria-label]="'Từ chối đơn nghỉ của ' + (l.user_name || ('ID ' + l.user_id))" [attr.data-testid]="'reject-leave-'+l.id"><span nz-icon nzType="close"></span></button>
+								<button *ngIf="l.status === 'pending'" nz-button nzDanger nzType="text" nzSize="small" (click)="$event.stopPropagation(); review(l,'reject')" nz-tooltip="Không duyệt" [attr.aria-label]="'Không duyệt đơn nghỉ của ' + (l.user_name || ('ID ' + l.user_id))" [attr.data-testid]="'reject-leave-'+l.id"><span nz-icon nzType="close"></span></button>
 							</td>
 						</tr>
 					</tbody>
@@ -203,13 +203,15 @@ const EMPTY_LEAVE_FORM: LeaveFormState = { leave_type: 'annual', start_date: '',
 				</ng-container>
 			</nz-modal>
 
-			<nz-modal [(nzVisible)]="showReviewModal" [nzTitle]="reviewModalTitle" (nzOnOk)="submitReview()" (nzOnCancel)="closeReviewModal()" [nzOkLoading]="saving()" [nzOkText]="reviewMode === 'approve' ? 'Duyệt' : 'Từ chối'" [nzOkDanger]="reviewMode === 'reject'" data-testid="leave-review-modal">
+			<nz-modal [(nzVisible)]="showReviewModal" [nzTitle]="reviewModalTitle" (nzOnOk)="submitReview()" (nzOnCancel)="closeReviewModal()" [nzOkLoading]="saving()" [nzOkText]="reviewMode === 'approve' ? 'Duyệt' : 'Từ chối'" [nzOkDanger]="reviewMode === 'reject'">
 				<ng-container *nzModalContent>
-					<p class="muted">Xác nhận {{ reviewMode === 'approve' ? 'duyệt' : 'từ chối' }} đơn nghỉ của <strong class="text-strong">{{ selectedLeave()?.user_name || selectedLeave()?.user_id }}</strong>.</p>
-					<label *ngIf="reviewMode === 'reject'" class="form-field review-reason">
-						<span>Lý do từ chối</span>
-						<textarea nz-input rows="3" [(ngModel)]="reviewReason" data-testid="leave-review-reason"></textarea>
-					</label>
+					<div data-testid="leave-review-modal">
+						<p class="muted">Xác nhận {{ reviewMode === 'approve' ? 'duyệt' : 'từ chối' }} đơn nghỉ của <strong class="text-strong">{{ selectedLeave()?.user_name || selectedLeave()?.user_id }}</strong>.</p>
+						<label *ngIf="reviewMode === 'reject'" class="form-field review-reason">
+							<span>Lý do từ chối</span>
+							<textarea nz-input rows="3" [(ngModel)]="reviewReason" data-testid="leave-review-reason"></textarea>
+						</label>
+					</div>
 				</ng-container>
 			</nz-modal>
 		</section>
@@ -311,7 +313,11 @@ export class LeavesPageComponent implements OnInit {
 	async submitReview(): Promise<void> {
 		const leave = this.selectedLeave();
 		if (!leave) { this.message.warning('Không có đơn nghỉ được chọn.'); return; }
-		const payload: LeaveReviewPayload = this.reviewMode === 'reject' ? { action: 'reject', rejected_reason: this.reviewReason.trim() || undefined } : { action: 'approve' };
+		if (this.reviewMode === 'reject' && !this.reviewReason.trim()) {
+			this.message.warning('Vui lòng nhập lý do từ chối.');
+			return;
+		}
+		const payload: LeaveReviewPayload = this.reviewMode === 'reject' ? { action: 'reject', rejected_reason: this.reviewReason.trim() } : { action: 'approve' };
 		await runAdminAsync(this.leaveApi.reviewLeave(leave.id, payload), {
 			pending: this.saving,
 			fallbackMessage: 'Thao tác thất bại.',

@@ -14,8 +14,19 @@ import {
   DashboardOutline, DeleteOutline, EyeOutline, FileSearchOutline,
   KeyOutline, LockOutline, MenuFoldOutline, MenuUnfoldOutline,
   MessageOutline, PlayCircleOutline, PlusOutline, ReloadOutline, SafetyCertificateOutline,
-  StopOutline, SyncOutline, TeamOutline, TranslationOutline
+  StopOutline, SyncOutline, TeamOutline, TranslationOutline,
+  WarningOutline,
+  LoginOutline,
+  LogoutOutline,
+  CommentOutline,
+  FileTextOutline,
+  ScheduleOutline,
+  SendOutline,
+  ApartmentOutline,
+  HistoryOutline,
+  GlobalOutline,
 } from '@ant-design/icons-angular/icons';
+
 
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { API_BASE_URL } from './core/tokens/api-base-url.token';
@@ -37,10 +48,20 @@ export const appConfig: ApplicationConfig = {
       CheckSquareOutline, CalendarOutline, FileSearchOutline, DatabaseOutline,
       PlusOutline, DeleteOutline, ReloadOutline, SyncOutline,
       MessageOutline, PlayCircleOutline, CheckCircleOutline, CloseCircleOutline, CheckOutline, CloseOutline,
-      StopOutline, LockOutline, EyeOutline
+      StopOutline, LockOutline, EyeOutline,
+      WarningOutline,
+      LoginOutline,
+      LogoutOutline,
+      CommentOutline,
+      FileTextOutline,
+      ScheduleOutline,
+      SendOutline,
+      ApartmentOutline,
+      HistoryOutline,
+      GlobalOutline,
     ]),
     importProvidersFrom(NzModalModule),
-    { provide: API_BASE_URL, useValue: 'http://127.0.0.1:8010' },
+    { provide: API_BASE_URL, useValue: 'http://localhost:8000' },
     { provide: NZ_CONFIG, useValue: ngZorroConfig },
     { provide: NZ_I18N, useValue: nzViVN }
   ]

@@ -1,2 +1,320 @@
 @import "tailwindcss";
-@import 'ng-zorro-antd/ng-zorro-antd.min.css';
+
+/* -------------------------------------------------------------
+   Global Theme overrides to resolve contrast and background issues
+   ------------------------------------------------------------- */
+
+html, body {
+  background-color: #020817 !important;
+  color: #f8fafc !important;
+}
+
+/* Make all nz-layout containers transparent to let the gradient background flow through */
+.ant-layout {
+  background: transparent !important;
+  min-width: 0;
+}
+
+.ant-layout-header,
+.ant-layout-content,
+.ant-layout-sider {
+  min-width: 0;
+}
+
+/* --- Tables & Pagination --- */
+.ant-table {
+  background: transparent !important;
+  color: #f8fafc !important;
+}
+
+.ant-table-container,
+.ant-table-content {
+  background: transparent !important;
+}
+
+.ant-table-thead > tr > th {
+  background: rgba(8, 15, 28, 0.78) !important;
+  color: #e2e8f0 !important;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.14) !important;
+  font-weight: 700 !important;
+}
+
+.ant-table-tbody > tr > td {
+  background: transparent !important;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.08) !important;
+  color: #f8fafc !important;
+}
+
+.ant-table-tbody > tr:hover > td {
+  background: rgba(8, 15, 28, 0.68) !important;
+}
+
+.ant-table-placeholder {
+  background: transparent !important;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.14) !important;
+}
+
+.ant-empty-description {
+  color: rgba(148, 163, 184, 0.84) !important;
+}
+
+.ant-pagination-item {
+  background-color: rgba(15, 23, 42, 0.56) !important;
+  border-color: rgba(148, 163, 184, 0.14) !important;
+}
+
+.ant-pagination-item a {
+  color: rgba(226, 232, 240, 0.82) !important;
+}
+
+.ant-pagination-item-active {
+  background-color: rgba(99, 102, 241, 0.22) !important;
+  border-color: #818cf8 !important;
+  box-shadow: 0 0 0 1px rgba(129, 140, 248, 0.16) !important;
+}
+
+
+.ant-pagination-item-active a {
+  color: #f8fafc !important;
+}
+
+.ant-pagination-prev .ant-pagination-item-link,
+.ant-pagination-next .ant-pagination-item-link {
+  background-color: rgba(15, 23, 42, 0.56) !important;
+  border-color: rgba(148, 163, 184, 0.14) !important;
+  color: rgba(226, 232, 240, 0.82) !important;
+}
+
+.ant-pagination-disabled .ant-pagination-item-link {
+  color: rgba(148, 163, 184, 0.3) !important;
+  background-color: rgba(15, 23, 42, 0.2) !important;
+}
+
+/* --- Modals --- */
+.ant-modal-content {
+  background-color: #0b0f19 !important; /* matches dark panel backgrounds */
+  border: 1px solid rgba(148, 163, 184, 0.12) !important;
+  color: #f8fafc !important;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.02),
+    0 24px 70px rgba(2, 6, 23, 0.56),
+    0 0 0 1px rgba(129, 140, 248, 0.08) !important;
+  backdrop-filter: blur(16px);
+}
+
+
+.ant-modal-header {
+  background-color: #0b0f19 !important;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12) !important;
+  color: #f8fafc !important;
+}
+
+
+.ant-modal-title {
+  color: #f8fafc !important;
+  font-weight: 700 !important;
+}
+
+.ant-modal-close-icon {
+  color: rgba(226, 232, 240, 0.82) !important;
+}
+
+.ant-modal-footer {
+  background-color: #0b0f19 !important;
+  border-top: 1px solid rgba(148, 163, 184, 0.14) !important;
+}
+
+/* --- Form Fields & Inputs --- */
+.ant-input {
+  background-color: rgba(15, 23, 42, 0.56) !important;
+  border: 1px solid rgba(148, 163, 184, 0.18) !important;
+  color: #f8fafc !important;
+}
+
+.ant-input:focus, .ant-input-focused {
+  border-color: #818cf8 !important;
+  box-shadow: 0 0 0 2px rgba(129, 140, 248, 0.18) !important;
+}
+
+.ant-input::placeholder {
+  color: rgba(148, 163, 184, 0.6) !important;
+}
+
+/* --- Selects & Dropdowns --- */
+.ant-select-selector {
+  background-color: rgba(15, 23, 42, 0.56) !important;
+  border: 1px solid rgba(148, 163, 184, 0.18) !important;
+  color: #f8fafc !important;
+}
+
+.ant-select-selection-item {
+  color: #f8fafc !important;
+}
+
+.ant-select-selection-placeholder {
+  color: rgba(148, 163, 184, 0.6) !important;
+}
+
+.ant-select-arrow {
+  color: rgba(226, 232, 240, 0.82) !important;
+}
+
+.ant-select-dropdown {
+  background-color: #0b0f19 !important;
+  border: 1px solid rgba(148, 163, 184, 0.12) !important;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.02),
+    0 18px 48px rgba(2, 6, 23, 0.48),
+    0 0 0 1px rgba(129, 140, 248, 0.06) !important;
+  backdrop-filter: blur(16px);
+}
+
+.ant-select-item {
+  color: rgba(226, 232, 240, 0.82) !important;
+}
+
+.ant-select-item-option-selected {
+  background-color: rgba(99, 102, 241, 0.2) !important;
+  color: #f8fafc !important;
+}
+
+.ant-select-item-option-active {
+  background-color: rgba(99, 102, 241, 0.12) !important;
+  color: #f8fafc !important;
+}
+
+/* --- Description lists inside details modal --- */
+.ant-descriptions-bordered .ant-descriptions-view {
+  border: 1px solid rgba(148, 163, 184, 0.14) !important;
+}
+
+.ant-descriptions-row {
+  border-bottom: 1px solid rgba(148, 163, 184, 0.14) !important;
+}
+
+.ant-descriptions-item-label {
+  background-color: rgba(8, 15, 28, 0.82) !important;
+  color: rgba(226, 232, 240, 0.82) !important;
+  border-right: 1px solid rgba(148, 163, 184, 0.14) !important;
+}
+
+.ant-descriptions-item-content {
+  color: #f8fafc !important;
+  border-right: 1px solid rgba(148, 163, 184, 0.14) !important;
+}
+
+/* --- Date Pickers --- */
+.ant-picker {
+  background-color: rgba(15, 23, 42, 0.56) !important;
+  border: 1px solid rgba(148, 163, 184, 0.18) !important;
+  color: #f8fafc !important;
+}
+
+.ant-picker:hover,
+.ant-picker-focused {
+  border-color: #818cf8 !important;
+  box-shadow: 0 0 0 2px rgba(129, 140, 248, 0.12) !important;
+}
+
+.ant-picker-input > input {
+  color: #f8fafc !important;
+}
+
+.ant-picker-suffix {
+  color: rgba(226, 232, 240, 0.82) !important;
+}
+
+/* --- Modern Premium Buttons Override --- */
+.ant-btn {
+  border-radius: 0.65rem !important; /* Mềm mại và bo góc hiện đại */
+  font-weight: 600 !important;
+  font-size: 0.88rem !important;
+  height: auto !important;
+  padding: 0.5rem 1.25rem !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.35rem !important;
+}
+
+/* Primary Button (Màu tím indigo sáng hơn, độ tương phản tuyệt đối) */
+.ant-btn-primary {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%) !important;
+  border: none !important;
+  color: #ffffff !important; /* Chữ trắng rõ ràng trên nền gradient */
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35) !important;
+}
+
+.ant-btn-primary:hover, .ant-btn-primary:focus {
+  background: linear-gradient(135deg, #818cf8 0%, #a78bfa 100%) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 6px 20px rgba(139, 92, 246, 0.5) !important;
+  color: #ffffff !important;
+}
+
+.ant-btn-primary:active {
+  transform: translateY(1px) !important;
+  box-shadow: 0 2px 10px rgba(139, 92, 246, 0.3) !important;
+}
+
+/* Default / Secondary Button (Nút mặc định viền mờ cao cấp) */
+.ant-btn-default {
+  background-color: rgba(15, 23, 42, 0.45) !important;
+  border: 1px solid rgba(148, 163, 184, 0.2) !important;
+  color: #f8fafc !important; /* Chữ trắng sáng */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+}
+
+.ant-btn-default:hover, .ant-btn-default:focus {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  border-color: #a78bfa !important;
+  color: #a78bfa !important; /* Đổi màu chữ sang tím sáng khi hover */
+  transform: translateY(-1px) !important;
+}
+
+.ant-btn-default:active {
+  transform: translateY(1px) !important;
+}
+
+/* Danger / Delete Button */
+.ant-btn-danger, .ant-btn-destroy {
+  background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%) !important;
+  border: none !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.35) !important;
+}
+
+.ant-btn-danger:hover, .ant-btn-danger:focus {
+  background: linear-gradient(135deg, #f87171 0%, #dc2626 100%) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.5) !important;
+  color: #ffffff !important;
+}
+
+/* Nút dạng tròn (Circle) */
+.ant-btn-circle {
+  width: 2.4rem !important;
+  height: 2.4rem !important;
+  padding: 0 !important;
+  border-radius: 50% !important;
+  display: inline-grid !important;
+  place-items: center !important;
+}
+
+/* Kích thước nút nhỏ (Small Buttons) */
+.ant-btn-sm {
+  padding: 0.25rem 0.75rem !important;
+  font-size: 0.8rem !important;
+  border-radius: 0.5rem !important;
+}
+
+/* --- Tối ưu hóa tương phản văn bản --- */
+.ant-select-selection-placeholder, .ant-input::placeholder {
+  color: rgba(226, 232, 240, 0.65) !important; /* Tăng độ sáng placeholder tránh chìm nền */
+}
+
+.ant-descriptions-item-label {
+  color: #ffffff !important; /* Nhãn mô tả sáng hơn hẳn */
+}
+

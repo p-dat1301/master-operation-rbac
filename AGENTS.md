@@ -1,7 +1,7 @@
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **master-operation-rbac** (5037 symbols, 9207 relationships, 115 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
+This project is indexed by GitNexus as **master-operation-rbac** (6396 symbols, 12543 relationships, 159 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
 > If any GitNexus tool warns the index is stale, run `npx gitnexus analyze` in terminal first.
 
@@ -41,3 +41,27 @@ This project is indexed by GitNexus as **master-operation-rbac** (5037 symbols, 
 | Index, status, clean, wiki CLI commands | `.claude/skills/gitnexus/gitnexus-cli/SKILL.md` |
 
 <!-- gitnexus:end -->
+
+<!-- gstack:start -->
+## gstack
+
+gstack skills are installed. Use these slash commands for AI-assisted development.
+
+### Quick start flow
+| When | Short alias | Full command |
+|------|-------------|--------------|
+| Product diagnostic / office hours | `/oh` | `/gstack-office-hours` |
+| Architecture / eng review plan | `/eng-review` | `/gstack-plan-eng-review` |
+| Code review before shipping | `/review` | `/gstack-review` |
+| Browser QA (local app at :3000) | `/qa-local` | `/gstack-qa http://localhost:3000` |
+| Release and PR workflow | `/ship` | `/gstack-ship` |
+| Security audit (auth/payment/admin) | `/cso` | `/gstack-cso` |
+| Open gstack browser | `/browse` | `/gstack-open-gstack-browser` |
+
+### Browser
+Use `/gstack-browse` or `/gstack-open-gstack-browser` for browser automation.
+Never use unrelated MCP browser tools.
+
+### Note
+gstack skills are namespaced with `gstack-` prefix (e.g. `/gstack-office-hours`).
+<!-- gstack:end -->

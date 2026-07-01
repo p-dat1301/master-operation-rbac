@@ -24,10 +24,9 @@ import { UserFormMode, UserFormState } from './users-page.component';
 			(nzOnCancel)="cancelForm.emit()"
 			[nzOkLoading]="saving"
 			[nzOkText]="formMode === 'create' ? 'Tạo' : 'Lưu'"
-			data-testid="user-form-modal"
 		>
 			<ng-container *nzModalContent>
-				<div class="form-grid">
+				<div class="form-grid" data-testid="user-form-modal">
 					<label *ngIf="formMode === 'create'" class="form-field">
 						<span>Mã nhân viên *</span>
 						<input nz-input [(ngModel)]="userForm.employee_code" data-testid="user-form-employee-code" />

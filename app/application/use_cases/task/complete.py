@@ -3,7 +3,7 @@ from app.domain.entities.user import User
 from app.domain.exceptions import BusinessRuleViolation, PermissionDenied, ResourceNotFound
 from app.domain.repositories.task_repository import TaskRepository
 from app.domain.services.rbac_service import RBACService
-from app.domain.entities.task import Task
+from app.domain.entities.task import Task, TaskStatus
 
 
 class CompleteTaskUseCase:
@@ -25,8 +25,8 @@ class CompleteTaskUseCase:
         if not (is_assigner or has_permission or is_admin_bod):
             raise PermissionDenied("You do not have permission to complete this task")
 
-        if task.status in ("done", "cancelled"):
-            raise BusinessRuleViolation(f"Task already {task.status}")
+        if task.status in (TaskStatus.DONE, TaskStatus.CANCELLED):
+            raise BusinessRuleViolation(f"Task already {task.status.value}")
 
         updated_task = Task(
             id=task.id,
@@ -36,7 +36,7 @@ class CompleteTaskUseCase:
             assignee_id=task.assignee_id,
             assigner_id=task.assigner_id,
             department_id=task.department_id,
-            status="done",
+            status=TaskStatus.DONE,
             priority=task.priority,
             start_date=task.start_date,
             due_date=task.due_date,

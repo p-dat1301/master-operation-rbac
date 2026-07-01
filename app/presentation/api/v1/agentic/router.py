@@ -2,14 +2,18 @@
 from __future__ import annotations
 
 from uuid import uuid4
+import os
+import tempfile
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from sqlalchemy import select
 
 from app.agentic.adapters.checkpoint.inmemory_checkpointer import build_inmemory_checkpointer
+from app.agentic.adapters.embeddings.default_embeddings import get_embedding_provider
 from app.agentic.adapters.parsers.base import ParserError
 from app.agentic.adapters.storage.models.agentic_chunk_model import AgenticChunkModel
 from app.agentic.adapters.storage.models.agentic_document_model import AgenticDocumentModel
+from app.agentic.adapters.vector_store.pgvector_store import PGVectorStoreAdapter
 from app.agentic.contracts.access_policy import AccessPolicyMetadata, UserAccessContext
 from app.agentic.contracts.chunk import RetrievalRequest
 from app.agentic.contracts.graph_state import GraphState
@@ -18,6 +22,7 @@ from app.agentic.orchestration.conversation_registry import ConversationRegistry
 from app.agentic.orchestration.rag_graph import build_rag_graph, invoke_rag_graph
 from app.agentic.orchestration.session_seeding import build_next_session_state
 from app.agentic.pipeline.chunking.core import chunk_document
+from app.agentic.pipeline.indexing import embed_and_persist_chunks
 from app.agentic.pipeline.ingestion.core import IngestSource
 from app.agentic.pipeline.parsing.core import normalize_document, parse_document
 from app.di.agentic import AgenticConversationService, build_agentic_retrieval_store
@@ -43,8 +48,22 @@ router = APIRouter(prefix="/api/v1/agentic", tags=["agentic"])
 _registry = ConversationRegistry()
 _service = AgenticConversationService(registry=_registry)
 _ingestor = IngestSource()
-_graph = build_rag_graph(checkpointer=build_inmemory_checkpointer(), retrieval_store=build_agentic_retrieval_store())
-_last_states: dict[str, GraphState] = {}
+_checkpointer = build_inmemory_checkpointer()
+_graph = build_rag_graph(checkpointer=_checkpointer, retrieval_store=build_agentic_retrieval_store())
+
+
+async def _load_previous_graph_state(*, thread_id: str, request: RetrievalRequest, conversation_id: str, user_id: int) -> GraphState:
+    snapshot = await _graph.aget_state({"configurable": {"thread_id": thread_id}})
+    values = getattr(snapshot, "values", None)
+    if values:
+        return GraphState.model_validate(values)
+    return GraphState(
+        request=request,
+        conversation_id=conversation_id,
+        user_id=user_id,
+        thread_id=thread_id,
+        user_context=UserAccessContext(user_id=user_id),
+    )
 
 
 def _record_chat_turn(*, conversation_id: str, user_message: str, answer_text: str | None, answer_status: str, langfuse_trace_id: str | None) -> None:
@@ -141,23 +160,19 @@ async def quick_chat(data: AgenticChatRequest, actor=Depends(get_current_user), 
     if conversation is None:
         conversation = _registry.get(_service.create_conversation(user_id=actor.id, title="Default chat")["conversation_id"])
     
-    previous_state = _last_states.get(conversation.conversation_id)
-    if previous_state is None:
-        previous_state = GraphState(
-            request=RetrievalRequest(query=data.message, top_k=data.top_k),
-            conversation_id=conversation.conversation_id,
-            user_id=actor.id,
-            thread_id=conversation.thread_id,
-            user_context=UserAccessContext(user_id=actor.id),
-        )
-    
+    previous_state = await _load_previous_graph_state(
+        thread_id=conversation.thread_id,
+        request=RetrievalRequest(query=data.message, top_k=data.top_k),
+        conversation_id=conversation.conversation_id,
+        user_id=actor.id,
+    )
+
     state = build_next_session_state(
         previous_state,
         request=RetrievalRequest(query=data.message, top_k=data.top_k),
         conversation_id=conversation.conversation_id,
     )
     result = await invoke_rag_graph(_graph, state, thread_id=conversation.thread_id)
-    _last_states[conversation.conversation_id] = result
     answer = result.answer
     answer_text = answer.answer if answer is not None else "No answer generated."
     answer_status = result.last_answer_status or (answer.status if answer is not None else "unknown")
@@ -188,23 +203,19 @@ async def chat(
 ) -> AgenticChatResponse:
     conversation = _registry.ensure_access(conversation_id=conversation_id, user_id=actor.id)
     
-    previous_state = _last_states.get(conversation.conversation_id)
-    if previous_state is None:
-        previous_state = GraphState(
-            request=RetrievalRequest(query=data.message, top_k=data.top_k),
-            conversation_id=conversation.conversation_id,
-            user_id=actor.id,
-            thread_id=conversation.thread_id,
-            user_context=UserAccessContext(user_id=actor.id),
-        )
-    
+    previous_state = await _load_previous_graph_state(
+        thread_id=conversation.thread_id,
+        request=RetrievalRequest(query=data.message, top_k=data.top_k),
+        conversation_id=conversation.conversation_id,
+        user_id=actor.id,
+    )
+
     state = build_next_session_state(
         previous_state,
         request=RetrievalRequest(query=data.message, top_k=data.top_k),
         conversation_id=conversation.conversation_id,
     )
     result = await invoke_rag_graph(_graph, state, thread_id=conversation.thread_id)
-    _last_states[conversation.conversation_id] = result
     answer = result.answer
     answer_text = answer.answer if answer is not None else "No answer generated."
     answer_status = result.last_answer_status or (answer.status if answer is not None else "unknown")
@@ -271,14 +282,29 @@ async def upload_document(
         access_policy=result.access_policy.model_dump(),
         status="ingested",
         parser_name=None,
-        metadata=result.metadata,
+        document_metadata=result.metadata,
     )
     db.add(db_doc)
     await db.commit()
 
     final_status = "ingested"
+    
+    suffix = f"_{file.filename}" if file.filename else ""
+    with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp_file:
+        tmp_file.write(content)
+        temp_file_path = tmp_file.name
+
     try:
-        parsed = parse_document(source, result.document_id)
+        parser_source = SourceMetadata(
+            source_type=source.source_type,
+            mime_type=source.mime_type,
+            source_uri=temp_file_path,
+            filename=source.filename,
+            size_bytes=source.size_bytes,
+            metadata=source.metadata,
+        )
+        
+        parsed = parse_document(parser_source, result.document_id)
         db_doc.status = "parsed"
         db_doc.parser_name = parsed.parser_name
         await db.commit()
@@ -303,19 +329,41 @@ async def upload_document(
             )
             db.add(db_chunk)
         
+        # Flush the session to write the chunk records and satisfy foreign key constraints
+        await db.flush()
+        
+        # Embed chunks and persist to vector database
+        embedding_provider = get_embedding_provider()
+        vector_store = PGVectorStoreAdapter(db)
+        await embed_and_persist_chunks(
+            chunks,
+            embedding_provider=embedding_provider,
+            vector_store=vector_store,
+            metadata={
+                "embedding_model": "multilingual-e5",
+                "index_version": "index-v1",
+            },
+        )
+        
         db_doc.status = "indexed"
         await db.commit()
         final_status = "indexed"
     except ParserError as e:
         db_doc.status = "failed"
-        db_doc.metadata = {**db_doc.metadata, "error": str(e)}
+        db_doc.document_metadata = {**db_doc.document_metadata, "error": str(e)}
         await db.commit()
         final_status = "failed"
     except Exception as e:
         db_doc.status = "failed"
-        db_doc.metadata = {**db_doc.metadata, "error": f"Unexpected error: {str(e)}"}
+        db_doc.document_metadata = {**db_doc.document_metadata, "error": f"Unexpected error: {str(e)}"}
         await db.commit()
         final_status = "failed"
+    finally:
+        try:
+            if os.path.exists(temp_file_path):
+                os.remove(temp_file_path)
+        except Exception:
+            pass
     
     return AgenticDocumentUploadResponse(
         ingestion_id=result.ingestion_id,
@@ -336,7 +384,7 @@ async def list_documents(actor=Depends(get_current_user), db=Depends(get_db)) ->
         AgenticDocumentSummary(
             document_id=d.document_id,
             status=d.status,
-            filename=d.metadata.get("filename"),
+            filename=d.document_metadata.get("filename"),
             mime_type=d.source.get("mime_type"),
         ) for d in docs
     ])
@@ -351,6 +399,6 @@ async def get_document(document_id: str, actor=Depends(get_current_user), db=Dep
     return AgenticDocumentSummary(
         document_id=document.document_id,
         status=document.status,
-        filename=document.metadata.get("filename"),
+        filename=document.document_metadata.get("filename"),
         mime_type=document.source.get("mime_type"),
     )

@@ -1,6 +1,15 @@
 from dataclasses import dataclass
 from datetime import date, datetime
+from enum import Enum
 from typing import Optional
+
+
+class LeaveRequestStatus(str, Enum):
+    PENDING = "pending"
+    APPROVED = "approved"
+    REJECTED = "rejected"
+    CANCELLED = "cancelled"
+
 
 @dataclass
 class LeaveRequest:
@@ -10,7 +19,7 @@ class LeaveRequest:
     start_date: date
     end_date: date
     reason: Optional[str] = None
-    status: str = "pending"
+    status: LeaveRequestStatus = LeaveRequestStatus.PENDING
     department_id: Optional[int] = None
     reviewed_by: Optional[int] = None
     rejected_reason: Optional[str] = None

@@ -17,15 +17,15 @@ async def sync_menu(data: MenuSyncRequest | None = None, actor=Depends(get_curre
     entered = await sync_execution_registry.try_enter('menu')
     if not entered:
         response = MenuSyncResponse(resource='menu', created=0, updated=0, skipped=0, errors=['sync already in progress'], dry_run=dry_run)
-        return JSONResponse(status_code=409, content=response.model_dump())
+        return JSONResponse(status_code=409, content=response.dict())
 
     use_case = provide_menu_sync(db)
     try:
         await maybe_delay_for_sync_test()
         dto = await use_case.execute(actor, dry_run=dry_run)
     except MenuSyncValidationError as exc:
-        response = MenuSyncResponse.from_dto(exc.summary)
-        return JSONResponse(status_code=400, content=response.model_dump())
+        response = MenuSyncResponse(**exc.summary.dict())
+        return JSONResponse(status_code=400, content=response.dict())
     finally:
         await sync_execution_registry.exit('menu')
-    return MenuSyncResponse.from_dto(dto)
+    return dto

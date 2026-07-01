@@ -5,6 +5,7 @@ from datetime import date
 from app.application.dtos.leave_request import LeaveRequestOutput, ReviewLeaveRequestInput
 from app.domain.entities.user import User
 from app.domain.entities.leave_balance import LeaveBalance
+from app.domain.entities.leave_request import LeaveRequestStatus
 from app.domain.exceptions import BusinessRuleViolation, PermissionDenied, ResourceNotFound
 from app.domain.repositories.department_repository import DepartmentRepository
 from app.domain.repositories.leave_balance_repository import LeaveBalanceRepository
@@ -41,7 +42,7 @@ class ReviewLeaveRequestUseCase:
         leave = await self.leave_repo.find_by_id(data.leave_request_id)
         if leave is None:
             raise ResourceNotFound("Leave request not found")
-        if leave.status != "pending":
+        if leave.status != LeaveRequestStatus.PENDING:
             raise BusinessRuleViolation("Only pending leave requests can be reviewed")
 
         all_depts = await self.dept_repo.find_all()
@@ -54,10 +55,10 @@ class ReviewLeaveRequestUseCase:
         if not self.rbac_service.can_approve_leave_for(actor, is_ancestor):
             raise PermissionDenied("You do not have permission to review this leave request")
 
-        new_status = "approved" if data.action == "approve" else "rejected"
+        new_status = LeaveRequestStatus.APPROVED if data.action == "approve" else LeaveRequestStatus.REJECTED
         reviewed_by = actor.id
 
-        if new_status == "approved":
+        if new_status == LeaveRequestStatus.APPROVED:
             balance = await self.leave_balance_repo.find_by_user_year(leave.requester_id, leave.start_date.year)
             required_days = _leave_days(leave.start_date, leave.end_date)
             total_days = balance.total_days if balance is not None else 12.0
@@ -77,15 +78,15 @@ class ReviewLeaveRequestUseCase:
 
         updated = await self.leave_repo.update_status(
             leave_id=leave.id,
-            status=new_status,
+            status=new_status.value,
             reviewed_by=reviewed_by,
-            rejection_reason=data.rejected_reason if new_status == "rejected" else None,
+            rejection_reason=data.rejected_reason if new_status == LeaveRequestStatus.REJECTED else None,
         )
 
         await self.notification_service.notify_user(
             user_id=leave.requester_id,
             title="Leave Request Update",
-            message=f"Your leave request has been {new_status}.",
+            message=f"Your leave request has been {new_status.value}.",
         )
 
         return LeaveRequestOutput.from_entity(updated)

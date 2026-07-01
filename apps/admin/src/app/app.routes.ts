@@ -96,7 +96,7 @@ export const routes: Routes = [
 			},
 			{
 				path: 'agentic/documents',
-				loadComponent: () => import('./features/chat/agentic-documents-page.component').then((m) => m.AgenticDocumentsPageComponent),
+				loadComponent: () => import('./features/documents/documents-page.component').then((m) => m.DocumentsPageComponent),
 				canActivate: [authGuard],
 				data: { title: 'Documents' }
 			},

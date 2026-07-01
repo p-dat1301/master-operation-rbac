@@ -55,7 +55,10 @@ export class AuthStoreService {
 	}
 
 	hasPermission(permission: string): boolean {
-		return this.currentUserState()?.permissions.includes(permission) ?? false;
+		const user = this.currentUserState();
+		if (!user) return false;
+		if (user.role_name === 'admin') return true;
+		return user.permissions.includes(permission);
 	}
 
 	logout(): void {

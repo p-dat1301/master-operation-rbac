@@ -1,14 +1,74 @@
-.claude/
-.gitnexus/
-.venv/
-.vscode/
-.omo/
-AGENT.md
-CLAUDE.md
-__pycache__/
-*.pyc
-*.pyo
-.playwright-mcp/
+# Documentation
+/docs/
+
+# Local environment and secrets
 .env
 .env.*
 !.env.example
+
+# Python environments and caches
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.nox/
+htmlcov/
+.coverage
+coverage.xml
+
+# Logs and temp files
+*.log
+*.out
+*.err
+*.pid
+*.tmp
+tmp/
+temp/
+
+# Tooling / local agent artifacts
+.playwright-mcp/
+.gstack/
+.gitnexus/
+.omo/tmp/
+.omo/evidence/
+
+# IDE
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+
+# OS files
+.DS_Store
+
+# Databases / local runtime files
+*.sqlite
+*.sqlite3
+*.db
+
+# Frontend / Node artifacts
+node_modules/
+dist/
+build/
+.next/
+out/
+coverage/
+*.tsbuildinfo
+
+# apps/admin specific artifacts
+/apps/admin/node_modules/
+/apps/admin/dist/
+/apps/admin/tmp/
+/apps/admin/out-tsc/
+/apps/admin/bazel-out/
+/apps/admin/.angular/cache/
+/apps/admin/coverage/
+/apps/admin/test-results/
+/apps/admin/playwright-report/
+/apps/admin/.history/

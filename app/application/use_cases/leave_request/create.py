@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import date
 
 from app.application.dtos.leave_request import LeaveRequestCreateInput, LeaveRequestOutput
-from app.domain.entities.leave_request import LeaveRequest
+from app.domain.entities.leave_request import LeaveRequest, LeaveRequestStatus
 from app.domain.entities.user import User
 from app.domain.exceptions import BusinessRuleViolation
 from app.domain.repositories.leave_balance_repository import LeaveBalanceRepository
@@ -28,7 +28,7 @@ class CreateLeaveRequestUseCase:
     async def execute(self, actor: User, data: LeaveRequestCreateInput) -> LeaveRequestOutput:
         existing_leaves = await self.leave_repo.list_by_requester(actor.id)
         for leave in existing_leaves:
-            if leave.status in {"pending", "approved"} and _overlaps(data.start_date, data.end_date, leave.start_date, leave.end_date):
+            if leave.status in {LeaveRequestStatus.PENDING, LeaveRequestStatus.APPROVED} and _overlaps(data.start_date, data.end_date, leave.start_date, leave.end_date):
                 raise BusinessRuleViolation("Leave request overlaps with an existing leave request")
 
         balance = await self.leave_balance_repo.find_by_user_year(actor.id, data.start_date.year)
@@ -43,7 +43,7 @@ class CreateLeaveRequestUseCase:
             start_date=data.start_date,
             end_date=data.end_date,
             reason=data.reason,
-            status="pending",
+            status=LeaveRequestStatus.PENDING,
             department_id=actor.department_id,
         )
         created = await self.leave_repo.create(leave_entity)

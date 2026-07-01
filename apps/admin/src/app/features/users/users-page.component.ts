@@ -63,8 +63,8 @@ export const EMPTY_USER_FORM: UserFormState = {
 	],
 	template: `
 		<section class="page-root" data-testid="users-page">
-			<div class="page-header">
-				<div>
+			<div class="page-header surface-card">
+				<div class="page-header-copy">
 					<p class="eyebrow">HR Management</p>
 					<h2>Quản lý người dùng</h2>
 					<p class="subtitle">Danh sách tài khoản nhân viên trong hệ thống.</p>
@@ -78,22 +78,42 @@ export const EMPTY_USER_FORM: UserFormState = {
 				</div>
 			</div>
 
-			<nz-card class="filter-card" [nzBordered]="false">
+			<nz-card class="filter-card surface-card content-panel" [nzBordered]="false">
 				<div class="filter-row">
-					<label class="filter-item"><span>Trạng thái</span>
-						<nz-select [(ngModel)]="filters.is_active" (ngModelChange)="applyFilters()" nzPlaceHolder="Tất cả" nzAllowClear style="width:160px">
-							<nz-option [nzValue]="true" nzLabel="Đang hoạt động"></nz-option>
-							<nz-option [nzValue]="false" nzLabel="Vô hiệu hóa"></nz-option>
-						</nz-select>
-					</label>
-					<button nz-button nzType="dashed" (click)="resetFilters()" id="reset-filters-btn">
-						<span nz-icon nzType="reload"></span> Đặt lại
-					</button>
+					<div class="filter-copy">
+						<p class="filter-kicker">Validation view</p>
+						<div>
+							<h3>Bộ lọc trạng thái</h3>
+							<p>Tập trung rà soát nhanh trạng thái kích hoạt trước khi chỉnh sửa hoặc thu hồi quyền.</p>
+						</div>
+					</div>
+					<div class="filter-controls">
+						<label class="filter-item"><span>Trạng thái</span>
+							<nz-select [(ngModel)]="filters.is_active" (ngModelChange)="applyFilters()" nzPlaceHolder="Tất cả" nzAllowClear style="width:160px">
+								<nz-option [nzValue]="true" nzLabel="Đang hoạt động"></nz-option>
+								<nz-option [nzValue]="false" nzLabel="Vô hiệu hóa"></nz-option>
+							</nz-select>
+						</label>
+						<button nz-button nzType="dashed" (click)="resetFilters()" id="reset-filters-btn">
+							<span nz-icon nzType="reload"></span> Đặt lại
+						</button>
+					</div>
 				</div>
 			</nz-card>
 
-			<nz-card class="table-card" [nzBordered]="false">
-				<nz-table #userTable [nzData]="filteredUsers()" [nzLoading]="loading()" [nzPageSize]="15" nzSize="middle" data-testid="users-table">
+			<nz-card class="table-card surface-card content-panel" [nzBordered]="false">
+				<div class="table-shell">
+					<div class="table-toolbar">
+						<div>
+							<p class="table-kicker">Directory ledger</p>
+							<h3>Danh sách người dùng</h3>
+						</div>
+						<div class="table-meta">
+							<span class="meta-pill">{{ filteredUsers().length }} hồ sơ</span>
+							<span class="meta-pill muted-pill">Phân trang 15 bản ghi</span>
+						</div>
+					</div>
+					<nz-table #userTable [nzData]="filteredUsers()" [nzLoading]="loading()" [nzPageSize]="15" nzSize="middle" data-testid="users-table">
 					<thead>
 						<tr>
 							<th nzWidth="50px">#</th>
@@ -128,7 +148,8 @@ export const EMPTY_USER_FORM: UserFormState = {
 							</td>
 						</tr>
 					</tbody>
-				</nz-table>
+					</nz-table>
+				</div>
 			</nz-card>
 
 			<app-user-page-modals
@@ -153,18 +174,38 @@ export const EMPTY_USER_FORM: UserFormState = {
 		</section>
 	`,
 	styles: [ADMIN_PAGE_COMMON_STYLES, `
+		.page-header { padding: 1.2rem 1.25rem; align-items:flex-start; }
+		.page-header-copy { display:grid; gap:.2rem }
 		.header-actions { display:flex; align-items:center; gap:1rem; flex-wrap:wrap; justify-content:flex-end }
 		.header-stats { display:flex; gap:.75rem; flex-wrap:wrap }
-		.stat-chip { display:flex; flex-direction:column; align-items:center; padding:.6rem 1.2rem; border-radius:1rem; min-width:90px; background:var(--admin-surface-card); border:1px solid var(--admin-border-subtle) }
-		.stat-chip.active { background:rgba(52,211,153,.1); border-color:rgba(52,211,153,.25) }
-		.stat-chip.inactive { background:rgba(148,163,184,.08); border-color:rgba(148,163,184,.15) }
-		.stat-value { font-size:1.4rem; font-weight:700; color:var(--admin-text-primary) }
-		.stat-label { font-size:.74rem; color:var(--admin-text-muted); margin-top:.1rem }
-		.user-cell { display:flex; align-items:center; gap:.75rem }
-		.avatar { width:2.2rem; height:2.2rem; border-radius:50%; background:linear-gradient(135deg,var(--admin-action-primary),var(--admin-action-primary-strong)); display:grid; place-items:center; font-size:.75rem; font-weight:700; color:#fff; flex-shrink:0 }
-		.user-name { font-weight:600; color:var(--admin-text-primary) }
-		.user-code { font-size:.78rem; color:var(--admin-text-muted) }
+		.stat-chip { display:grid; gap:.12rem; align-content:start; min-width:108px; padding:.75rem .95rem; border-radius:1rem; background:linear-gradient(180deg, rgba(16, 24, 38, .82), rgba(10, 15, 25, .7)); border:1px solid var(--admin-border-subtle); box-shadow: inset 0 1px 0 rgba(255,255,255,.03) }
+		.stat-chip.active { border-color: rgba(129, 140, 248, .22); box-shadow: inset 0 1px 0 rgba(255,255,255,.03), 0 0 0 1px rgba(129, 140, 248, .05) }
+		.stat-chip.inactive { border-color: rgba(148, 163, 184, .16) }
+		.stat-value { font-size:1.35rem; line-height:1; font-weight:750; letter-spacing:-.03em; color:var(--admin-text-primary) }
+		.stat-label { font-size:.74rem; color:var(--admin-text-muted); text-transform:uppercase; letter-spacing:.12em }
+		.filter-card { padding:1rem 1.1rem; }
+		.filter-row { align-items:stretch; justify-content:space-between }
+		.filter-copy { display:grid; gap:.45rem; min-width:min(420px, 100%) }
+		.filter-kicker, .table-kicker { margin:0; font-size:.72rem; letter-spacing:.18em; text-transform:uppercase; color:var(--admin-action-primary) }
+		.filter-copy h3, .table-toolbar h3 { margin:0; font-size:1.03rem; font-weight:700; color:var(--admin-text-primary) }
+		.filter-copy p { margin:0; color:var(--admin-text-secondary); font-size:.88rem; max-width:54ch }
+		.filter-controls { display:flex; align-items:flex-end; gap:.85rem; flex-wrap:wrap }
+		.table-card { padding:1rem 1.1rem 1.1rem }
+		.table-shell { display:grid; gap:.85rem }
+		.table-toolbar { display:flex; align-items:flex-end; justify-content:space-between; gap:1rem; flex-wrap:wrap }
+		.table-meta { display:flex; gap:.55rem; flex-wrap:wrap; justify-content:flex-end }
+		.meta-pill { display:inline-flex; align-items:center; padding:.36rem .7rem; border-radius:999px; background:rgba(129, 140, 248, .12); border:1px solid rgba(129, 140, 248, .14); color:#c7d2fe; font-size:.74rem; font-weight:700; letter-spacing:.02em }
+		.muted-pill { background:rgba(148, 163, 184, .08); border-color:rgba(148, 163, 184, .12); color:var(--admin-text-secondary) }
+		.user-cell { display:flex; align-items:center; gap:.85rem; min-width:0 }
+		.avatar { width:2.35rem; height:2.35rem; border-radius:50%; background:linear-gradient(135deg,var(--admin-action-primary),var(--admin-action-primary-strong)); display:grid; place-items:center; font-size:.74rem; font-weight:800; letter-spacing:.04em; color:#fff; flex-shrink:0; box-shadow:0 10px 22px rgba(129,140,248,.22) }
+		.user-name { font-weight:700; color:var(--admin-text-primary); line-height:1.1 }
+		.user-code { font-size:.76rem; color:var(--admin-text-muted); margin-top:.12rem }
+		:host ::ng-deep .ant-table-thead > tr > th { background:rgba(9, 15, 27, .7); color:var(--admin-text-strong); letter-spacing:.03em }
+		:host ::ng-deep .ant-badge-status-text { color:var(--admin-text-secondary) }
+		:host ::ng-deep .ant-tag { margin-inline-end:0; border-radius:.7rem; border-color:rgba(129,140,248,.18); background:rgba(129,140,248,.12); color:#c7d2fe; font-weight:600 }
+		:host ::ng-deep .ant-table-tbody > tr > td { vertical-align:middle }
 	`]
+
 })
 export class UsersPageComponent implements OnInit {
 	private readonly userApi = inject(UserApiService);
@@ -266,6 +307,10 @@ export class UsersPageComponent implements OnInit {
 	}
 
 	async submitUserForm(): Promise<void> {
+		if (this.formMode === 'create' && (!this.userForm.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.userForm.email.trim()))) {
+			this.message.warning('Vui lòng nhập email hợp lệ.');
+			return;
+		}
 		if (!this.isUserFormValid()) {
 			this.message.warning('Vui lòng nhập đủ thông tin bắt buộc.');
 			return;
@@ -364,11 +409,16 @@ export class UsersPageComponent implements OnInit {
 	}
 
 	private isUserFormValid(): boolean {
-		const requiredForEdit = Boolean(this.userForm.full_name.trim() && this.userForm.role_name.trim() && this.selectedUser());
 		if (this.formMode === 'edit') {
-			return requiredForEdit;
+			return Boolean(this.userForm.full_name.trim() && this.userForm.role_name.trim() && this.selectedUser());
 		}
-		return requiredForEdit && Boolean(this.userForm.employee_code.trim() && this.userForm.email.trim() && this.userForm.password);
+		return Boolean(
+			this.userForm.employee_code.trim() &&
+			this.userForm.email.trim() &&
+			this.userForm.full_name.trim() &&
+			this.userForm.password &&
+			this.userForm.role_name.trim()
+		);
 	}
 
 	private toCreatePayload(): UserCreateRequest {

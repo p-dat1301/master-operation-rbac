@@ -1,16 +1,18 @@
 export const ADMIN_PAGE_COMMON_STYLES = `
 	:host {
-		--admin-text-primary: #f8fafc;
-		--admin-text-secondary: rgba(226, 232, 240, .82);
-		--admin-text-muted: rgba(148, 163, 184, .84);
-		--admin-text-strong: #e2e8f0;
-		--admin-surface-card: rgba(15, 23, 42, .72);
-		--admin-surface-card-strong: rgba(8, 15, 28, .82);
-		--admin-surface-table: rgba(8, 15, 28, .6);
-		--admin-surface-field: rgba(15, 23, 42, .56);
-		--admin-border-subtle: rgba(148, 163, 184, .14);
-		--admin-action-primary: #7dd3fc;
-		--admin-action-primary-strong: #38bdf8;
+		--admin-text-primary: #f3f6fb;
+		--admin-text-secondary: rgba(216, 223, 235, .84);
+		--admin-text-muted: rgba(142, 155, 175, .9);
+		--admin-text-strong: #e7edf7;
+		--admin-surface-card: rgba(14, 20, 32, .78);
+		--admin-surface-card-strong: rgba(10, 15, 24, .9);
+		--admin-surface-table: rgba(10, 15, 24, .68);
+		--admin-surface-field: rgba(18, 26, 40, .62);
+		--admin-border-subtle: rgba(148, 163, 184, .1);
+		--admin-border-field: rgba(148, 163, 184, .08);
+		--admin-shadow-surface: 0 1px 0 rgba(255, 255, 255, .02), 0 20px 60px rgba(2, 6, 23, .24);
+		--admin-action-primary: #818cf8;
+		--admin-action-primary-strong: #a78bfa;
 		--admin-action-success: #34d399;
 		--admin-action-warning: #fbbf24;
 		--admin-action-danger: #f87171;
@@ -65,10 +67,17 @@ export const ADMIN_PAGE_COMMON_STYLES = `
 	.surface-card,
 	.filter-card,
 	.table-card,
-	.modal-surface {
-		background: var(--admin-surface-card);
+	.modal-surface,
+	.content-panel {
+		background: linear-gradient(180deg, rgba(9, 16, 30, .82) 0%, rgba(7, 12, 24, .78) 100%);
 		border: 1px solid var(--admin-border-subtle);
-		border-radius: 1.2rem;
+		border-radius: 1.35rem;
+		box-shadow: var(--admin-shadow-surface);
+		backdrop-filter: blur(14px);
+	}
+
+	.content-panel {
+		padding: clamp(1rem, 2vw, 1.4rem);
 	}
 
 	.surface-card-strong {
@@ -81,6 +90,7 @@ export const ADMIN_PAGE_COMMON_STYLES = `
 
 	.surface-field {
 		background: var(--admin-surface-field);
+		border-color: var(--admin-border-field);
 	}
 
 	.filter-row {

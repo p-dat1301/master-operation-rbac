@@ -3,9 +3,9 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "dev": "ng serve",
-    "start": "ng serve",
-    "build": "ng build",
+    "dev": "NG_BUILD_PARALLEL_TS=0 NG_BUILD_MAX_WORKERS=2 NODE_OPTIONS=--max-old-space-size=4096 ng serve",
+    "start": "NG_BUILD_PARALLEL_TS=0 NG_BUILD_MAX_WORKERS=2 NODE_OPTIONS=--max-old-space-size=4096 ng serve",
+    "build": "NG_BUILD_PARALLEL_TS=0 NG_BUILD_MAX_WORKERS=2 NODE_OPTIONS=--max-old-space-size=4096 ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "test:unit": "ng test --watch=false",

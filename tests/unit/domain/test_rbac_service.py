@@ -115,6 +115,24 @@ class TestAttendanceScope:
 
 
 # ---------------------------------------------------------------------------
+# Test: get_document_scope
+# ---------------------------------------------------------------------------
+
+class TestDocumentScope:
+    def test_get_document_scope_admin_all(self, svc):
+        admin = make_user("admin", set())
+        assert svc.get_document_scope(admin) == "all"
+
+    def test_get_document_scope_manager_department(self, svc):
+        manager = make_user("manager", {"upload_document", "read_document", "update_document", "delete_document"})
+        assert svc.get_document_scope(manager) == "department"
+
+    def test_get_document_scope_employee_self(self, svc):
+        emp = make_user("employee", set())
+        assert svc.get_document_scope(emp) == "self"
+
+
+# ---------------------------------------------------------------------------
 # Test: can_approve_leave_for
 # ---------------------------------------------------------------------------
 

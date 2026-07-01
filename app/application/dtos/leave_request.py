@@ -35,7 +35,7 @@ class LeaveRequestOutput(BaseModel):
             start_date=lr.start_date,
             end_date=lr.end_date,
             reason=lr.reason,
-            status=lr.status,
+            status=lr.status.value,
             department_id=lr.department_id,
             reviewed_by=lr.reviewed_by,
             approved_by=lr.reviewed_by,

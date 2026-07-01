@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from app.application.dtos.task import TaskOutput
-from app.domain.entities.task import Task
+from app.domain.entities.task import Task, TaskStatus
 from app.domain.entities.user import User
 from app.domain.exceptions import BusinessRuleViolation, PermissionDenied, ResourceNotFound
 from app.domain.repositories.task_repository import TaskRepository
@@ -17,7 +17,7 @@ class StartTaskUseCase:
         task = await self.task_repo.find_by_id(task_id)
         if task is None:
             raise ResourceNotFound("Task not found")
-        if task.status != "todo":
+        if task.status != TaskStatus.TODO:
             raise BusinessRuleViolation("Only todo tasks can be started")
         if actor.id != task.assignee_id and not self.rbac_service.has_permission(actor, "manage_org"):
             raise PermissionDenied("You do not have permission to start this task")
@@ -30,7 +30,7 @@ class StartTaskUseCase:
             assignee_id=task.assignee_id,
             assigner_id=task.assigner_id,
             department_id=task.department_id,
-            status="in_progress",
+            status=TaskStatus.IN_PROGRESS,
             priority=task.priority,
             start_date=task.start_date,
             due_date=task.due_date,

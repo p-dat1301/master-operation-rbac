@@ -1,3 +1,4 @@
+# pyrefly: ignore [missing-import]
 from fastapi import APIRouter, Depends, Path
 
 from app.presentation.schemas.notification_schema import NotificationResponse
@@ -13,7 +14,7 @@ router = APIRouter(prefix="/api/v1/notifications", tags=["notifications"])
 async def list_notifications(actor=Depends(get_current_user), db=Depends(get_db)):
     use_case = provide_list_notifications(db)
     dtos = await use_case.execute(actor)
-    return [NotificationResponse.from_dto(d) for d in dtos]
+    return dtos
 
 
 @router.put("/{id}/read", response_model=NotificationResponse)
@@ -28,7 +29,7 @@ async def mark_notification_read(id: int = Path(...), actor=Depends(get_current_
         raise PermissionDenied("Cannot mark another user's notification as read")
     updated = await repo.mark_as_read(id)
     from app.application.dtos.notification import NotificationOutput
-    return NotificationResponse.from_dto(NotificationOutput.from_entity(updated))
+    return NotificationOutput.from_entity(updated)
 
 
 @router.put("/read-all")

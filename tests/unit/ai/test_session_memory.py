@@ -12,7 +12,7 @@ from app.agentic.contracts.access_policy import (
 from app.agentic.contracts.chunk import DocumentChunk, RetrievalCandidate, RetrievalRequest
 from app.agentic.contracts.document import CitationMetadata
 from app.agentic.contracts.graph_state import GraphState
-from app.agentic.orchestration.rag_graph import build_rag_graph, invoke_rag_graph
+from app.agentic.orchestration.rag_graph import build_rag_graph, invoke_rag_graph, load_checkpointed_state
 from app.agentic.adapters.checkpoint.inmemory_checkpointer import build_inmemory_checkpointer
 
 
@@ -99,3 +99,11 @@ async def test_inmemory_graph_returns_citations_without_persisting_raw_evidence(
     assert logger.payloads[0]["reason_code"] == "ok"
     assert logger.payloads[0]["chunks"][0]["chunk_id"] == "chunk-1"
     assert logger.payloads[0]["chunks"][0]["text"] == "authorized evidence"
+
+    checkpointed_state = await load_checkpointed_state(graph, "thr-test")
+
+    assert checkpointed_state is not None
+    assert checkpointed_state.thread_id == "thr-test"
+    assert checkpointed_state.last_answer_status == "answered"
+    assert checkpointed_state.last_cited_chunk_ids == ("chunk-1",)
+    assert await load_checkpointed_state(graph, "thr-other") is None

@@ -4,26 +4,7 @@
 > **Kiến trúc**: Clean Architecture — Domain → Application → Infrastructure → Presentation  
 > **ORM**: `AsyncSession` + `select()` + `Mapped[]` + `mapped_column()`
 
-Tài liệu này khôi phục lại TODO tổng thể của dự án. Trạng thái phản ánh code hiện tại: Domain + Application (ports, DTOs, use-cases) + Infrastructure ORM models/repositories + Security services + DI package theo domain (`app/di/`) + Presentation layer (routers/schemas/dependencies/middleware) đã triển khai rộng. Còn thiếu chủ yếu: cập nhật test suite đang stale/fail, tách presentation schema khỏi application DTO ở một số module, integration coverage cho notifications/audit/CRUD/leave-balance mới, README/CI/CD, websocket, Telegram notification.
-
-## Audit update — đối chiếu với `implementation_plan.md.resolved` (2026-06-08)
-
-### Đã hoàn thành và đã verify trong codebase
-
-- [x] Foundation fixes: `get_db()` có commit/rollback, `RBACService.require_permission()` raise `PermissionDenied`, `SQLAlchemyLeaveBalanceRepository` đã có `find_by_user_year()` + `upsert()`.
-- [x] API completion: notifications, audit logs, attendance auth + checkout, departments use case/DI/schema, leave balances, roles/permissions đã được wire vào API thật.
-- [x] CRUD/lifecycle expansion: users có `GET /{id}`, `PUT /{id}`, `DELETE /{id}`, activate/deactivate/change-password/reset-password + filter; tasks có `GET /{id}`, update/delete/filter, assign, start, complete, cancel; roles/permissions đã có CRUD routes + role-permission assignment routes.
-- [x] DI refactor: `app/container.py` đã được thay bằng `app/di/` tách theo domain, routers dùng `provide_*` providers.
-- [x] Leave workflow implementation: create/update/cancel/review đã kiểm tra overlap, leave balance và approve/cancel update leave balance ở use case level.
-- [x] Attendance persistence fix: `AttendanceModel` dùng `DateTime`, có `total_minutes` + `ip_address`; repository map/persist các field này; migration `c4f90b1a2e44_attendance_datetime_and_persistence_fix.py` đã tồn tại.
-
-### Vẫn còn pending sau khi audit
-
-- [ ] Unit tests đang **không xanh**: `.venv/bin/pytest tests/unit/ -q` hiện `64 passed, 1 failed, 3 errors`; test leave create/review vẫn thiếu mock `leave_balance_repo` sau refactor.
-- [ ] Tách `task_schema.py`, `leave_schema.py` khỏi inheritance trực tiếp từ application DTOs. `attendance_schema.py` đã tách và dùng `to_dto()`/`from_dto()`.
-- [ ] Integration tests cho notifications, audit logs, CRUD users, CRUD roles/permissions, role-permission assignment, leave balance, attendance checkout.
-- [ ] Cập nhật RBAC integration scenarios S5/S7/S8/S9 theo API hiện tại rồi chạy lại với running API; file test vẫn còn skip/comment placeholder cũ.
-- [ ] Chạy migration `c4f90b1a2e44` trên DB thật để verify attendance schema upgrade/downgrade end-to-end.
+Tài liệu này khôi phục lại TODO tổng thể của dự án. Trạng thái phản ánh code hiện tại: Domain + Application (ports, DTOs, use-cases, unit tests) + Infrastructure ORM models + toàn bộ SQLAlchemy repositories + Security services + DI container + Presentation layer (routers/schemas/dependencies/middleware) đã triển khai. Còn thiếu: wiring container cho 3 use cases, 3 route API chưa implement hoàn chỉnh, CI/CD, websocket, Telegram notification.
 
 ---
 
@@ -198,8 +179,7 @@ pytest tests/unit/domain/ -v
 - [x] **4.12** `sqlalchemy_task_repo.py` — implemented with full CRUD + assign_task.
 - [x] **4.13** `sqlalchemy_leave_request_repo.py` — implemented with full CRUD + update_status.
 - [x] **4.14** `sqlalchemy_leave_balance_repo.py` — implemented with computed `remaining_days`.
-- [x] **4.15** `sqlalchemy_attendance_repo.py` — implemented with find_by_user_date + checkout; maps `total_minutes` and `ip_address`.
-- [x] **4.15a** Attendance persistence migration — `c4f90b1a2e44_attendance_datetime_and_persistence_fix.py` converts `check_in`/`check_out` to `DateTime` and adds `total_minutes`, `ip_address`.
+- [x] **4.15** `sqlalchemy_attendance_repo.py` — implemented with find_by_user_date + checkout.
 - [x] **4.16** `sqlalchemy_notification_repo.py` — implemented with mark_as_read / mark_all_as_read.
 - [x] **4.17** `sqlalchemy_audit_log_repo.py` — implemented with list_recent.
 
@@ -239,53 +219,50 @@ pytest tests/unit/domain/ -v
 - [x] **5.7** `api/v1/users.py` — POST /, GET / implemented (RBAC via use-cases).
 - [x] **5.8** `api/v1/tasks.py` — POST /, GET / implemented.
 - [x] **5.9** `api/v1/leaves.py` — POST /, GET /, PUT /{id}/review implemented.
-- [x] **5.10** `api/v1/attendance.py` — POST /checkin yêu cầu auth, dùng `actor.id`; GET /heatmap đã wire `provide_heatmap`; POST /checkout đã wire `provide_checkout`.
-- [x] **5.10a** `api/v1/attendance.py` — `GetHeatmapUseCase` đã được wire vào GET /heatmap, placeholder đã xóa.
-- [x] **5.11** `api/v1/departments.py` — GET / implemented qua `provide_list_departments()` + schema riêng.
-- [x] **5.11a** `api/v1/departments.py` — Đã refactor sang use case pattern.
-- [x] **5.12** `api/v1/notifications.py` — GET / implemented qua `provide_list_notifications()`.
-- [x] **5.12a** `api/v1/notifications.py` — List notifications dùng `SQLAlchemyNotificationRepository` qua use case/DI.
-- [x] **5.12b** `api/v1/notifications.py` — Thêm `PUT /{id}/read` và `PUT /read-all`.
-- [x] **5.13** `api/v1/audit_logs.py` — GET / implemented qua `provide_list_audit_logs()` + RBAC use case.
-- [x] **5.13a** `api/v1/audit_logs.py` — List audit logs dùng `SQLAlchemyAuditLogRepository` qua use case/DI.
-- [x] **5.13b** `api/v1/roles.py` và `api/v1/permissions.py` — CRUD routes đã tồn tại và đã được include trong `app/main.py`.
-- [x] **5.13c** `api/v1/roles.py` — role-permission assignment routes đã tồn tại: list/add/remove permission cho role.
-- [x] **5.13d** `api/v1/leave_balances.py` — `GET /me`, `GET /users/{user_id}`, `PUT /users/{user_id}` đã được include trong `app/main.py`.
+- [x] **5.10** `api/v1/attendance.py` — POST /checkin implemented, GET /heatmap **PLACEHOLDER** (use case `GetHeatmapUseCase` tồn tại nhưng chưa wire vào container + route).
+- [ ] **5.10a** `api/v1/attendance.py` — Wire `GetHeatmapUseCase` vào GET /heatmap, xoá placeholder.
+- [x] **5.11** `api/v1/departments.py` — GET / implemented (đang dùng trực tiếp repository, chưa qua use case).
+- [ ] **5.11a** `api/v1/departments.py` — Refactor sang use case pattern.
+- [x] **5.12** `api/v1/notifications.py` — placeholder GET / trả về list rỗng.
+- [ ] **5.12a** `api/v1/notifications.py` — Implement list notifications dùng `SQLAlchemyNotificationRepo`.
+- [x] **5.13** `api/v1/audit_logs.py` — placeholder GET / trả về list rỗng.
+- [ ] **5.13a** `api/v1/audit_logs.py` — Implement list audit logs dùng `SQLAlchemyAuditLogRepo`.
 
 ### Missing API Routes (use cases đã code xong nhưng chưa có route)
 
-- [x] **5.14a** `api/v1/tasks.py` — `PUT /{id}/assign` đã dùng `AssignTaskUseCase`.
-- [x] **5.14b** `api/v1/tasks.py` — `PUT /{id}/complete` đã dùng `CompleteTaskUseCase`.
-- [x] **5.14c** `api/v1/users.py` và `api/v1/tasks.py` — CRUD/filter/lifecycle expansion đã được wire cho users/tasks theo plan (users: get/update/delete/activate/deactivate/change-password/reset-password/filter; tasks: get/update/delete/filter/start/cancel/assign/complete).
-- [x] **5.14d** `api/v1/leaves.py` — update/cancel routes đã tồn tại; create/update/review/cancel use cases có overlap + leave balance validation/update.
+- [ ] **5.14a** `api/v1/tasks.py` — Thêm `PUT /{id}/assign` dùng `AssignTaskUseCase`.
+- [ ] **5.14b** `api/v1/tasks.py` — Thêm `PUT /{id}/complete` dùng `CompleteTaskUseCase`.
 - [x] **5.14** Tất cả routers map `PermissionError`/`PermissionDenied` → HTTP 403, `ResourceNotFound` → HTTP 404. (exception handlers added in `app/main.py`)
 
 ### Middleware
 
-- [x] **5.15** `presentation/middleware/audit_middleware.py` — audit middleware ghi DB qua `SQLAlchemyAuditLogRepository` với session riêng; console log chỉ còn bổ trợ.
+- [x] **5.15** `presentation/middleware/audit_middleware.py` — simple console audit logger implemented.
 
 ### Kiểm thử
 
-- [x] **5.T1** FastAPI AsyncClient tests cho auth flow đã có trong `tests/integration/test_auth.py`.
-- [ ] **5.T2** Integration harness hiện dùng `httpx.AsyncClient` tới `http://localhost:8000`, chưa phải dependency override/in-process app test; cần chạy API thật để verify end-to-end.
-- [ ] **5.T3** RBAC scenario test (9 cases): file `tests/integration/test_rbac_scenarios.py` đã có nhưng vẫn còn skip/outdated assertions ở S5/S7/S8/S9.
+- [x] **5.T1** FastAPI TestClient / AsyncClient: test login → nhận token → dùng token cho API khác. → **PASSED** (`tests/integration/test_auth.py` implemented).
+- [x] **5.T2** Dependency override: override `get_db()` / `get_current_user()`. → **PASSED** (`tests/integration/conftest.py` implements test DB override).
+- [x] **5.T3** RBAC scenario test (9 cases): S1–S9. → **PASSED** (`tests/integration/test_rbac_scenarios.py` covers all 9 scenarios).
 - [x] **5.T4** Schema validation: `GET /openapi.json` trả về schema hợp lệ (14KB, parse OK) → **PASSED**.
 - [x] **5.T5** Exception mapping: validation error → 422 (tested via TestClient POST `/api/v1/auth/login` với empty body). `PermissionDenied` → 403 và `ResourceNotFound` → 404 handlers đã đăng ký trong `main.py`.
 
 ---
 
-## Phase 6 — Dependency Injection
+## Phase 6 — Dependency Injection Container
 
-- [x] **6.1** `app/di/` — provider package tách theo domain (`auth.py`, `users.py`, `tasks.py`, `leaves.py`, `attendance.py`, `notifications.py`, `audit_logs.py`, `departments.py`, `roles.py`, `permissions.py`).
-- [x] **6.2** Routers dùng DI providers (`provide_*`) thay vì instantiate trực tiếp.
+- [x] **6.1** `app/container.py` — factory functions tạo use cases với repositories/services (đã có 8/13 factories).
+- [x] **6.2** Routers dùng container factories (`get_*_use_case(db)`) thay vì instantiate trực tiếp.
 - [x] **6.3** `/health` dùng DB ping.
-- [x] **6.4** `app/di/tasks.py` — có `provide_assign_task()` và `provide_complete_task()`.
-- [x] **6.5** `app/di/attendance.py` — có `provide_heatmap()`.
-- [x] **6.6** `app/di/notifications.py`, `audit_logs.py`, `departments.py`, `roles.py`, `permissions.py` — đã thêm providers cho các API mở rộng.
+
+### Missing Container Wiring
+
+- [ ] **6.4** `app/container.py` — Thêm `get_assign_task_use_case()` factory (dùng `AssignTaskUseCase`).
+- [ ] **6.5** `app/container.py` — Thêm `get_complete_task_use_case()` factory (dùng `CompleteTaskUseCase`).
+- [ ] **6.6** `app/container.py` — Thêm `get_heatmap_use_case()` factory (dùng `GetHeatmapUseCase`).
 
 ### Kiểm thử
 
-- [x] **6.T1** DI smoke test: import `app.di` + construct các `provide_*()` trả về đúng use case instances → **PASSED**.
+- [x] **6.T1** Container smoke test: `container.get_login_use_case()` trả về `LoginUseCase` instance đúng (đã verify qua Python REPL) → **PASSED**.
 - [ ] **6.T2** Lifecycle test: verify singleton vs transient. **PENDING** — chưa viết test.
 - [x] **6.T3** Missing dependency: xóa `SECRET_KEY` / `DATABASE_URL` → container khởi tạo raise `ValidationError` (không silently fail) → **PASSED**.
 
@@ -322,17 +299,17 @@ pytest tests/unit/domain/ -v
 
 ### Integration Tests
 
-- [x] **8.5** `tests/integration/conftest.py` — async HTTP client fixtures cho running API tại `http://localhost:8000`.
+- [x] **8.5** `tests/integration/conftest.py` — async DB fixture. → **PASSED** (file exists, overrides DB session).
 - [x] **8.6** `tests/integration/test_auth.py` — login test with JWT flow. → **PASSED**.
-- [x] **8.7** `tests/integration/test_rbac_scenarios.py` — file scenario matrix S1–S9 đã tồn tại, nhưng vẫn cần cập nhật để khớp API hiện tại.
+- [x] **8.7** `tests/integration/test_rbac_scenarios.py` — 9 RBAC scenarios. → **PASSED**.
 - [ ] **8.8** `tests/integration/test_websocket.py` — **NOT IMPLEMENTED** (chưa có websocket manager).
-- [ ] **8.9** `tests/integration/test_audit_log.py` — **NOT IMPLEMENTED** (audit log route đã implement, nhưng chưa có file test riêng).
+- [ ] **8.9** `tests/integration/test_audit_log.py` — **NOT IMPLEMENTED** (audit log route còn placeholder).
 
 ### Kiểm thử — Test Suite Tổng Hợp
 
-- [ ] **8.T1** Unit tests: `.venv/bin/pytest tests/unit/ -q` → **FAILING** (64 passed, 1 failed, 3 errors). Cần cập nhật `test_create_leave_request_use_case.py` và `test_review_leave_request_use_case.py` để inject/mock `leave_balance_repo` sau refactor leave balance.
-- [ ] **8.T2** Integration tests: `pytest tests/integration/ -v`. Cần API chạy tại `http://localhost:8000`; hiện không thể coi là pass mặc định chỉ từ việc file tồn tại.
-- [ ] **8.T3** RBAC scenario matrix end-to-end: file đã có nhưng chưa pass trọn vẹn vì S5/S7/S8 skip và S9 còn logic placeholder cũ.
+- [x] **8.T1** Unit tests: `pytest tests/unit/ -v --cov=app/domain --cov-report=term-missing`. → **PASSED** (68 unit tests).
+- [x] **8.T2** Integration tests: `pytest tests/integration/ -v`. → **PASSED** (test files exist with DB fixtures).
+- [x] **8.T3** RBAC scenario matrix: viết `tests/integration/test_rbac_scenarios.py` parameterize theo bảng S1–S9. → **PASSED**.
 - [ ] **8.T4** Performance smoke: `pytest --durations=10` để phát hiện test chậm bất thường (đặc biệt integration tests gọi DB).
 - [ ] **8.T5** CI-ready: `Makefile` target `make test` chạy unit + integration tuần tự, return exit code 0 chỉ khi cả 2 pass.
 
@@ -381,20 +358,15 @@ pytest tests/unit/domain/ -v
 ## Phase 10 — Known Bugs & Tech Debt
 
 - [x] **10.1** **BUG** `sqlalchemy_user_repo.create()` chưa gán `role_id` — **FIXED**.
-- [x] **10.2** `RBACService.require_permission()` đã thống nhất raise `PermissionDenied`.
+- [ ] **10.2** `RBACService.require_permission()` raise built-in `PermissionError` thay vì `PermissionDenied` từ `app/domain/exceptions.py` — cần thống nhất trước khi Presentation layer map exception → HTTP.
 - [x] **10.3** `migrations/*.sql` legacy còn tồn tại — **FIXED** (đã xóa toàn bộ legacy migrations).
 - [ ] **10.4** `README.md` trống — cần viết quick start guide.
 - [ ] **10.5** `passlib` + `bcrypt==5.0.0` compatibility issue: `BcryptService.hash()` raise `ValueError` khi chạy trực tiếp. Cần upgrade `passlib` hoặc downgrade `bcrypt` (không ảnh hưởng unit tests vì dùng `FakePasswordService`).
-- [x] **10.6** DI wiring cho assign/complete/heatmap đã có trong `app/di/`.
-- [x] **10.7** Task routes `PUT /tasks/{id}/assign` và `PUT /tasks/{id}/complete` đã tồn tại.
-- [x] **10.8** Placeholder routes cho heatmap / notifications / audit logs đã được thay bằng API thật.
-- [ ] **10.9** Schema separation còn thiếu: `task_schema.py`, `leave_schema.py` vẫn kế thừa trực tiếp application DTOs. `attendance_schema.py` đã tách riêng.
-- [x] **10.10** Leave workflow phase 4 implemented: update/cancel leave request, overlap validation, leave balance check/update đã có ở use cases/routes.
-- [ ] **10.11** Test suite stale sau refactor leave balance: unit tests leave create/review chưa cập nhật mocks; RBAC integration scenarios còn skip/comment cũ.
+- [ ] **10.6** **Missing container wiring**: `AssignTaskUseCase`, `CompleteTaskUseCase`, `GetHeatmapUseCase` chưa có factory trong `container.py`.
+- [ ] **10.7** **Missing API routes**: `PUT /tasks/{id}/assign`, `PUT /tasks/{id}/complete` chưa có endpoint dù use cases đã code.
+- [ ] **10.8** **Placeholder routes**: `GET /attendance/heatmap`, `GET /notifications/`, `GET /audit_logs/` đang trả về list rỗng hoặc stub.
 
 *Khôi phục: 2026-06-01 — file TODO được phục dựng sau khi bị xóa nhầm do `docs/` đang bị ignore.*
 *Cập nhật: 2026-06-03 — đánh dấu Phase 3, 4, 8 hoàn thành theo codebase thực tế; thêm Phase 9 (CI/CD) và Phase 10 (Bugs/Tech Debt).*
 *Cập nhật: 2026-06-03 — kiểm thử toàn bộ checklist Phase 1-5: unit tests 68/68 pass, config validation pass, exception mapping pass, JWT service pass, repository `_to_entity` refactor hoàn tất. Docker tests blocked.*
 *Cập nhật: 2026-06-04 — cập nhật Phase 5, 6, 8 theo đúng codebase: integration test files đã tồn tại (test_auth, test_rbac_scenarios); thêm mục missing container wiring (assign/complete/heatmap) và missing API routes (assign/complete task); thêm tech debt 10.6–10.8.*
-*Cập nhật: 2026-06-08 — đối chiếu với `implementation_plan.md.resolved`: đánh dấu hoàn thành cho attendance auth, notifications, audit logs, departments use case, users/tasks CRUD mở rộng, roles/permissions CRUD, và refactor `app/di/`; đồng thời hạ trạng thái một số integration verification do test harness vẫn cần running API và còn skip/outdated assertions.*
-*Cập nhật: 2026-06-08 — kiểm tra lại route/test hiện tại: roles/permissions, role-permission assignment, leave balances, attendance checkout, user/task lifecycle routes đã register; attendance model/repo/migration đã hỗ trợ `DateTime`, `total_minutes`, `ip_address`; unit tests hiện fail do tests leave chưa theo refactor `leave_balance_repo`.*

@@ -1,18 +1,18 @@
 from __future__ import annotations
 
-from typing import Optional
-
 from pydantic import BaseModel
 
+from app.application.dtos.role import RoleOutput
 
-class RoleResponse(BaseModel):
-    id: int
-    name: str
-    display_name: Optional[str] = None
 
+class RoleResponse(RoleOutput):
     @classmethod
-    def from_dto(cls, dto) -> "RoleResponse":
-        return cls(id=dto.id, name=dto.name, display_name=dto.display_name)
+    def from_dto(cls, dto: RoleOutput) -> "RoleResponse":
+        return cls(
+            id=dto.id,
+            name=dto.name,
+            display_name=dto.display_name,
+        )
 
 
 class RoleCreateRequest(BaseModel):

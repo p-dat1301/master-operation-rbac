@@ -37,15 +37,16 @@ type ShellRouteMeta = {
 
 			<nz-layout>
 				<nz-header data-testid="admin-header" class="shell-header">
-					<div class="header-left">
-						<button nz-button nzType="default" nzShape="circle" (click)="toggleSider()" aria-label="Toggle navigation">
-							<span nz-icon [nzType]="siderCollapsed ? 'menu-unfold' : 'menu-fold'"></span>
-						</button>
-						<div>
-							<p class="header-kicker">Admin control plane</p>
-							<h2>{{ pageTitle }}</h2>
-						</div>
+				<div class="header-left">
+					<button nz-button nzType="default" nzShape="circle" (click)="toggleSider()" aria-label="Toggle navigation">
+						<span nz-icon [nzType]="siderCollapsed ? 'menu-unfold' : 'menu-fold'"></span>
+					</button>
+					<div>
+						<p class="eyebrow header-kicker">Admin control plane</p>
+						<h2>{{ pageTitle }}</h2>
 					</div>
+				</div>
+
 
 					<div class="header-actions">
 						<div class="identity-chip" *ngIf="authStore.currentUser() as user">
@@ -82,9 +83,9 @@ type ShellRouteMeta = {
 			.shell-layout {
 				min-height: 100dvh;
 				background:
-					radial-gradient(circle at top left, rgba(59, 130, 246, 0.2), transparent 26%),
-					radial-gradient(circle at 100% 0%, rgba(14, 165, 233, 0.14), transparent 22%),
-					#020817;
+					radial-gradient(circle at 14% 8%, rgba(129, 140, 248, 0.08), transparent 22%),
+					radial-gradient(circle at 86% 0%, rgba(167, 139, 250, 0.05), transparent 18%),
+					linear-gradient(180deg, #040916 0%, #020814 100%);
 				color: var(--admin-text-primary);
 			}
 
@@ -98,103 +99,145 @@ type ShellRouteMeta = {
 			}
 
 			.header-kicker {
-				margin: 0;
-				font-size: 0.76rem;
-				letter-spacing: 0.18em;
+				margin: 0 0 0.2rem;
+				font-size: 0.72rem;
+				letter-spacing: 0.2em;
 				text-transform: uppercase;
 				color: var(--admin-action-primary);
+				opacity: 0.88;
 			}
 
 			.header-left h2 {
 				margin: 0;
-				font-size: clamp(1.2rem, 2vw, 1.6rem);
-				font-weight: 700;
+				font-size: clamp(1.05rem, 1.65vw, 1.35rem);
+				font-weight: 750;
+				letter-spacing: -0.03em;
 				color: var(--admin-text-primary);
 			}
 
-			.shell-header {
-				height: auto;
-				padding: 1.25rem 1.5rem;
-				line-height: normal;
-				background: rgba(2, 6, 23, 0.35);
-				backdrop-filter: blur(16px);
-				border-bottom: 1px solid var(--admin-border-subtle);
-				display: flex;
-				align-items: center;
-				justify-content: space-between;
-				gap: 1rem;
-			}
+				.shell-header {
+					height: auto;
+					padding: 1rem 1.35rem;
+					line-height: normal;
+					background: rgba(2, 6, 23, 0.42);
+					backdrop-filter: blur(18px) saturate(120%);
+					border-bottom: 1px solid var(--admin-border-subtle);
+					display: flex;
+					align-items: center;
+					justify-content: space-between;
+					gap: 1rem;
+					flex-wrap: wrap;
+				}
+
 
 			.header-left {
 				display: flex;
 				align-items: center;
-				gap: 1rem;
+				gap: 0.9rem;
+				min-width: 0;
 			}
 
-			.header-actions {
-				display: flex;
-				align-items: center;
-				gap: 0.75rem;
-			}
+				.header-actions {
+					display: flex;
+					align-items: center;
+					gap: 0.75rem;
+					flex-wrap: wrap;
+					justify-content: flex-end;
+					min-width: 0;
+				}
+
 
 			.identity-chip {
 				display: grid;
-				gap: 0.1rem;
-				padding: 0.5rem 0.85rem;
-				border-radius: 1rem;
-				background: rgba(15, 23, 42, 0.72);
-				border: 1px solid var(--admin-border-subtle);
+				gap: 0.08rem;
+				padding: 0.55rem 0.9rem;
+				border-radius: 0.95rem;
+				background: rgba(10, 16, 30, 0.78);
+				border: 1px solid rgba(148, 163, 184, 0.12);
+				box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
 			}
 
 			.identity-chip strong {
 				color: var(--admin-text-primary);
 				font-size: 0.88rem;
+				font-weight: 700;
 			}
 
 			.identity-chip span {
 				color: var(--admin-text-secondary);
-				font-size: 0.78rem;
+				font-size: 0.76rem;
 			}
 
 			.status-pill {
 				display: inline-flex;
 				align-items: center;
 				gap: 0.45rem;
-				padding: 0.55rem 0.85rem;
+				padding: 0.5rem 0.8rem;
 				border-radius: 999px;
-				background: rgba(14, 165, 233, 0.14);
-				color: #bae6fd;
-				font-size: 0.82rem;
+				background: rgba(129, 140, 248, 0.12);
+				border: 1px solid rgba(129, 140, 248, 0.16);
+				color: #c7d2fe;
+				font-size: 0.78rem;
 				font-weight: 700;
+				letter-spacing: 0.01em;
 			}
 
 			.shell-content {
-				padding: 1.5rem;
+				padding: 1.15rem;
 			}
 
 			.content-frame {
 				display: grid;
-				gap: 1rem;
+				gap: 0.95rem;
 			}
 
 			.content-panel {
-				min-height: calc(100dvh - 11rem);
-				padding: clamp(1rem, 2vw, 1.5rem);
-				border: 1px solid var(--admin-border-subtle);
-				border-radius: 1.5rem;
-				background: rgba(8, 15, 28, 0.72);
-				box-shadow: 0 30px 80px rgba(2, 6, 23, 0.4);
+				min-height: calc(100dvh - 10.75rem);
+				box-shadow:
+					0 1px 0 rgba(255, 255, 255, 0.02),
+					0 18px 50px rgba(2, 6, 23, 0.34),
+					inset 0 1px 0 rgba(255, 255, 255, 0.02);
+				overflow: hidden;
 			}
 
 			@media (max-width: 991px) {
 				.shell-header {
-					padding: 1rem;
-					align-items: flex-start;
+					padding: 0.9rem 1rem;
+					align-items: stretch;
 					flex-direction: column;
 				}
 
+				.header-left {
+					width: 100%;
+				}
+
+				.header-actions {
+					justify-content: flex-start;
+					width: 100%;
+				}
+
+				.identity-chip {
+					max-width: 100%;
+				}
+
 				.shell-content {
-					padding: 1rem;
+					padding: 0.9rem;
+				}
+
+				.content-panel {
+					min-height: auto;
+					border-radius: 1.15rem;
+				}
+			}
+
+			@media (max-width: 767px) {
+				.header-actions > * {
+					flex: 1 1 auto;
+				}
+
+				.header-actions .status-pill,
+				.header-actions button {
+					min-width: max-content;
 				}
 			}
 		`
@@ -205,48 +248,49 @@ export class AdminShellComponent implements OnInit {
 	protected readonly authStore = inject(AuthStoreService);
 
 	private readonly allNavItems: ShellNavItem[] = [
-		{ label: 'Dashboard', icon: 'dashboard', route: '/', group: 'Workspace' },
-		{ label: 'Thông báo', icon: 'bell', route: '/notifications', group: 'Workspace' },
-		{ label: 'Chat', icon: 'message', route: '/chat', group: 'Agent/AI' },
-		{ label: 'Conversations', icon: 'comment', route: '/agentic/conversations', group: 'Agent/AI' },
-		{ label: 'Documents', icon: 'file-text', route: '/agentic/documents', group: 'Agent/AI' },
-		{ label: 'Người dùng', icon: 'team', route: '/users', permission: 'manage_org', group: 'Organization' },
-		{ label: 'Departments', icon: 'team', route: '/system/departments', permission: 'manage_org', group: 'Organization' },
-		{ label: 'Roles', icon: 'safety-certificate', route: '/rbac/roles', permission: 'manage_org', group: 'Access Control' },
-		{ label: 'Permissions', icon: 'key', route: '/rbac/permissions', permission: 'manage_org', group: 'Access Control' },
-		{ label: 'Công việc', icon: 'check-square', route: '/tasks', permission: 'create_task', group: 'Operations' },
-		{ label: 'Attendance', icon: 'schedule', route: '/attendance', permission: 'view_attendance_self', group: 'Operations' },
-		{ label: 'Nghỉ phép', icon: 'calendar', route: '/leaves', permission: 'approve_leave', group: 'Operations' },
-		{ label: 'Audit Logs', icon: 'file-search', route: '/audit-logs', permission: 'audit:view', group: 'Security' },
-		{ label: 'Menu sync', icon: 'appstore', route: '/config/menu-sync', permission: 'system.config.manage', group: 'Advanced/Admin tools' },
-		{ label: 'i18n sync', icon: 'translation', route: '/config/i18n-sync', permission: 'system.config.manage', group: 'Advanced/Admin tools' }
+		{ label: 'Bảng điều khiển', icon: 'dashboard', route: '/', group: 'Không gian làm việc' },
+		{ label: 'Thông báo', icon: 'bell', route: '/notifications', group: 'Không gian làm việc' },
+		{ label: 'Trò chuyện AI', icon: 'message', route: '/chat', group: 'Trợ lý AI & Tri thức' },
+		{ label: 'Lịch sử chat', icon: 'comment', route: '/agentic/conversations', group: 'Trợ lý AI & Tri thức' },
+		{ label: 'Tài liệu & Tri thức', icon: 'file-text', route: '/agentic/documents', group: 'Trợ lý AI & Tri thức' },
+		{ label: 'Nhân sự', icon: 'team', route: '/users', permission: 'manage_org', group: 'Tổ chức & Phân quyền' },
+		{ label: 'Phòng ban', icon: 'apartment', route: '/system/departments', permission: 'manage_org', group: 'Tổ chức & Phân quyền' },
+		{ label: 'Vai trò', icon: 'safety-certificate', route: '/rbac/roles', permission: 'manage_org', group: 'Tổ chức & Phân quyền' },
+		{ label: 'Quyền hạn', icon: 'key', route: '/rbac/permissions', permission: 'manage_org', group: 'Tổ chức & Phân quyền' },
+		{ label: 'Công việc', icon: 'check-square', route: '/tasks', permission: 'create_task', group: 'Hoạt động & Vận hành' },
+		{ label: 'Điểm danh', icon: 'schedule', route: '/attendance', permission: 'view_attendance_self', group: 'Hoạt động & Vận hành' },
+		{ label: 'Đơn nghỉ phép', icon: 'calendar', route: '/leaves', permission: 'approve_leave', group: 'Hoạt động & Vận hành' },
+		{ label: 'Nhật ký hệ thống', icon: 'history', route: '/audit-logs', permission: 'audit:view', group: 'Quản trị hệ thống' },
+		{ label: 'Đồng bộ Menu', icon: 'sync', route: '/config/menu-sync', permission: 'system.config.manage', group: 'Quản trị hệ thống' },
+		{ label: 'Đồng bộ i18n', icon: 'global', route: '/config/i18n-sync', permission: 'system.config.manage', group: 'Quản trị hệ thống' }
 	];
 
 	private readonly routeMeta: ShellRouteMeta[] = [
-		{ route: '/', title: 'Dashboard', breadcrumbs: ['Admin', 'Workspace', 'Dashboard'] },
-		{ route: '/agentic/conversations', title: 'Conversations', breadcrumbs: ['Admin', 'Agent/AI', 'Conversations'] },
-		{ route: '/agentic/documents', title: 'Documents', breadcrumbs: ['Admin', 'Agent/AI', 'Documents'] },
-		{ route: '/users', title: 'Quản lý người dùng', breadcrumbs: ['Admin', 'Organization', 'Quản lý người dùng'] },
-		{ route: '/system/departments', title: 'Departments', breadcrumbs: ['Admin', 'Organization', 'Departments'] },
-		{ route: '/rbac/roles', title: 'Roles', breadcrumbs: ['Admin', 'Access Control', 'Roles'] },
-		{ route: '/rbac/permissions', title: 'Permissions', breadcrumbs: ['Admin', 'Access Control', 'Permissions'] },
-		{ route: '/tasks', title: 'Công việc', breadcrumbs: ['Admin', 'Operations', 'Công việc'] },
-		{ route: '/attendance', title: 'Attendance', breadcrumbs: ['Admin', 'Operations', 'Attendance'] },
-		{ route: '/leaves', title: 'Đơn nghỉ phép', breadcrumbs: ['Admin', 'Operations', 'Đơn nghỉ phép'] },
-		{ route: '/notifications', title: 'Thông báo', breadcrumbs: ['Admin', 'Workspace', 'Thông báo'] },
-		{ route: '/chat', title: 'Chat', breadcrumbs: ['Admin', 'Agent/AI', 'Chat'] },
-		{ route: '/audit-logs', title: 'Audit Logs', breadcrumbs: ['Admin', 'Security', 'Audit Logs'] },
-		{ route: '/config/menu-sync', title: 'Menu sync', breadcrumbs: ['Admin', 'Advanced/Admin tools', 'Menu sync'] },
-		{ route: '/config/i18n-sync', title: 'i18n sync', breadcrumbs: ['Admin', 'Advanced/Admin tools', 'i18n sync'] },
-		{ route: '/unauthorized', title: 'Unauthorized', breadcrumbs: ['Admin', 'Unauthorized'] },
-		{ route: '/forbidden', title: 'Forbidden', breadcrumbs: ['Admin', 'Forbidden'] },
-		{ route: '/not-found', title: 'Not found', breadcrumbs: ['Admin', 'Not found'] }
+		{ route: '/', title: 'Bảng điều khiển', breadcrumbs: ['Hệ thống', 'Không gian làm việc', 'Bảng điều khiển'] },
+		{ route: '/agentic/conversations', title: 'Lịch sử chat', breadcrumbs: ['Hệ thống', 'Trợ lý AI & Tri thức', 'Lịch sử chat'] },
+		{ route: '/agentic/documents', title: 'Tài liệu & Tri thức', breadcrumbs: ['Hệ thống', 'Trợ lý AI & Tri thức', 'Tài liệu & Tri thức'] },
+		{ route: '/users', title: 'Quản lý nhân sự', breadcrumbs: ['Hệ thống', 'Tổ chức & Phân quyền', 'Nhân sự'] },
+		{ route: '/system/departments', title: 'Quản lý phòng ban', breadcrumbs: ['Hệ thống', 'Tổ chức & Phân quyền', 'Phòng ban'] },
+		{ route: '/rbac/roles', title: 'Quản lý vai trò', breadcrumbs: ['Hệ thống', 'Tổ chức & Phân quyền', 'Vai trò'] },
+		{ route: '/rbac/permissions', title: 'Quản lý quyền hạn', breadcrumbs: ['Hệ thống', 'Tổ chức & Phân quyền', 'Quyền hạn'] },
+		{ route: '/tasks', title: 'Quản lý công việc', breadcrumbs: ['Hệ thống', 'Hoạt động & Vận hành', 'Công việc'] },
+		{ route: '/attendance', title: 'Điểm danh', breadcrumbs: ['Hệ thống', 'Hoạt động & Vận hành', 'Điểm danh'] },
+		{ route: '/leaves', title: 'Đơn nghỉ phép', breadcrumbs: ['Hệ thống', 'Hoạt động & Vận hành', 'Đơn nghỉ phép'] },
+		{ route: '/notifications', title: 'Thông báo', breadcrumbs: ['Hệ thống', 'Không gian làm việc', 'Thông báo'] },
+		{ route: '/chat', title: 'Trò chuyện AI', breadcrumbs: ['Hệ thống', 'Trợ lý AI & Tri thức', 'Trò chuyện AI'] },
+		{ route: '/audit-logs', title: 'Nhật ký hệ thống', breadcrumbs: ['Hệ thống', 'Quản trị hệ thống', 'Nhật ký hệ thống'] },
+		{ route: '/config/menu-sync', title: 'Đồng bộ Menu', breadcrumbs: ['Hệ thống', 'Quản trị hệ thống', 'Đồng bộ Menu'] },
+		{ route: '/config/i18n-sync', title: 'Đồng bộ i18n', breadcrumbs: ['Hệ thống', 'Quản trị hệ thống', 'Đồng bộ i18n'] },
+		{ route: '/unauthorized', title: 'Không có quyền truy cập', breadcrumbs: ['Hệ thống', 'Lỗi truy cập'] },
+		{ route: '/forbidden', title: 'Bị cấm truy cập', breadcrumbs: ['Hệ thống', 'Lỗi truy cập'] },
+		{ route: '/not-found', title: 'Không tìm thấy trang', breadcrumbs: ['Hệ thống', 'Lỗi truy cập'] }
 	];
 
 	breadcrumbs: string[] = ['Admin'];
 	pageTitle = 'Dashboard';
 	isMobile = false;
 	siderCollapsed = false;
+	navItems: ShellNavItem[] = [];
 
 	ngOnInit(): void {
 		this.updateViewportState();
@@ -257,6 +301,7 @@ export class AdminShellComponent implements OnInit {
 				this.siderCollapsed = true;
 			}
 		});
+		this.navItems = this.allNavItems.filter((item) => !item.permission || this.authStore.hasPermission(item.permission));
 	}
 
 	@HostListener('window:resize')
@@ -274,10 +319,6 @@ export class AdminShellComponent implements OnInit {
 	logout(): void {
 		this.authStore.logout();
 		void this.router.navigateByUrl('/login');
-	}
-
-	get navItems(): ShellNavItem[] {
-		return this.allNavItems.filter((item) => !item.permission || this.authStore.hasPermission(item.permission));
 	}
 
 	private syncRouteMeta(url: string): void {

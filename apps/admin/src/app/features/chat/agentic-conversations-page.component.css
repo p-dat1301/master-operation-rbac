@@ -1,0 +1,29 @@
+.conversation-layout { display:grid; grid-template-columns:minmax(280px, .8fr) minmax(0, 1.35fr); gap:1.25rem; align-items:start }
+.section-heading { display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; margin-bottom:1rem }
+.list-card, .detail-card { min-height:28rem }
+.conversation-list { display:grid; gap:.7rem }
+.conversation-row { width:100%; text-align:left; border:1px solid var(--admin-border-subtle); border-radius:1rem; padding:.9rem; display:grid; gap:.35rem; background:var(--admin-surface-table); cursor:pointer; transition:border-color .18s ease, transform .18s ease, background .18s ease }
+.conversation-row:hover, .conversation-row.selected { border-color:rgba(125,211,252,.55); background:rgba(14,165,233,.12); transform:translateY(-1px) }
+.conversation-title { color:var(--admin-text-primary); font-weight:700; line-height:1.25 }
+.conversation-meta { color:var(--admin-text-muted); font-size:.78rem; overflow-wrap:anywhere }
+.status-tag { width:max-content; margin-top:.25rem }
+.state-panel { border:1px dashed var(--admin-border-subtle); border-radius:1rem; padding:1rem; display:flex; align-items:flex-start; gap:.8rem; color:var(--admin-text-secondary); background:var(--admin-surface-table) }
+.state-panel strong { color:var(--admin-text-primary) }
+.state-panel p { margin:.15rem 0 0 }
+.state-panel [nz-icon] { color:var(--admin-action-primary); font-size:1.25rem; margin-top:.15rem }
+.error-state { border-color:rgba(248,113,113,.3); background:rgba(127,29,29,.12) }
+.error-state [nz-icon] { color:var(--admin-action-danger) }
+.loading-block { min-height:5rem; display:flex; align-items:center; justify-content:center; gap:.75rem; color:var(--admin-text-secondary) }
+.messages-heading { margin:1.25rem 0 .85rem; padding-top:1rem; border-top:1px solid var(--admin-border-subtle) }
+.message-history { display:grid; gap:1rem }
+.turn-card { border:1px solid var(--admin-border-subtle); border-radius:1.1rem; padding:1rem; background:var(--admin-surface-table) }
+.turn-header { display:flex; justify-content:space-between; gap:1rem; flex-wrap:wrap; margin-bottom:.8rem; color:var(--admin-action-primary); font-size:.78rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase }
+.bubble { border-radius:1rem; padding:.8rem .9rem; margin-top:.65rem }
+.bubble span { display:block; margin-bottom:.35rem; font-size:.72rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase }
+.bubble p { margin:0; white-space:pre-wrap; overflow-wrap:anywhere; color:var(--admin-text-strong) }
+.bubble.user { background:rgba(56,189,248,.12); border:1px solid rgba(56,189,248,.18) }
+.bubble.user span { color:var(--admin-action-primary) }
+.bubble.assistant { background:rgba(52,211,153,.1); border:1px solid rgba(52,211,153,.16) }
+.bubble.assistant span { color:var(--admin-action-success) }
+.trace { margin:.7rem 0 0; font-size:.78rem; overflow-wrap:anywhere }
+@media (max-width: 980px) { .conversation-layout { grid-template-columns:1fr } }

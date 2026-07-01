@@ -1,7 +1,0 @@
-- generic [ref=e4]:
-  - img [ref=e7]
-  - generic [ref=e63]: Không đủ quyền
-  - generic [ref=e64]: Tài khoản hiện tại không có quyền truy cập màn hình này.
-  - link "Quay về trang tổng quan" [ref=e66] [cursor=pointer]:
-    - /url: /
-    - generic [ref=e67]: Về tổng quan

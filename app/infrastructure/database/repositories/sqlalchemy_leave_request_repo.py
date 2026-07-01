@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.domain.entities.leave_request import LeaveRequest
+from app.domain.entities.leave_request import LeaveRequest, LeaveRequestStatus
 from app.domain.repositories.leave_request_repository import LeaveRequestRepository
 from app.infrastructure.database.models.leave_request_model import LeaveRequestModel
 
@@ -31,7 +31,7 @@ class SQLAlchemyLeaveRequestRepository(LeaveRequestRepository):
             start_date=model.start_date,
             end_date=model.end_date,
             reason=model.reason,
-            status=model.status,
+            status=LeaveRequestStatus(model.status),
             department_id=model.department_id,
             reviewed_by=model.reviewer_id,
             reviewed_at=self._as_utc(model.reviewed_at),
@@ -76,7 +76,7 @@ class SQLAlchemyLeaveRequestRepository(LeaveRequestRepository):
             start_date=leave.start_date,
             end_date=leave.end_date,
             reason=leave.reason,
-            status=leave.status,
+            status=leave.status.value,
             department_id=leave.department_id,
         )
         self._session.add(model)
@@ -94,7 +94,7 @@ class SQLAlchemyLeaveRequestRepository(LeaveRequestRepository):
         model.start_date = leave.start_date
         model.end_date = leave.end_date
         model.reason = leave.reason
-        model.status = leave.status
+        model.status = leave.status.value
         model.department_id = leave.department_id
         await self._session.flush()
         return self._to_entity(model)

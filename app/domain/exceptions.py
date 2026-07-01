@@ -10,5 +10,11 @@ class ScopeViolation(DomainError):
 class ResourceNotFound(DomainError):
     pass
 
+class StorageError(DomainError):
+    pass
+
+class StorageObjectNotFound(StorageError):
+    pass
+
 class BusinessRuleViolation(DomainError):
     pass

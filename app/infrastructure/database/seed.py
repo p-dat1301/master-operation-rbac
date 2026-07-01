@@ -5,7 +5,8 @@ Chạy: python -m app.infrastructure.database.seed
 from __future__ import annotations
 
 import asyncio
-from datetime import date
+import random
+from datetime import date, datetime, timedelta, timezone
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -15,6 +16,7 @@ from app.infrastructure.database.models.permission_model import PermissionModel
 from app.infrastructure.database.models.role_model import RoleModel
 from app.infrastructure.database.models.role_permission_model import RolePermissionModel
 from app.infrastructure.database.models.user_model import UserModel
+from app.infrastructure.database.models.attendance_model import AttendanceModel
 from app.infrastructure.database.session import AsyncSessionLocal as async_session_factory
 from app.infrastructure.security.bcrypt_service import BcryptService
 
@@ -26,6 +28,10 @@ from app.infrastructure.security.bcrypt_service import BcryptService
 DEPARTMENTS: list[dict] = [
     {"id": 1, "name": "Engineering", "level": 1, "parent_id": None},
     {"id": 2, "name": "HR", "level": 1, "parent_id": None},
+    {"id": 3, "name": "Sales", "level": 1, "parent_id": None},
+    {"id": 4, "name": "Marketing", "level": 1, "parent_id": None},
+    {"id": 5, "name": "Finance", "level": 1, "parent_id": None},
+    {"id": 6, "name": "IT Support", "level": 1, "parent_id": None},
 ]
 
 ROLES: list[dict] = [
@@ -43,13 +49,17 @@ PERMISSIONS: list[dict] = [
     {"id": 6, "code": "view_attendance_dept", "description": "View attendance for own department"},
     {"id": 7, "code": "audit:view", "description": "View audit logs"},
     {"id": 8, "code": "system.config.manage", "description": "Manage admin system configuration sync"},
+    {"id": 9, "code": "upload_document", "description": "Upload and manage documents"},
+    {"id": 10, "code": "read_document", "description": "Read documents"},
+    {"id": 11, "code": "update_document", "description": "Update documents"},
+    {"id": 12, "code": "delete_document", "description": "Delete documents"},
 ]
 
 # role_id -> list of permission_ids
 ROLE_PERMISSIONS: dict[int, list[int]] = {
-    1: [1, 2, 3, 4, 5, 6, 7, 8],      # admin: all
-    2: [2, 3, 4, 6],                # manager: create_task, assign_task, approve_leave, view_attendance_dept
-    3: [],                          # employee: no explicit permissions (self-scope by default)
+    1: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],   # admin: all
+    2: [2, 3, 4, 6, 9, 10, 11, 12],               # manager: create_task, assign_task, approve_leave, view_attendance_dept, upload_document, document CRUD
+    3: [],                                        # employee: no explicit permissions (self-scope by default)
 }
 
 DEMO_USERS: list[dict] = [
@@ -71,7 +81,7 @@ DEMO_USERS: list[dict] = [
         "password": "Manager@123",
         "role_id": 2,
         "department_id": 1,  # Engineering
-        "manager_id": 1,     # admin as manager (for hierarchy)
+        "manager_id": 1,     # admin as manager
     },
     {
         "id": 3,
@@ -80,8 +90,88 @@ DEMO_USERS: list[dict] = [
         "full_name": "Employee User",
         "password": "Employee@123",
         "role_id": 3,
-        "department_id": 1,  # Engineering (same dept as manager for S2 testing)
+        "department_id": 1,  # Engineering
         "manager_id": 2,     # manager as direct manager
+    },
+    {
+        "id": 4,
+        "employee_code": "EMP004",
+        "email": "alice@company.vn",
+        "full_name": "Alice Pham",
+        "password": "Employee@123",
+        "role_id": 2,  # HR Manager
+        "department_id": 2,  # HR
+        "manager_id": 1,
+    },
+    {
+        "id": 5,
+        "employee_code": "EMP005",
+        "email": "bob@company.vn",
+        "full_name": "Bob Nguyen",
+        "password": "Employee@123",
+        "role_id": 3,  # Employee
+        "department_id": 2,  # HR
+        "manager_id": 4,
+    },
+    {
+        "id": 6,
+        "employee_code": "EMP006",
+        "email": "charlie@company.vn",
+        "full_name": "Charlie Tran",
+        "password": "Employee@123",
+        "role_id": 2,  # Sales Manager
+        "department_id": 3,  # Sales
+        "manager_id": 1,
+    },
+    {
+        "id": 7,
+        "employee_code": "EMP007",
+        "email": "david@company.vn",
+        "full_name": "David Le",
+        "password": "Employee@123",
+        "role_id": 3,  # Sales Employee
+        "department_id": 3,  # Sales
+        "manager_id": 6,
+    },
+    {
+        "id": 8,
+        "employee_code": "EMP008",
+        "email": "eva@company.vn",
+        "full_name": "Eva Vu",
+        "password": "Employee@123",
+        "role_id": 3,
+        "department_id": 4,  # Marketing
+        "manager_id": 1,
+    },
+    {
+        "id": 9,
+        "employee_code": "EMP009",
+        "email": "frank@company.vn",
+        "full_name": "Frank Do",
+        "password": "Employee@123",
+        "role_id": 3,
+        "department_id": 6,  # IT Support
+        "manager_id": 1,
+    },
+    {
+        "id": 10,
+        "employee_code": "EMP010",
+        "email": "grace@company.vn",
+        "full_name": "Grace Trinh",
+        "password": "Employee@123",
+        "role_id": 2,  # Finance Manager
+        "department_id": 5,  # Finance
+        "manager_id": 1,
+    },
+    {
+        "id": 11,
+        "employee_code": "EMP011",
+        "email": "helen@company.vn",
+        "full_name": "Helen Ngo",
+        "password": "Employee@123",
+        "role_id": 3,
+        "department_id": 5,  # Finance Employee
+        "manager_id": 10,
     },
 ]
 
@@ -149,6 +239,114 @@ async def _seed_users(session: AsyncSession) -> None:
     print("  [seed] users OK")
 
 
+async def _seed_attendance(session: AsyncSession) -> None:
+    today = date.today()
+    start_date = today - timedelta(days=30)
+    
+    stmt = select(UserModel)
+    res = await session.execute(stmt)
+    users = res.scalars().all()
+    
+    print(f"  [seed] seeding attendance for {len(users)} users over the past 30 days...")
+    
+    for user in users:
+        for i in range(31):
+            day = start_date + timedelta(days=i)
+            if day == today:
+                continue
+                
+            check_stmt = select(AttendanceModel).where(
+                AttendanceModel.user_id == user.id,
+                AttendanceModel.date == day
+            )
+            existing = await session.execute(check_stmt)
+            if existing.scalars().first() is not None:
+                continue
+
+            is_weekend = day.weekday() in (5, 6)
+            
+            if is_weekend:
+                # 90% chance of no record on weekends
+                if random.random() > 0.1:
+                    continue
+                # Weekend overtime
+                check_in_hour = random.randint(8, 10)
+                check_in_min = random.randint(0, 59)
+                check_in_dt = datetime(day.year, day.month, day.day, check_in_hour, check_in_min, tzinfo=timezone.utc)
+                hours_worked = random.uniform(8.0, 9.5)
+                check_out_dt = check_in_dt + timedelta(hours=hours_worked)
+                total_mins = int(hours_worked * 60)
+                
+                session.add(AttendanceModel(
+                    user_id=user.id,
+                    date=day,
+                    check_in=check_in_dt,
+                    check_out=check_out_dt,
+                    total_minutes=total_mins,
+                    ip_address="127.0.0.1",
+                    department_id=user.department_id,
+                    status="checked_out",
+                    note="Làm thêm cuối tuần"
+                ))
+            else:
+                rand = random.random()
+                if rand < 0.08:
+                    # Absent / Short hours (Red)
+                    session.add(AttendanceModel(
+                        user_id=user.id,
+                        date=day,
+                        check_in=datetime(day.year, day.month, day.day, 8, 0, tzinfo=timezone.utc),
+                        check_out=datetime(day.year, day.month, day.day, 10, 30, tzinfo=timezone.utc),
+                        total_minutes=150,
+                        ip_address="127.0.0.1",
+                        department_id=user.department_id,
+                        status="absent",
+                        note="Số giờ công quá thấp"
+                    ))
+                elif rand < 0.18:
+                    # Short shift (Yellow)
+                    check_in_hour = random.randint(9, 11)
+                    check_in_min = random.randint(0, 59)
+                    check_in_dt = datetime(day.year, day.month, day.day, check_in_hour, check_in_min, tzinfo=timezone.utc)
+                    hours_worked = random.uniform(4.0, 6.0)
+                    check_out_dt = check_in_dt + timedelta(hours=hours_worked)
+                    total_mins = int(hours_worked * 60)
+                    
+                    session.add(AttendanceModel(
+                        user_id=user.id,
+                        date=day,
+                        check_in=check_in_dt,
+                        check_out=check_out_dt,
+                        total_minutes=total_mins,
+                        ip_address="127.0.0.1",
+                        department_id=user.department_id,
+                        status="checked_out",
+                        note="Về sớm / Đi muộn"
+                    ))
+                else:
+                    # Regular shift (Green)
+                    check_in_hour = 8
+                    check_in_min = random.randint(0, 30)
+                    check_in_dt = datetime(day.year, day.month, day.day, check_in_hour, check_in_min, tzinfo=timezone.utc)
+                    hours_worked = random.uniform(8.0, 9.5)
+                    check_out_dt = check_in_dt + timedelta(hours=hours_worked)
+                    total_mins = int(hours_worked * 60)
+                    
+                    session.add(AttendanceModel(
+                        user_id=user.id,
+                        date=day,
+                        check_in=check_in_dt,
+                        check_out=check_out_dt,
+                        total_minutes=total_mins,
+                        ip_address="127.0.0.1",
+                        department_id=user.department_id,
+                        status="checked_out",
+                        note="Đạt tiêu chuẩn ca làm"
+                    ))
+    await session.flush()
+    print("  [seed] attendance OK")
+
+
 # ------------------------------------------------------------------
 # Main
 # ------------------------------------------------------------------
@@ -162,6 +360,7 @@ async def seed_all() -> None:
             await _seed_permissions(session)
             await _seed_role_permissions(session)
             await _seed_users(session)
+            await _seed_attendance(session)
     print("[seed] Done.")
 
 

@@ -4,11 +4,14 @@ from typing import Literal
 
 from app.domain.entities.user import User
 from app.domain.exceptions import PermissionDenied
+from app.domain.services.department_tree import DepartmentTreeService
 
 
 AttendanceScope = Literal["all", "department", "self"]
 TaskScope = Literal["all", "department", "self"]
 LeaveRequestScope = Literal["all", "department", "self"]
+DocumentScope = Literal["all", "department", "self"]
+DocumentScopeDepartmentTreeService = DepartmentTreeService
 
 # Vai trò đặc biệt được coi là "super-admin" — bỏ qua kiểm tra permission_code.
 _SUPERADMIN_ROLES: frozenset[str] = frozenset({"admin"})
@@ -85,6 +88,18 @@ class RBACService:
         if self.has_permission(actor, "view_attendance_all"):
             return "all"
         if self.has_permission(actor, "view_attendance_dept"):
+            return "department"
+        return "self"
+
+    def get_document_scope(self, actor: User) -> DocumentScope:
+        """Phạm vi tài liệu được phép thao tác.
+
+        Manager trả về ``department``; use case layer sẽ dùng
+        ``DepartmentTreeService.get_dept_and_descendants`` để mở rộng cây phòng ban.
+        """
+        if actor.role_name in ("admin", "bod"):
+            return "all"
+        if actor.role_name == "manager":
             return "department"
         return "self"
 

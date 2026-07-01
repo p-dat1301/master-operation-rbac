@@ -4,7 +4,7 @@ from app.presentation.schemas.leave_schema import LeaveCreateRequest, LeaveRespo
 from app.presentation.dependencies.db_deps import get_db
 from app.presentation.dependencies.auth_deps import get_current_user
 from app.di import provide_cancel_leave, provide_create_leave, provide_list_leave, provide_review_leave, provide_update_leave
-from app.application.dtos.leave_request import LeaveRequestCreateInput, ReviewLeaveRequestInput
+from app.application.dtos.leave_request import ReviewLeaveRequestInput
 
 router = APIRouter(prefix="/api/v1/leaves", tags=["leaves"])
 
@@ -12,8 +12,7 @@ router = APIRouter(prefix="/api/v1/leaves", tags=["leaves"])
 @router.post("/", response_model=LeaveResponse)
 async def create_leave(data: LeaveCreateRequest, actor=Depends(get_current_user), db=Depends(get_db)):
     use_case = provide_create_leave(db)
-    dto = LeaveRequestCreateInput(**data.dict())
-    return await use_case.execute(actor, dto)
+    return await use_case.execute(actor, data)
 
 
 @router.get("/", response_model=list[LeaveResponse])
@@ -33,8 +32,7 @@ async def review_leave(id: int = Path(...), data: ReviewLeaveRequest = None, act
 @router.put("/{id}", response_model=LeaveResponse)
 async def update_leave(id: int = Path(...), data: LeaveUpdateRequest = None, actor=Depends(get_current_user), db=Depends(get_db)):
     use_case = provide_update_leave(db)
-    dto = LeaveRequestCreateInput(**data.dict())
-    return await use_case.execute(actor, id, dto)
+    return await use_case.execute(actor, id, data)
 
 
 @router.put("/{id}/cancel", response_model=LeaveResponse)

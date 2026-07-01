@@ -1,0 +1,197 @@
+<section class="page-root chat-window" data-testid="chat-window-page">
+	<div class="page-header">
+		<div>
+			<p class="eyebrow">Agent / AI</p>
+			<h2>Chat</h2>
+			<p class="subtitle">Conversation-aware chatbot with persisted threads.</p>
+		</div>
+		<div class="header-meta text-secondary">
+			<span class="text-muted">Mode</span>
+			<strong class="text-strong">{{ selectedConversation() ? 'Conversation' : 'Quick chat' }}</strong>
+		</div>
+	</div>
+
+	<div class="chat-layout">
+		<!-- Sidebar: conversation list -->
+		<aside class="conversation-sidebar surface-card surface-card-strong" data-testid="conversation-sidebar">
+			<div class="sidebar-header">
+				<span class="text-action">Conversations</span>
+				<button nz-button nzSize="small" nzType="text" (click)="createNewConversation()" nzTooltipTitle="New conversation thread" data-testid="new-chat-btn">
+					<span nz-icon nzType="plus"></span>
+				</button>
+			</div>
+
+			<div *ngIf="conversationLoadFailed()" class="state-panel error-state" data-testid="chat-conversation-load-error">
+				<span nz-icon nzType="warning"></span>
+				<div><strong>Loading failed.</strong><p>{{ conversationError() }}</p></div>
+				<button nz-button nzSize="small" nzType="primary" (click)="loadConversations()">Retry</button>
+			</div>
+
+			<div class="conversation-search">
+				<input nz-input placeholder="Search conversations..." [(ngModel)]="searchQuery" (ngModelChange)="filterConversations()" data-testid="conversation-search-input" />
+			</div>
+
+			<div class="conversation-list" data-testid="sidebar-conversation-list">
+				@if (loadingConversations() && conversations().length === 0) {
+					<div class="loading-block"><nz-spin nzSimple></nz-spin><span>Loading…</span></div>
+				}
+				@if (!loadingConversations() && filteredConversations().length === 0) {
+					<div class="empty-list text-muted">
+						<span nz-icon nzType="message"></span>
+						<span>No conversations yet</span>
+					</div>
+				}
+				@for (conversation of filteredConversations(); track conversation.conversation_id) {
+					<button
+						class="conversation-item"
+						[class.active]="selectedConversationId() === conversation.conversation_id"
+						(click)="selectConversation(conversation.conversation_id)"
+						[attr.data-testid]="'conversation-item-' + conversation.conversation_id"
+					>
+						<span class="conv-title">{{ conversation.title || 'Untitled' }}</span>
+						<span class="conv-id text-muted">{{ shortId(conversation.conversation_id) }}</span>
+						<nz-tag *ngIf="conversation.status" [nzColor]="statusColor(conversation.status)" class="conv-status">{{ conversation.status }}</nz-tag>
+					</button>
+				}
+			</div>
+
+			<div class="sidebar-footer">
+				<button nz-button nzBlock nzSize="small" nzType="dashed" (click)="loadConversations()" [disabled]="loadingConversations()">
+					<span nz-icon nzType="reload"></span> Refresh
+				</button>
+			</div>
+		</aside>
+
+		<!-- Main: chat panel -->
+		<div class="chat-panel">
+			<!-- top_k controls -->
+			<div class="chat-toolbar">
+				<label class="topk-field text-muted">
+					<span>top_k</span>
+					<input
+						nz-input
+						type="number"
+						[min]="topKMin"
+						[max]="topKMax"
+						step="1"
+						[(ngModel)]="topKInput"
+						(ngModelChange)="validateTopK()"
+						data-testid="chat-top-k-input"
+					/>
+				</label>
+				<div class="conv-badge text-muted">
+					<span nz-icon nzType="team"></span>
+					<span>{{ selectedConversation() ? selectedConversation()?.title || selectedConversationId() : 'Quick chat' }}</span>
+				</div>
+			</div>
+
+			<!-- Messages -->
+			<div class="chat-messages" #messagesContainer>
+				@if (chatError()) {
+					<div class="state-panel error-state" data-testid="chat-send-error">
+						<span nz-icon nzType="warning"></span>
+						<div><strong>Message failed.</strong><p>{{ chatError() }}</p></div>
+					</div>
+				}
+				@if (messages().length === 0 && !loadingConversations()) {
+					<div class="empty-state">
+						<span nz-icon nzType="comment" class="empty-icon"></span>
+						<p>Start a conversation by typing a message below.</p>
+					</div>
+				}
+				@for (msg of messages(); track $index) {
+					<div class="message" [class.user]="msg.role === 'user'" [class.assistant]="msg.role === 'assistant'">
+						<div class="message-avatar"><span nz-icon [nzType]="msg.role === 'user' ? 'user' : 'thunderbolt'"></span></div>
+						<div class="message-body">
+							<div class="message-header">
+								<span class="message-role">{{ msg.role === 'user' ? 'You' : 'Assistant' }}</span>
+							</div>
+							<div class="message-content">{{ msg.content }}</div>
+							@if (msg.meta) {
+								<div class="response-meta text-muted">
+									<div class="meta-row"><span class="text-secondary">Status:</span> <span class="text-strong">{{ msg.meta.status }}</span></div>
+									<div class="meta-row"><span class="text-secondary">Conv:</span> <span class="text-strong">{{ shortId(msg.meta.conversationId) }}</span></div>
+									<div class="meta-row"><span class="text-secondary">Thread:</span> <span class="text-strong">{{ shortId(msg.meta.threadId) }}</span></div>
+									@if (msg.meta.citedChunkIds.length > 0) { <div class="meta-row"><span class="text-secondary">Chunks:</span> {{ msg.meta.citedChunkIds.length }}</div> }
+									@if (msg.meta.citations.length > 0) {
+										<details class="citation-details">
+											<summary class="text-secondary">{{ msg.meta.citations.length }} citation(s)</summary>
+											<div class="citation-list">
+												@for (citation of msg.meta.citations; track $index) {
+													<pre class="citation-item">{{ citation | json }}</pre>
+												}
+											</div>
+										</details>
+									}
+								</div>
+							}
+						</div>
+					</div>
+				}
+				@if (loadingConversations() && messages().length === 0) {
+					<div class="loading-block" data-testid="chat-conversations-loading"><nz-spin nzSimple></nz-spin><span>Loading available conversations…</span></div>
+				}
+				@if (loading()) {
+					<div class="message assistant loading" data-testid="chat-response-loading">
+						<div class="message-avatar"><span nz-icon nzType="thunderbolt"></span></div>
+						<div class="message-body">
+							<div class="message-header"><span class="message-role">Assistant</span></div>
+							<div class="message-content thinking-indicator"><span>Đang suy nghĩ</span><span class="dot-pulse"></span></div>
+						</div>
+					</div>
+				}
+			</div>
+
+			<!-- Permission error -->
+			<div *ngIf="permissionError()" class="state-panel error-state" data-testid="chat-permission-error">
+				<span nz-icon nzType="lock"></span>
+				<div><strong>Conversation unavailable.</strong><p>{{ permissionError() }}</p></div>
+			</div>
+
+			<!-- Input area -->
+			<div class="chat-input">
+				<div class="input-row">
+					<textarea
+						nz-input
+						[(ngModel)]="inputMessage"
+						placeholder="Type your message..."
+						[disabled]="loading()"
+						(keydown.enter)="onEnterPress($event)"
+						rows="1"
+						data-testid="chat-input-textarea"
+					></textarea>
+					<button
+						nz-button
+						nzType="primary"
+						class="send-btn"
+						[disabled]="!canSend()"
+						(click)="sendMessage()"
+						data-testid="chat-send-btn"
+					>
+						<span nz-icon nzType="send"></span>
+					</button>
+				</div>
+				<div class="input-footer text-muted">
+					<span>{{ selectedConversation() ? 'Replying in selected conversation' : 'Quick chat — no thread persisted' }}</span>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<nz-modal
+		[(nzVisible)]="showCreateModal"
+		nzTitle="Tạo cuộc hội thoại mới"
+		(nzOnOk)="submitNewConversation()"
+		(nzOnCancel)="closeCreateModal()"
+		[nzOkLoading]="loadingConversations()"
+		nzOkText="Tạo"
+		nzCancelText="Hủy"
+	>
+		<ng-container *nzModalContent>
+			<div style="display: grid; gap: 0.5rem; color: #ffffff;">
+				<span style="font-weight: 600;">Tiêu đề cuộc hội thoại</span>
+				<input nz-input [(ngModel)]="newConversationTitle" placeholder="Ví dụ: Hỏi về chính sách nghỉ phép" />
+			</div>
+		</ng-container>
+	</nz-modal>
+</section>

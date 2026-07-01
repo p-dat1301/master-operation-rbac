@@ -1,0 +1,118 @@
+<section class="page-root" data-testid="agentic-conversations-page">
+	<div class="page-header">
+		<div>
+			<p class="eyebrow">Agentic workspace</p>
+			<h2>Conversations</h2>
+			<p class="subtitle">Persisted agent threads, metadata, and message history.</p>
+		</div>
+		<button nz-button nzType="default" (click)="loadConversations()" [disabled]="listLoading()" data-testid="reload-conversations-btn">
+			<span nz-icon nzType="sync"></span> Reload
+		</button>
+	</div>
+
+	<div class="conversation-layout">
+		<nz-card class="surface-card list-card" [nzBordered]="false">
+			<div class="section-heading">
+				<div>
+					<p class="text-action">Conversation list</p>
+					<p class="text-secondary">{{ conversations().length }} persisted thread{{ conversations().length === 1 ? '' : 's' }}</p>
+				</div>
+			</div>
+
+			<nz-spin [nzSpinning]="listLoading()">
+				<div *ngIf="listError()" class="state-panel error-state" data-testid="conversation-list-error">
+					<span nz-icon nzType="warning"></span>
+					<div><strong>Could not load conversations.</strong><p>{{ listError() }}</p></div>
+					<button nz-button nzSize="small" nzType="primary" (click)="loadConversations()">Try again</button>
+				</div>
+
+				<div *ngIf="!listError() && !listLoading() && conversations().length === 0" class="state-panel" data-testid="conversation-list-empty">
+					<span nz-icon nzType="inbox"></span>
+					<div><strong>No conversations yet.</strong><p>Persisted agent conversations will appear here after users start chatting.</p></div>
+				</div>
+
+				<div *ngIf="!listError() && !listLoading() && selectedConversationId() && !selectedExistsInList()" class="state-panel error-state" data-testid="conversation-list-not-found">
+					<span nz-icon nzType="disconnect"></span>
+					<div><strong>Conversation not found.</strong><p>The selected thread is missing or was removed. Reload the list and choose another conversation.</p></div>
+				</div>
+
+				<div *ngIf="!listError() && conversations().length > 0" class="conversation-list" data-testid="conversation-list">
+					<button
+						*ngFor="let conversation of conversations(); trackBy: trackConversation"
+						class="conversation-row"
+						[class.selected]="selectedConversationId() === conversation.conversation_id"
+						(click)="selectConversation(conversation.conversation_id)"
+						[attr.data-testid]="'conversation-row-' + conversation.conversation_id"
+					>
+						<span class="conversation-title">{{ conversation.title || 'Untitled conversation' }}</span>
+						<span class="conversation-meta">{{ shortId(conversation.conversation_id) }} · thread {{ shortId(conversation.thread_id) }}</span>
+						<nz-tag class="status-tag" [nzColor]="statusColor(conversation.status)">{{ conversation.status || 'unknown' }}</nz-tag>
+					</button>
+				</div>
+			</nz-spin>
+		</nz-card>
+
+		<nz-card class="surface-card detail-card" [nzBordered]="false">
+			<div class="section-heading">
+				<div>
+					<p class="text-action">Detail</p>
+					<p class="text-secondary">Conversation metadata and persisted turns.</p>
+				</div>
+			</div>
+
+			<div *ngIf="!selectedConversationId()" class="state-panel" data-testid="conversation-detail-empty">
+				<span nz-icon nzType="message"></span>
+				<div><strong>Select a conversation.</strong><p>Choose a persisted thread from the list to inspect its messages.</p></div>
+			</div>
+
+			<ng-container *ngIf="selectedConversationId()">
+				<div *ngIf="detailLoading()" class="loading-block" data-testid="conversation-detail-loading"><nz-spin nzSimple></nz-spin><span>Loading conversation detail…</span></div>
+
+				<div *ngIf="notFound()" class="state-panel error-state" data-testid="conversation-not-found">
+					<span nz-icon nzType="disconnect"></span>
+					<div><strong>Conversation not found.</strong><p>The selected conversation may have been removed or is no longer accessible.</p></div>
+				</div>
+
+				<div *ngIf="detailError() && !notFound()" class="state-panel error-state" data-testid="conversation-detail-error">
+					<span nz-icon nzType="warning"></span>
+					<div><strong>Could not load detail.</strong><p>{{ detailError() }}</p></div>
+					<button nz-button nzSize="small" nzType="primary" (click)="reloadSelected()">Try again</button>
+				</div>
+
+				<ng-container *ngIf="selectedConversation() as conversation">
+					<nz-descriptions nzSize="small" [nzColumn]="1" nzBordered data-testid="conversation-detail">
+						<nz-descriptions-item nzTitle="Title">{{ conversation.title || 'Untitled conversation' }}</nz-descriptions-item>
+						<nz-descriptions-item nzTitle="Conversation ID">{{ conversation.conversation_id }}</nz-descriptions-item>
+						<nz-descriptions-item nzTitle="Thread ID">{{ conversation.thread_id || '—' }}</nz-descriptions-item>
+						<nz-descriptions-item nzTitle="User ID">{{ conversation.user_id }}</nz-descriptions-item>
+						<nz-descriptions-item nzTitle="Status"><nz-tag [nzColor]="statusColor(conversation.status)">{{ conversation.status || 'unknown' }}</nz-tag></nz-descriptions-item>
+					</nz-descriptions>
+				</ng-container>
+
+				<div class="messages-heading"><p class="text-action">Message history</p><p class="text-secondary">{{ messages().length }} persisted turn{{ messages().length === 1 ? '' : 's' }}</p></div>
+
+				<div *ngIf="messagesLoading()" class="loading-block" data-testid="conversation-messages-loading"><nz-spin nzSimple></nz-spin><span>Loading message history…</span></div>
+
+				<div *ngIf="messagesError()" class="state-panel error-state" data-testid="conversation-messages-error">
+					<span nz-icon nzType="warning"></span>
+					<div><strong>Could not load messages.</strong><p>{{ messagesError() }}</p></div>
+					<button nz-button nzSize="small" nzType="primary" (click)="reloadSelected()">Try again</button>
+				</div>
+
+				<div *ngIf="!messagesLoading() && !messagesError() && selectedConversation() && messages().length === 0" class="state-panel" data-testid="conversation-messages-empty">
+					<span nz-icon nzType="comment"></span>
+					<div><strong>No persisted messages.</strong><p>This conversation exists, but no user or assistant turns have been saved yet.</p></div>
+				</div>
+
+				<div *ngIf="!messagesError() && !messagesLoading() && messages().length > 0" class="message-history" data-testid="conversation-message-history">
+					<article *ngFor="let message of messages(); trackBy: trackMessage" class="turn-card">
+						<div class="turn-header"><span>Turn {{ message.turn_index }}</span><span class="text-muted">{{ message.turn_id }}</span></div>
+						<div class="bubble user"><span>User</span><p>{{ message.user_message }}</p></div>
+						<div class="bubble assistant"><span>Assistant · {{ message.assistant_status || 'unknown' }}</span><p>{{ message.assistant_message || 'No assistant response persisted.' }}</p></div>
+						<p *ngIf="message.langfuse_trace_id" class="trace text-muted">Trace: {{ message.langfuse_trace_id }}</p>
+					</article>
+				</div>
+			</ng-container>
+		</nz-card>
+	</div>
+</section>

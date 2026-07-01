@@ -3,7 +3,9 @@ from __future__ import annotations
 import re
 import logging
 
+# pyrefly: ignore [missing-import]
 from starlette.middleware.base import BaseHTTPMiddleware
+# pyrefly: ignore [missing-import]
 from starlette.requests import Request
 from typing import Callable
 
@@ -25,6 +27,9 @@ class AuditMiddleware(BaseHTTPMiddleware):
         if request.method in ("POST", "PUT", "DELETE") and 200 <= response.status_code < 300:
             user = getattr(request.state, "user", None)
             user_id = user.id if user else None
+
+            if user_id is None:
+                return response
 
             # Parse resource from path
             match = _PATH_PATTERN.match(request.url.path)

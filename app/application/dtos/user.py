@@ -1,7 +1,7 @@
 from datetime import date
 from typing import Optional
 
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 
 from app.domain.entities.user import User
 
@@ -12,6 +12,7 @@ class UserOutput(BaseModel):
     email: EmailStr
     full_name: str
     role_name: str
+    permissions: list[str] = Field(default_factory=list)
     phone: Optional[str] = None
     job_title: Optional[str] = None
     contact_type: Optional[str] = None
@@ -30,6 +31,7 @@ class UserOutput(BaseModel):
             email=user.email,
             full_name=user.full_name,
             role_name=user.role_name,
+            permissions=sorted(user.permissions),
             phone=user.phone,
             job_title=user.job_title,
             contact_type=user.contact_type,

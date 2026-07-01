@@ -17,15 +17,15 @@ async def sync_i18n(data: I18nSyncRequest | None = None, actor=Depends(get_curre
     entered = await sync_execution_registry.try_enter('i18n')
     if not entered:
         response = I18nSyncResponse(resource='i18n', created=0, updated=0, skipped=0, errors=['sync already in progress'], dry_run=dry_run)
-        return JSONResponse(status_code=409, content=response.model_dump())
+        return JSONResponse(status_code=409, content=response.dict())
 
     use_case = provide_i18n_sync(db)
     try:
         await maybe_delay_for_sync_test()
         dto = await use_case.execute(actor, dry_run=dry_run)
     except I18nSyncValidationError as exc:
-        response = I18nSyncResponse.from_dto(exc.summary)
-        return JSONResponse(status_code=400, content=response.model_dump())
+        response = I18nSyncResponse(**exc.summary.dict())
+        return JSONResponse(status_code=400, content=response.dict())
     finally:
         await sync_execution_registry.exit('i18n')
-    return I18nSyncResponse.from_dto(dto)
+    return dto

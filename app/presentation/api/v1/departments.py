@@ -1,3 +1,4 @@
+# pyrefly: ignore [missing-import]
 from fastapi import APIRouter, Depends
 
 from app.presentation.schemas.department_schema import DepartmentResponse
@@ -12,4 +13,4 @@ router = APIRouter(prefix="/api/v1/departments", tags=["departments"])
 async def list_departments(db=Depends(get_db), actor=Depends(get_current_user)):
     use_case = provide_list_departments(db)
     dtos = await use_case.execute()
-    return [DepartmentResponse.from_dto(d) for d in dtos]
+    return dtos

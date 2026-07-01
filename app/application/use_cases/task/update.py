@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from app.application.dtos.task import TaskOutput, TaskUpdateInput
-from app.domain.entities.task import Task
+from app.domain.entities.task import Task, TaskPriority, TaskStatus
 from app.domain.entities.user import User
 from app.domain.exceptions import BusinessRuleViolation, ResourceNotFound
 from app.domain.repositories.task_repository import TaskRepository
@@ -18,7 +18,7 @@ class UpdateTaskUseCase:
         task = await self.task_repo.find_by_id(task_id)
         if task is None:
             raise ResourceNotFound("Task not found")
-        if task.status in {"done", "cancelled"}:
+        if task.status in {TaskStatus.DONE, TaskStatus.CANCELLED}:
             raise BusinessRuleViolation("Task cannot be updated in its current state")
 
         updated_task = Task(
@@ -30,7 +30,7 @@ class UpdateTaskUseCase:
             assigner_id=task.assigner_id,
             department_id=data.department_id if data.department_id is not None else task.department_id,
             status=task.status,
-            priority=data.priority if data.priority is not None else task.priority,
+            priority=TaskPriority(data.priority) if data.priority is not None else task.priority,
             start_date=data.start_date if data.start_date is not None else task.start_date,
             due_date=data.due_date if data.due_date is not None else task.due_date,
             estimated_hours=data.estimated_hours if data.estimated_hours is not None else task.estimated_hours,

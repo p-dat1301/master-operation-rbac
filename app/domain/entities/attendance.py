@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime, date
-from typing import Optional
+from typing import Optional 
 
 @dataclass
 class Attendance:
@@ -12,5 +12,5 @@ class Attendance:
     total_minutes: Optional[int] = None
     ip_address: Optional[str] = None
     note: Optional[str] = None
-    department_id: Optional[int] = None
     status: Optional[str] = None
+    department_id: Optional[int] = None

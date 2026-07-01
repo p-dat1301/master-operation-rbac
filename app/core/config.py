@@ -22,6 +22,12 @@ class Settings(BaseSettings):
     ELASTICSEARCH_INDEX_NAME: str = "agentic_chunks"
     RAG_USE_ELASTICSEARCH: bool = False
 
+    MINIO_ENDPOINT: str = "localhost:9000"
+    MINIO_ROOT_USER: str = "minio_admin"
+    MINIO_ROOT_PASSWORD: str = "minio_admin"
+    MINIO_BUCKET: str = "documents"
+    MINIO_SECURE: bool = False
+
     @field_validator("ELASTICSEARCH_HOST")
     @classmethod
     def validate_elasticsearch_host(cls, value: str) -> str:

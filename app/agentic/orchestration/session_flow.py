@@ -1,4 +1,8 @@
-"""RAG session flow orchestration helpers."""
+"""RAG session flow orchestration helpers.
+
+Thread-scoped continuation is canonical here: prior graph state is loaded by
+conversation.thread_id and reseeded via build_next_session_state().
+"""
 from __future__ import annotations
 
 from collections.abc import Awaitable, Callable
@@ -9,7 +13,7 @@ from app.agentic.contracts.graph_state import GraphState
 from app.agentic.orchestration.conversation_registry import ConversationRegistry, ConversationRecord, TurnRecord
 from app.agentic.orchestration.session_seeding import build_next_session_state
 
-PreviousStateLoader = Callable[[str], Awaitable[GraphState]]
+PreviousStateLoader = Callable[[str], Awaitable[GraphState]]  # thread_id -> GraphState
 GraphInvoker = Callable[[GraphState, str], Awaitable[GraphState]]
 
 
@@ -42,6 +46,7 @@ async def start_next_rag_session(
             conversation_id=conversation_id,
             turn_id=turn_id,
             turn_index=turn_index,
+            user_message=request.query,
             assistant_status=assistant_status,
             langfuse_trace_id=langfuse_trace_id,
         )

@@ -3,7 +3,7 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-from app.domain.entities.task import Task
+from app.domain.entities.task import Task, TaskPriority
 
 
 class TaskOutput(BaseModel):
@@ -35,8 +35,8 @@ class TaskOutput(BaseModel):
             assignee_id=task.assignee_id,
             assigner_id=task.assigner_id,
             department_id=task.department_id,
-            status=task.status,
-            priority=task.priority,
+            status=task.status.value,
+            priority=task.priority.value if isinstance(task.priority, TaskPriority) else task.priority,
             start_date=task.start_date,
             due_date=task.due_date,
             estimated_hours=task.estimated_hours,

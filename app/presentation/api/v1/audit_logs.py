@@ -1,3 +1,4 @@
+# pyrefly: ignore [missing-import]
 from fastapi import APIRouter, Depends
 
 from app.presentation.schemas.audit_log_schema import AuditLogResponse
@@ -12,4 +13,4 @@ router = APIRouter(prefix="/api/v1/audit_logs", tags=["audit_logs"])
 async def list_audit_logs(actor=Depends(get_current_user), db=Depends(get_db)):
     use_case = provide_list_audit_logs(db)
     dtos = await use_case.execute(actor)
-    return [AuditLogResponse.from_dto(d) for d in dtos]
+    return dtos

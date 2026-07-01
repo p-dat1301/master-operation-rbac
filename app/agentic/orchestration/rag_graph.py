@@ -1,6 +1,7 @@
 """LangGraph assembly for Task 9 MVP."""
 from __future__ import annotations
 
+from langgraph.checkpoint.base import CheckpointTuple
 from langgraph.graph import END, START, StateGraph
 
 from app.agentic.contracts.chunk import RetrievalRequest
@@ -38,9 +39,28 @@ def build_rag_graph(*, checkpointer, retrieval_store, answer_llm=None, langfuse_
     return builder.compile(checkpointer=checkpointer)
 
 
+def _thread_config(thread_id: str) -> dict[str, dict[str, str]]:
+    return {"configurable": {"thread_id": thread_id}}
+
+
+async def load_checkpointed_state(graph, thread_id: str) -> GraphState | None:
+    checkpointer = getattr(graph, "checkpointer", None)
+    if checkpointer is None:
+        return None
+    checkpoint: CheckpointTuple | None = await checkpointer.aget_tuple(_thread_config(thread_id))
+    if checkpoint is None:
+        return None
+    state = checkpoint.checkpoint.get("channel_values") or checkpoint.checkpoint.get("values")
+    if not isinstance(state, dict):
+        return None
+    allowed_fields = GraphState.model_fields.keys()
+    normalized_state = {key: value for key, value in state.items() if key in allowed_fields}
+    return GraphState.model_validate(normalized_state)
+
+
 async def invoke_rag_graph(graph, state: GraphState, *, thread_id: str) -> GraphState:
     state.thread_id = thread_id
-    result = await graph.ainvoke(state, config={"configurable": {"thread_id": thread_id}})
+    result = await graph.ainvoke(state, config=_thread_config(thread_id))
     return GraphState.model_validate(result)
 
 

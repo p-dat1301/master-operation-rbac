@@ -1,5 +1,5 @@
 from app.application.dtos.task import TaskCreateInput, TaskOutput
-from app.domain.entities.task import Task
+from app.domain.entities.task import Task, TaskPriority, TaskStatus
 from app.domain.entities.user import User
 from app.domain.repositories.task_repository import TaskRepository
 from app.domain.services.rbac_service import RBACService
@@ -23,8 +23,8 @@ class CreateTaskUseCase:
             assignee_id=data.assignee_id,
             assigner_id=actor.id,
             department_id=data.department_id,
-            status="todo",
-            priority=data.priority,
+            status=TaskStatus.TODO,
+            priority=TaskPriority(data.priority) if data.priority is not None else None,
             start_date=data.start_date,
             due_date=data.due_date,
             estimated_hours=data.estimated_hours,

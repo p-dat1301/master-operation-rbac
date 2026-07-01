@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.domain.entities.task import Task
+from app.domain.entities.task import Task, TaskPriority, TaskStatus
 from app.domain.repositories.task_repository import TaskRepository
 from app.infrastructure.database.models.task_model import TaskModel
 
@@ -32,8 +32,8 @@ class SQLAlchemyTaskRepository(TaskRepository):
             assignee_id=model.assignee_id,
             assigner_id=model.creator_id,
             department_id=model.department_id,
-            status=model.status,
-            priority=model.priority,
+            status=TaskStatus(model.status),
+            priority=TaskPriority(model.priority) if model.priority is not None else None,
             due_date=model.due_date,
             created_at=self._as_utc(model.created_at),
             updated_at=self._as_utc(model.updated_at),
@@ -74,8 +74,8 @@ class SQLAlchemyTaskRepository(TaskRepository):
             creator_id=task.assigner_id,
             assignee_id=task.assignee_id,
             department_id=task.department_id,
-            status=task.status,
-            priority=task.priority,
+            status=task.status.value,
+            priority=task.priority.value if task.priority is not None else None,
             due_date=task.due_date,
         )
         self._session.add(model)
@@ -93,8 +93,8 @@ class SQLAlchemyTaskRepository(TaskRepository):
         model.description = task.description
         model.assignee_id = task.assignee_id
         model.department_id = task.department_id
-        model.status = task.status
-        model.priority = task.priority
+        model.status = task.status.value
+        model.priority = task.priority.value if task.priority is not None else None
         model.due_date = task.due_date
         await self._session.flush()
         return self._to_entity(model)

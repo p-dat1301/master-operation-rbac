@@ -10,12 +10,19 @@ services:
       - .env
     environment:
       ELASTICSEARCH_HOST: elasticsearch:9200
+      MINIO_ENDPOINT: minio:9000
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
+      MINIO_BUCKET: ${MINIO_BUCKET}
+      MINIO_SECURE: ${MINIO_SECURE}
     volumes:
       - .:/code
       - ./migrations:/code/migrations
     depends_on:
       db:
         condition: service_healthy
+      minio:
+        condition: service_started
       llm_gateway:
         condition: service_started
     networks:
@@ -25,7 +32,7 @@ services:
   llm_gateway:
     image: ghcr.io/berriai/litellm:main-latest
     container_name: masterop_llm_gateway
-    command: ["--config", "/app/config.yaml", "--host", "0.0.0.0", "--port", "4000"]
+    command: [ "--config", "/app/config.yaml", "--host", "0.0.0.0", "--port", "4000" ]
     environment:
       GROQ_API_KEY: ${GROQ_API_KEY:-}
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
@@ -50,7 +57,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d masterop"]
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d masterop" ]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -79,7 +86,7 @@ services:
     volumes:
       - elasticsearch_data:/usr/share/elasticsearch/data
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      test: [ "CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -87,9 +94,25 @@ services:
       - masterop_net
     restart: unless-stopped
 
+  minio:
+    image: minio/minio:latest
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    networks:
+      - masterop_net
+    restart: unless-stopped
+
 volumes:
   postgres_data:
   elasticsearch_data:
+  minio_data:
 
 networks:
   masterop_net:

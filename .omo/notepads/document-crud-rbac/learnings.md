@@ -1,0 +1,45 @@
+- Added `app/domain/services/document_access_policy.py` as a pure domain adapter from `Document` to `AccessPolicyMetadata`.
+- `build_document_policy()` maps `visibility_scope`, `class_document`, sorted `allowed_role_names`, first `allowed_departments` value, and `uploaded_by` into canonical agentic policy metadata.
+- `evaluate_document_access()` reuses `evaluate_access()` for standard scopes, hard-denies inactive users, allows `admin`/`bod` bypass, and extends department evaluation for `manager` via `DepartmentTreeService.get_dept_and_descendants()`.
+- Manager subtree handling stays in the domain adapter so routers/repos do not duplicate policy logic or add DB I/O.
+- Added document CRUD seed permissions `read_document`/`update_document`/`delete_document` with ids 10-12 and granted them to admin + manager only, matching the existing document upload access pattern.
+- Added `DocumentScope = Literal["all", "department", "self"]` and `RBACService.get_document_scope(actor)` with role-based scope rules: admin/bod -> all, manager -> department, employee -> self.
+- Manager document scope remains symbolic in RBAC; use case layer is expected to expand department visibility with `DepartmentTreeService.get_dept_and_descendants`.
+- Added unit tests covering admin, manager, and employee document scope outcomes.
+- Added `tests/unit/application/test_document_rbac_matrix.py` with standardized actor factories: `make_employee_actor()`, `make_manager_actor()`, `make_admin_actor()`, `make_bod_actor()`, `make_inactive_actor()`.
+- Kept the `User` constructor pattern aligned with `tests/unit/domain/test_rbac_service.py` (`employee_code`, `email`, `full_name`, `role_name`, `permissions`, `department_id`, `is_active`).
+- Added `make_document_entity()` fixture helper returning `Document` dataclass instances and created 3 docs across Engineering/HR parent/HR child.
+- Matrix covers list/detail/search/update/delete with allow + deny cases, plus list/search/detail parity using the same scope helper.
+- For manager descendant coverage, the test uses `department_id=1` as the parent scope and a mocked descendant map that includes department 3.
+- Added DocumentRepository CRUD/search contract methods for list_all, list_by_departments, list_by_owner, search, update, and delete.
+- SQLAlchemyDocumentRepository keeps list/search filtering in SQL statements; department scoping is applied before keyword ilike filters in search.
+- delete(document_id) returns the mapped Document entity before deletion so store_bucket/store_object_key remain available for MinIO cleanup.
+- Unit coverage uses AsyncMock session/result objects to verify query construction and update/delete behavior without requiring aiosqlite.
+- Added `ListDocumentsUseCase` with inactive-user denial before scope resolution, then `all` -> `list_all()`, `department` -> `find_all()` + `DepartmentTreeService.get_dept_and_descendants()` + `list_by_departments()`, and `self` -> `list_by_owner(actor.id)`.
+- List document use case maps every repository result through `DocumentListOutput.from_entity()` and keeps all scope filtering in repository methods, not post-query Python filtering.
+- Added `tests/unit/application/test_list_documents_use_case.py` covering inactive denial, admin all, manager department-descendant expansion, and employee own-upload filtering with AsyncMock assertions.
+- Added `app/application/use_cases/document/get_document.py` with `GetDocumentByIdUseCase`: inactive users are denied before repository access, missing documents raise `ResourceNotFound`, and successful reads return `DocumentDetailOutput.from_entity()` after `evaluate_document_access(..., departments=None)` passes.
+- Unit coverage in `tests/unit/application/test_get_document_use_case.py` now verifies inactive deny, missing document, cross-department employee deny, same-department employee allow, and admin allow.
+- Evidence captured in `.omo/evidence/task-7-employee-allow.txt` and `.omo/evidence/task-7-deny.txt` from targeted pytest runs.
+- Added `app/application/use_cases/document/update_document.py` with `UpdateDocumentUseCase`: inactive users are denied first, then `require_permission(actor, "update_document")`, then `find_by_id()`, then `evaluate_document_access(..., departments=None)`, and finally `repo.update()` with only non-None title/description/status fields.
+- Update flow returns `DocumentDetailOutput.from_entity(updated_document)` and raises `ResourceNotFound` when the document is missing.
+- Unit coverage in `tests/unit/application/test_update_document_use_case.py` verifies inactive deny, permission deny, missing document, cross-department deny, title-only update, and full metadata update with `DocumentStatus.INDEXED`.
+- Evidence captured in `.omo/evidence/task-9-update-success.txt` and `.omo/evidence/task-9-update-deny.txt`.
+- Added `SearchDocumentsUseCase` with the same 3-branch scope pattern as list: inactive users are denied before repository access, admin/bod use `repo.search(keyword, dept_ids=None)`, manager expands `DepartmentTreeService.get_dept_and_descendants()` before search, and employee scope searches only their department via `dept_ids=[actor.department_id]` when available.
+- Search coverage keeps filtering in SQL via `repo.search()` and maps results through `DocumentListOutput.from_entity()` without post-query Python filtering.
+- Added `tests/unit/application/test_search_documents_use_case.py` covering inactive denial, admin all-scope search, manager descendant search, and employee own-scope search with AsyncMock assertions.
+- Evidence captured in `.omo/evidence/task-8-search-scope.txt` and `.omo/evidence/task-8-admin-search.txt` from pytest runs.
+- Added `DeleteDocumentUseCase` with the same inactive-user and `ResourceNotFound` pattern as get-by-id, plus `RBACService.require_permission(actor, "delete_document")` before repository access.
+- Delete flow checks `evaluate_document_access(document, actor, departments=None)` before any destructive action, then attempts `storage_service.delete_file(document.store_object_key)` and ignores/logs MinIO delete failures before hard-deleting in the repository.
+- Added `tests/unit/application/test_delete_document_use_case.py` covering inactive denial, missing permission denial, missing document, access-policy denial, normal success, and MinIO-missing success paths with AsyncMock/MagicMock assertions.
+- Added DI providers in `app/di/document.py` for list/get/search/update/delete documents using lazy `SQLAlchemyDepartmentRepository` and `DepartmentTreeService` imports inside the scoped providers, matching the existing `provide_create_document` wiring style.
+- Exported the new document providers from `app/di/__init__.py` so `from app.di import *` includes all document CRUD use case factories.
+- Added thin document API CRUD/search routes in `app/presentation/api/v1/documents.py`: `GET /` lists or searches via optional `?q=`, `GET /{document_id}` returns detail, `PATCH /{document_id}` updates metadata, and `DELETE /{document_id}` returns 204 with no body.
+- Document router now imports concrete providers from `app.di.document` and delegates all authorization/not-found handling to use cases; the only router branch is `q` present vs absent for list/search dispatch.
+- Added `tests/integration/test_document_crud.py` to cover document list/search/detail/update/delete CRUD behavior with RBAC scope checks.
+- Integration tests use shared `client`, `admin_token`, `manager_token`, and `employee_token` fixtures from `tests/integration/conftest.py` with Bearer auth headers.
+- Search/list parity is asserted by comparing employee-scoped IDs from `GET /api/v1/documents/` and `GET /api/v1/documents/?q=...`, while outside-scope documents must stay excluded from both.
+- Detail/update/delete integration cases verify 401 on missing auth, 403 on cross-scope or unauthorized role access, 404 on missing document IDs via `99999`, 200 for permitted reads/updates, and 204 with empty body for permitted deletes.
+- F2 code-quality review: document CRUD RBAC is mostly clean on targeted paths; router stays thin and authorization remains in use cases/domain policy, but delete storage cleanup still broadly swallows exceptions.
+- F2 diagnostics: Ruff reports unused imports in pre-existing document create use case (`DocumentClassification`, `PermissionDenied`); new CRUD/list/get/search/update/delete paths have no LSP diagnostics.
+- F2 verification state: targeted document CRUD/RBAC unit suite passes 81/81; integration suite is not full success because route-unavailable guards skip execution when `/api/v1/documents/*` is missing on the running server.

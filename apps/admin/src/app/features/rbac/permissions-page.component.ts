@@ -154,7 +154,7 @@ export class PermissionsPageComponent implements OnInit {
 			this.message.warning('Vui lòng nhập permission key.');
 			return;
 		}
-		if (!/^[a-z][a-z0-9:_-]*$/.test(code)) {
+		if (!/^[a-z][a-z0-9:_.-]*$/.test(code)) {
 			this.message.warning('Permission key chỉ nên dùng chữ thường, số, dấu : _ -.');
 			return;
 		}
@@ -165,11 +165,11 @@ export class PermissionsPageComponent implements OnInit {
 			if (editing) {
 				const updated = await firstValueFrom(this.rbacApi.updatePermission(editing.id, payload));
 				this.permissions.update((list) => list.map((item) => item.id === updated.id ? updated : item));
-				this.message.success(`Đã cập nhật permission "${updated.code}".`);
+				this.message.success('Đã cập nhật permission.');
 			} else {
 				const created = await firstValueFrom(this.rbacApi.createPermission(payload));
 				this.permissions.update((list) => [...list, created]);
-				this.message.success(`Đã tạo permission "${created.code}".`);
+				this.message.success('Đã tạo permission.');
 			}
 			this.closeModal();
 		} catch (error) { this.showApiError(error, editing ? 'Cập nhật permission thất bại.' : 'Tạo permission thất bại.'); }

@@ -1,20 +1,11 @@
 from __future__ import annotations
 
-from typing import Optional
-
 from pydantic import BaseModel
 
 from app.application.dtos.leave_balance import LeaveBalanceOutput, LeaveBalanceUpdateInput
 
 
-class LeaveBalanceResponse(BaseModel):
-    id: int
-    user_id: int
-    year: int
-    total_days: float
-    used_days: float
-    pending_days: float
-    remaining_days: float
+class LeaveBalanceResponse(LeaveBalanceOutput):
 
     @classmethod
     def from_dto(cls, dto: LeaveBalanceOutput) -> "LeaveBalanceResponse":
@@ -29,7 +20,5 @@ class LeaveBalanceResponse(BaseModel):
         )
 
 
-class LeaveBalanceUpdateRequest(BaseModel):
-    year: int
-    total_days: float
-    used_days: float = 0.0
+class LeaveBalanceUpdateRequest(LeaveBalanceUpdateInput):
+    pass

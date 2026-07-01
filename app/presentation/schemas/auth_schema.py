@@ -1,12 +1,9 @@
-from pydantic import BaseModel, EmailStr
+from app.application.dtos.auth import LoginInput, LoginOutput
 
 
-class LoginRequest(BaseModel):
-    email: EmailStr
-    password: str
+class LoginRequest(LoginInput):
+    pass
 
 
-class LoginResponse(BaseModel):
-    access_token: str
-    token_type: str = "bearer"
-    expires_in: int = 3600
+class LoginResponse(LoginOutput):
+    pass

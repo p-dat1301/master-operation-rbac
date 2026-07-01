@@ -1,0 +1,170 @@
+<section class="page-root" data-testid="agentic-documents-page">
+	<div class="page-header">
+		<div>
+			<p class="eyebrow">Agentic workspace</p>
+			<h2>Documents</h2>
+			<p class="subtitle">List, inspect, and upload knowledge documents with policy controls.</p>
+		</div>
+		<div class="header-actions">
+			<div class="count-chip surface-field">
+				<span nz-icon nzType="file-text"></span>
+				<span>{{ documents().length }} documents</span>
+			</div>
+			<button *ngIf="canUpload()" nz-button nzType="primary" nzSize="large" (click)="openUploadModal()" data-testid="upload-document-btn">
+				<span nz-icon nzType="upload"></span> Upload document
+			</button>
+		</div>
+	</div>
+
+	<div class="content-grid">
+		<nz-card class="surface-card table-panel" [nzBordered]="false">
+			<div class="panel-title-row">
+				<div>
+					<h3 class="panel-title text-primary">Document list</h3>
+					<p class="text-secondary">Browse all agentic documents and open a detail preview.</p>
+				</div>
+				<button nz-button nzType="default" (click)="loadDocuments()" [nzLoading]="listLoading()"><span nz-icon nzType="reload"></span> Refresh</button>
+			</div>
+
+			<nz-spin [nzSpinning]="listLoading()">
+				<div *ngIf="listError()" class="state-panel error-state" data-testid="document-list-error">
+					<span nz-icon nzType="warning"></span>
+					<div><strong>Could not load documents.</strong><p>{{ listError() }}</p></div>
+					<button nz-button nzSize="small" nzType="primary" (click)="loadDocuments()">Try again</button>
+				</div>
+
+				<div *ngIf="!listError() && !listLoading() && documents().length === 0" class="state-panel" data-testid="document-list-empty">
+					<span nz-icon nzType="inbox"></span>
+					<div><strong>No documents found yet.</strong><p>Uploaded agentic documents will appear here after a successful upload.</p></div>
+				</div>
+
+				<nz-table *ngIf="!listError() && documents().length > 0" #docTable [nzData]="documents()" [nzPageSize]="8" nzSize="middle" data-testid="agentic-documents-table">
+					<thead>
+						<tr>
+							<th nzWidth="60px">#</th>
+							<th>Document</th>
+							<th nzWidth="140px">Status</th>
+							<th nzWidth="180px">Type</th>
+							<th nzWidth="140px" nzAlign="right">Action</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr *ngFor="let document of docTable.data; let i = index">
+							<td class="idx-col">{{ i + 1 }}</td>
+							<td>
+								<div class="doc-name">{{ document.filename || document.document_id }}</div>
+								<div class="text-muted">ID: {{ document.document_id }}</div>
+							</td>
+							<td><span class="status-pill" [class.status-pill--active]="document.status === 'ready'">{{ document.status }}</span></td>
+							<td class="text-secondary">{{ document.mime_type || '—' }}</td>
+							<td nzAlign="right"><button nz-button nzType="link" (click)="openDocument(document)">View detail</button></td>
+						</tr>
+					</tbody>
+				</nz-table>
+			</nz-spin>
+		</nz-card>
+
+		<nz-card class="surface-card detail-panel" [nzBordered]="false">
+			<div class="panel-title-row">
+				<div>
+					<h3 class="panel-title text-primary">Document detail</h3>
+					<p class="text-secondary">Fetch a real document by document_id for operational review.</p>
+				</div>
+			</div>
+
+			<nz-spin [nzSpinning]="detailLoading()">
+				<div *ngIf="detailError()" class="state-panel error-state" data-testid="document-detail-error">
+					<span nz-icon nzType="warning"></span>
+					<div><strong>Could not load document detail.</strong><p>{{ detailError() }}</p></div>
+					<button nz-button nzSize="small" nzType="primary" (click)="refreshSelectedDocument()">Try again</button>
+				</div>
+				<div *ngIf="selectedDocument() && selectedDocument()?.status === 'not_found'" class="state-panel error-state" data-testid="document-not-found">
+					<span nz-icon nzType="disconnect"></span>
+					<div><strong>Document not found.</strong><p>The selected document was removed or is no longer accessible.</p></div>
+				</div>
+				<ng-container *ngIf="!detailError() && selectedDocument(); else noSelection">
+					<div class="detail-grid">
+						<div><span class="field-label">Document ID</span><div class="field-value">{{ selectedDocument()?.document_id }}</div></div>
+						<div><span class="field-label">Filename</span><div class="field-value">{{ selectedDocument()?.filename || '—' }}</div></div>
+						<div><span class="field-label">Mime type</span><div class="field-value">{{ selectedDocument()?.mime_type || '—' }}</div></div>
+						<div><span class="field-label">Status</span><div class="field-value">{{ selectedDocument()?.status }}</div></div>
+					</div>
+					<div class="detail-actions">
+						<button nz-button nzType="default" (click)="refreshSelectedDocument()" [disabled]="!selectedDocument()"><span nz-icon nzType="reload"></span> Reload detail</button>
+					</div>
+				</ng-container>
+				<ng-template #noSelection>
+					<div class="state-panel" data-testid="document-detail-empty">
+						<span nz-icon nzType="file-search"></span>
+						<div><strong>Select a document.</strong><p>Select a document from the list to inspect it here.</p></div>
+					</div>
+				</ng-template>
+			</nz-spin>
+		</nz-card>
+	</div>
+
+	<nz-modal [(nzVisible)]="showUploadModal" nzTitle="Upload agentic document" (nzOnCancel)="closeUploadModal()" (nzOnOk)="submitUpload()" [nzOkLoading]="uploading()" nzOkText="Upload" nzWidth="720px">
+		<ng-container *nzModalContent>
+			<div class="upload-grid">
+				<div class="file-upload-zone" (click)="fileInput.click()">
+					<input #fileInput type="file" (change)="onFileSelected($event)" style="display: none;" />
+					<span nz-icon nzType="upload" class="upload-icon"></span>
+					<div class="upload-text">
+						@if (selectedFile) {
+							<span class="file-name">{{ selectedFile.name }}</span>
+							<span class="file-size">({{ (selectedFile.size / 1024 / 1024) | number:'1.1-2' }} MB)</span>
+						} @else {
+							<span>Click to select document file</span>
+						}
+					</div>
+				</div>
+				<label class="form-field">
+					<span class="field-label">Classification <span class="required">*</span></span>
+					<nz-select [(ngModel)]="uploadForm.classification" data-testid="document-classification-select">
+						<nz-option nzLabel="Public" nzValue="public"></nz-option>
+						<nz-option nzLabel="Internal" nzValue="internal"></nz-option>
+						<nz-option nzLabel="Confidential" nzValue="confidential"></nz-option>
+						<nz-option nzLabel="Restricted" nzValue="restricted"></nz-option>
+					</nz-select>
+				</label>
+				<label class="form-field">
+					<span class="field-label">Visibility scope <span class="required">*</span></span>
+					<nz-select [(ngModel)]="uploadForm.visibility_scope" data-testid="document-visibility-select">
+						<nz-option nzLabel="Public (Global)" nzValue="global"></nz-option>
+						<nz-option nzLabel="Role" nzValue="role"></nz-option>
+						<nz-option nzLabel="Department" nzValue="department"></nz-option>
+						<nz-option nzLabel="Owner Only" nzValue="owner"></nz-option>
+						<nz-option nzLabel="Manager Subtree" nzValue="manager_subtree"></nz-option>
+					</nz-select>
+				</label>
+				@if (uploadForm.visibility_scope === 'role') {
+					<label class="form-field">
+						<span class="field-label">Allowed roles <span class="required">*</span></span>
+						<nz-select [(ngModel)]="uploadForm.allowed_roles" nzMode="multiple" nzShowSearch nzPlaceHolder="Select allowed roles" data-testid="document-roles-select">
+							<nz-option *ngFor="let role of roles()" [nzLabel]="role.display_name" [nzValue]="role.name"></nz-option>
+						</nz-select>
+					</label>
+				}
+				@if (uploadForm.visibility_scope === 'department') {
+					<label class="form-field">
+						<span class="field-label">Department <span class="required">*</span></span>
+						<nz-select [(ngModel)]="uploadForm.department_id" nzAllowClear nzShowSearch nzPlaceHolder="Select department" data-testid="document-department-select">
+							<nz-option *ngFor="let dept of departments()" [nzLabel]="dept.name" [nzValue]="dept.id"></nz-option>
+						</nz-select>
+					</label>
+				}
+				<div *ngIf="!canUpload()" class="state-panel error-state" data-testid="document-upload-forbidden">
+					<span nz-icon nzType="lock"></span>
+					<div><strong>Upload unavailable.</strong><p>You do not have permission to upload documents in this workspace.</p></div>
+				</div>
+				<div class="hint-box surface-field">
+					<p class="text-secondary">Policy rules: role scope requires at least one allowed role; department scope requires a department_id.</p>
+				</div>
+				<div *ngIf="uploadError()" class="state-panel error-state" data-testid="document-upload-error">
+					<span nz-icon nzType="warning"></span>
+					<div><strong>Upload failed.</strong><p>{{ uploadError() }}</p></div>
+				</div>
+			</div>
+		</ng-container>
+	</nz-modal>
+</section>

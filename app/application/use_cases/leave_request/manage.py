@@ -4,7 +4,7 @@ from datetime import date
 
 from app.application.dtos.leave_request import LeaveRequestCreateInput, LeaveRequestOutput
 from app.domain.entities.leave_balance import LeaveBalance
-from app.domain.entities.leave_request import LeaveRequest
+from app.domain.entities.leave_request import LeaveRequest, LeaveRequestStatus
 from app.domain.entities.user import User
 from app.domain.exceptions import BusinessRuleViolation, PermissionDenied, ResourceNotFound
 from app.domain.repositories.leave_balance_repository import LeaveBalanceRepository
@@ -30,14 +30,14 @@ class UpdateLeaveRequestUseCase:
             raise ResourceNotFound("Leave request not found")
         if leave.requester_id != actor.id:
             raise PermissionDenied("You can only update your own leave request")
-        if leave.status != "pending":
+        if leave.status != LeaveRequestStatus.PENDING:
             raise BusinessRuleViolation("Only pending leave requests can be updated")
 
         existing_leaves = await self.leave_repo.list_by_requester(actor.id)
         for existing_leave in existing_leaves:
             if existing_leave.id == leave_id:
                 continue
-            if existing_leave.status in {"pending", "approved"} and _overlaps(data.start_date, data.end_date, existing_leave.start_date, existing_leave.end_date):
+            if existing_leave.status in {LeaveRequestStatus.PENDING, LeaveRequestStatus.APPROVED} and _overlaps(data.start_date, data.end_date, existing_leave.start_date, existing_leave.end_date):
                 raise BusinessRuleViolation("Leave request overlaps with an existing leave request")
 
         balance = await self.leave_balance_repo.find_by_user_year(actor.id, data.start_date.year)
@@ -70,10 +70,10 @@ class CancelLeaveRequestUseCase:
             raise ResourceNotFound("Leave request not found")
         if leave.requester_id != actor.id:
             raise PermissionDenied("You can only cancel your own leave request")
-        if leave.status == "cancelled":
+        if leave.status == LeaveRequestStatus.CANCELLED:
             raise BusinessRuleViolation("Leave request already cancelled")
 
-        if leave.status == "approved":
+        if leave.status == LeaveRequestStatus.APPROVED:
             balance = await self.leave_balance_repo.find_by_user_year(actor.id, leave.start_date.year)
             required_days = _leave_days(leave.start_date, leave.end_date)
             if balance is None:
@@ -105,7 +105,7 @@ class CancelLeaveRequestUseCase:
             start_date=leave.start_date,
             end_date=leave.end_date,
             reason=leave.reason,
-            status="cancelled",
+            status=LeaveRequestStatus.CANCELLED,
             department_id=leave.department_id,
         )
         updated = await self.leave_repo.update(updated_leave)
